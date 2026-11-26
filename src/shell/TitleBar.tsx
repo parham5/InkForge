@@ -74,7 +74,7 @@ export function TitleBar({ run, checked }: { run: (id: CommandId) => void; check
     <header className="titlebar no-print" data-tauri-drag-region>
       <img className="titlebar-icon" src="/favicon.svg" alt="" width={16} height={16} data-tauri-drag-region />
       <span className="titlebar-name" data-tauri-drag-region>
-        Handbook
+        InkForge
       </span>
       <WebMenu run={run} checked={checked} />
       <div className="titlebar-drag" data-tauri-drag-region />

@@ -1,18 +1,21 @@
 [package]
-name = "handbook"
-version = "0.9.12"
-description = "Handbook: a text editor that writes in your own handwriting"
-authors = []
+name = "inkforge"
+version = "1.0.0-alpha.1"
+description = "InkForge: professional handwriting and font studio"
+authors = ["Parham Fallah"]
 license = ""
-repository = "https://github.com/rostislav-kuparo/handbook"
 edition = "2024"
 rust-version = "1.90"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-name = "handbook_lib"
+name = "inkforge_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "InkForge"
+path = "src/main.rs"
 
 [build-dependencies]
 tauri-build = { version = "2.7.2", features = [] }

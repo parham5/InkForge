@@ -1,5 +1,8 @@
 node_modules/
 dist/
+public/vendor/
+crates/*/pkg/
+validation-hand.ttf
 target/
 *.log
 .DS_Store

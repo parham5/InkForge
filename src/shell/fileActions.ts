@@ -19,19 +19,19 @@ export async function openJson() {
   if (!file) return;
   try {
     const data = JSON.parse(file.text);
-    if (data?.format === 'handbook-backup') {
+    if (data?.format === 'handbook-backup' || data?.format === 'inkforge-backup') {
       const n = await importEverything(data);
       const desks = Array.isArray(data.desks) ? await importDesks(data.desks) : 0;
       if (Array.isArray(data.blanks)) await importBlanks(data.blanks);
       alert(`Загружено из резервной копии: документов — ${n.documents}, вариантов букв — ${n.samples}${desks ? `, столов — ${desks}` : ''}.`);
       return;
     }
-    if (data?.format === 'handbook-handwriting') {
+    if (data?.format === 'handbook-handwriting' || data?.format === 'inkforge-handwriting') {
       await importHandwriting(data, false);
       alert(`Почерк добавлен: вариантов букв — ${data.samples.length}.`);
       return;
     }
-    if (data?.format !== 'handbook-document' || !data.content) throw new Error('Это не файл Handbook (.json)');
+    if (!['handbook-document', 'inkforge-document'].includes(data?.format) || !data.content) throw new Error('This is not an InkForge document (.json)');
     showDocument((await createDocument(String(data.title ?? 'Без названия'), data.content)).id);
   } catch (err) {
     alert(String(err));
@@ -45,12 +45,12 @@ export async function backupEverything() {
   const withDesks = await getSetting(BACKUP_DESKS_KEY, false);
   const data = await exportEverything(withDesks ? await exportDesks() : undefined, await exportBlanks());
   const day = new Date().toISOString().slice(0, 10);
-  await saveFile(new Blob([JSON.stringify(data)], { type: 'application/json' }), `handbook-backup-${day}.json`);
+  await saveFile(new Blob([JSON.stringify(data)], { type: 'application/json' }), `inkforge-backup-${day}.json`);
 }
 
 export async function saveHandwriting() {
   const data = await exportHandwriting();
-  await saveFile(new Blob([JSON.stringify(data)], { type: 'application/json' }), 'pocherk.handbook.json');
+  await saveFile(new Blob([JSON.stringify(data)], { type: 'application/json' }), 'handwriting.inkforge.json');
 }
 
 export async function loadHandwriting() {

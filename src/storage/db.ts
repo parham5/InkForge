@@ -10,7 +10,7 @@ interface SettingRow {
   value: unknown;
 }
 
-class HandbookDB extends Dexie {
+class InkForgeDB extends Dexie {
   samples!: EntityTable<Sample, 'id'>;
   documents!: EntityTable<HandDocument, 'id'>;
   settings!: EntityTable<SettingRow, 'key'>;
@@ -22,6 +22,7 @@ class HandbookDB extends Dexie {
   blanks!: EntityTable<Blank, 'id'>;
 
   constructor() {
+    // Retain the established database name so installed users keep every record.
     super('handbook');
     this.version(1).stores({
       samples: 'id, char, createdAt',
@@ -51,7 +52,7 @@ class HandbookDB extends Dexie {
   }
 }
 
-export const db = new HandbookDB();
+export const db = new InkForgeDB();
 
 export async function loadStyle(): Promise<Style> {
   const row = await db.settings.get('style');
@@ -109,7 +110,7 @@ export async function createDocument(
 
 /** Backup format for the handwriting (samples + style). */
 export interface HandwritingBackup {
-  format: 'handbook-handwriting';
+  format: 'inkforge-handwriting' | 'handbook-handwriting';
   version: 1;
   style: Style;
   samples: Sample[];
@@ -117,7 +118,7 @@ export interface HandwritingBackup {
 
 export async function exportHandwriting(): Promise<HandwritingBackup> {
   return {
-    format: 'handbook-handwriting',
+    format: 'inkforge-handwriting',
     version: 1,
     style: await loadStyle(),
     samples: await db.samples.toArray(),
@@ -126,7 +127,7 @@ export async function exportHandwriting(): Promise<HandwritingBackup> {
 
 /** Everything in one file: handwriting, documents and settings (moving to another computer or app). */
 export interface FullBackup {
-  format: 'handbook-backup';
+  format: 'inkforge-backup' | 'handbook-backup';
   version: 1;
   exportedAt: number;
   samples: Sample[];
@@ -140,7 +141,7 @@ export interface FullBackup {
 
 export async function exportEverything(desks?: unknown[], blanks?: unknown[]): Promise<FullBackup> {
   return {
-    format: 'handbook-backup',
+    format: 'inkforge-backup',
     version: 1,
     exportedAt: Date.now(),
     samples: await db.samples.toArray(),
@@ -153,8 +154,8 @@ export async function exportEverything(desks?: unknown[], blanks?: unknown[]): P
 
 /** Adds a full backup to what is here; rows with the same id are replaced by the backup's. */
 export async function importEverything(data: FullBackup): Promise<{ samples: number; documents: number }> {
-  if (data?.format !== 'handbook-backup' || !Array.isArray(data.samples) || !Array.isArray(data.documents)) {
-    throw new Error('Это не резервная копия Handbook');
+  if (!['inkforge-backup', 'handbook-backup'].includes(data?.format) || !Array.isArray(data.samples) || !Array.isArray(data.documents)) {
+    throw new Error('This is not an InkForge backup');
   }
   await db.transaction('rw', db.samples, db.documents, db.settings, async () => {
     await db.samples.bulkPut(data.samples);
@@ -165,8 +166,8 @@ export async function importEverything(data: FullBackup): Promise<{ samples: num
 }
 
 export async function importHandwriting(data: HandwritingBackup, replace: boolean) {
-  if (data?.format !== 'handbook-handwriting' || !Array.isArray(data.samples)) {
-    throw new Error('Это не файл почерка Handbook');
+  if (!['inkforge-handwriting', 'handbook-handwriting'].includes(data?.format) || !Array.isArray(data.samples)) {
+    throw new Error('This is not an InkForge handwriting file');
   }
   await db.transaction('rw', db.samples, db.settings, async () => {
     if (replace) await db.samples.clear();

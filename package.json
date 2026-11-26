@@ -1,9 +1,9 @@
 {
-  "name": "handbook",
+  "name": "inkforge",
   "private": true,
-  "version": "0.9.12",
+  "version": "1.0.0-alpha.1",
   "type": "module",
-  "description": "Handwriting text editor: your own handwriting as a living font, with embedded HTML blocks",
+  "description": "Your handwriting. Your typeface. Your identity.",
   "scripts": {
     "prepare-assets": "node scripts/prepare.mjs",
     "wasm": "node scripts/prepare.mjs --force-wasm",

@@ -545,10 +545,10 @@ export async function exportPng(o: PageExport) {
 export async function exportFont() {
   const bytes = getHandwriting().fontBytes;
   if (!bytes) return;
-  await saveFile(new Blob([bytes.slice()], { type: 'font/ttf' }), 'MyHandwriting.ttf');
+  await saveFile(new Blob([bytes.slice()], { type: 'font/ttf' }), 'InkForgeHandwriting.ttf');
 }
 
 export async function exportDocumentJson(title: string, content: DocContent) {
-  const data = { format: 'handbook-document', version: 1, title, content };
-  await saveFile(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), `${safeFilename(title)}.handbook.json`);
+  const data = { format: 'inkforge-document', version: 1, title, content };
+  await saveFile(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), `${safeFilename(title)}.inkforge.json`);
 }

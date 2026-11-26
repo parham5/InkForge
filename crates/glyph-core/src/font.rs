@@ -356,7 +356,7 @@ pub fn build_font(opts: &FontOptions, keys: &[KeyGlyphs]) -> Result<Vec<u8>, Str
     let name = Name::new(vec![
         rec(NameId::FAMILY_NAME, &opts.family),
         rec(NameId::SUBFAMILY_NAME, "Regular"),
-        rec(NameId::UNIQUE_ID, &format!("{ps_name}-Regular;handbook")),
+        rec(NameId::UNIQUE_ID, &format!("{ps_name}-Regular;inkforge")),
         rec(NameId::FULL_NAME, &format!("{} Regular", opts.family)),
         rec(NameId::VERSION_STRING, "Version 1.000"),
         rec(NameId::POSTSCRIPT_NAME, &format!("{ps_name}-Regular")),

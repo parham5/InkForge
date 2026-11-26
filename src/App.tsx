@@ -16,11 +16,11 @@ import { useLive } from './util/useLive';
 type Tab = 'docs' | 'studio';
 type Theme = 'system' | 'light' | 'dark';
 
-const THEME_KEY = 'handbook.theme';
+const THEME_KEY = 'inkforge.theme';
 
 function readTheme(): Theme {
   try {
-    const t = localStorage.getItem(THEME_KEY);
+    const t = localStorage.getItem(THEME_KEY) ?? localStorage.getItem('handbook.theme');
     return t === 'light' || t === 'dark' ? t : 'system';
   } catch {
     return 'system';
@@ -176,7 +176,7 @@ export function App() {
       {tab === 'docs' ? <Documents /> : <Studio />}
       <nav className="tabs pill float no-print" role="tablist">
         <button role="tab" aria-selected={tab === 'docs'} className={tab === 'docs' ? 'on' : ''} onClick={() => go('docs')}>
-          Документы
+          Documents
         </button>
         <button
           role="tab"
@@ -185,7 +185,7 @@ export function App() {
           onClick={() => go('studio')}
           title={!loaded ? 'Почерк загружается' : building ? 'Собираю шрифт…' : `Букв в почерке: ${byChar.size}`}
         >
-          Почерк
+          Handwriting
           {(!loaded || building) && <span className="tab-busy pulse" aria-label="собираю шрифт" />}
         </button>
       </nav>

@@ -1,4 +1,10 @@
-# Handbook
+# InkForge
+
+Your handwriting. Your typeface. Your identity.
+
+InkForge 1.0.0-alpha.1 is developed and published by Parham Fallah. © 2026 Parham Fallah for new contributions.
+
+This product is based on Handbook by Rostislav Kuparo, used with written permission. The original project is available at https://github.com/rostislav-kuparo/handbook. This attribution does not imply endorsement. Existing third-party notices and license obligations remain applicable.
 
 Текстовый редактор без привычного форматирования. Вместо жирного и курсива — **ваш почерк**: вы пишете каждую букву столько раз, сколько хотите, а программа собирает из этого живой шрифт, где одинаковые буквы никогда не повторяются. Посреди текста можно вставлять **HTML-блоки** — редактируемые графики, диаграммы и фигуры.
 
@@ -6,7 +12,7 @@
 
 ## Установка (Windows)
 
-Скачайте установщик `Handbook_…_x64-setup.exe` со страницы [Releases](https://github.com/rostislav-kuparo/handbook/releases/latest) и запустите. Права администратора не нужны: программа ставится только для вашего пользователя, а установщик создаёт ярлык на рабочем столе и в меню «Пуск». Удаляется как обычная программа, через «Параметры → Приложения».
+Build the Windows installer locally with `npm run app:build`; no InkForge download or support URL has been published yet.
 
 Чтобы перенести почерк и документы с другого компьютера или из веб-версии, выберите в старом месте **«Файл → Резервная копия всего»**, затем в новом **«Файл → Открыть…»** и укажите этот файл.
 

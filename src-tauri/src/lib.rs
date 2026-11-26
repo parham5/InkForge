@@ -61,7 +61,7 @@ fn free_path(dir: &Path, name: &str) -> PathBuf {
 
 /// Downloads\Handbook: every export goes into a folder of its own here.
 fn exports_dir(app: &tauri::AppHandle) -> Result<PathBuf, String> {
-  Ok(app.path().download_dir().map_err(|e| e.to_string())?.join("Handbook"))
+  Ok(app.path().download_dir().map_err(|e| e.to_string())?.join("InkForge"))
 }
 
 /// `<prefix>_1`, `<prefix>_2`… — the first folder name not taken in `dir`.
@@ -166,7 +166,7 @@ async fn pick_json(window: tauri::WebviewWindow) -> Result<Option<(String, Strin
   {
     let Some(path) = rfd::FileDialog::new()
       .set_parent(&window)
-      .add_filter("Handbook (.json)", &["json"])
+      .add_filter("InkForge and legacy documents (.json)", &["json"])
       .pick_file()
     else {
       return Ok(None);

@@ -1,11 +1,9 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import pkg from '../../package.json';
-import { copyText } from '../util/clipboard';
 
 export type HelpId = 'letters' | 'keys' | 'about';
 
-const REPO = 'https://github.com/rostislav-kuparo/handbook';
 
 /** Fired on window to open a help page of the «Информация» menu (or the drawing help). */
 export const HELP_EVENT = 'handbook:help';
@@ -148,23 +146,18 @@ function KeysHelp() {
 }
 
 function About() {
-  const [copied, setCopied] = useState(false);
   return (
     <section className="about">
       <p className="about-name">
-        Handbook <span className="muted">{pkg.version}</span>
+        InkForge <span className="muted">{pkg.version}</span>
       </p>
-      <p>Текстовый редактор, который пишет вашим почерком.</p>
+      <p>Your handwriting. Your typeface. Your identity.</p>
+      <p>Developed and published by Parham Fallah. © 2026 Parham Fallah.</p>
       <p className="muted">
         Почерк, документы и настройки хранятся только на этом компьютере. Чтобы перенести их, сохраните «Файл → Резервная
         копия всего», а на новом месте откройте её через «Файл → Открыть…».
       </p>
-      <div className="row">
-        <code>{REPO}</code>
-        <button className="btn small" onClick={() => void copyText(REPO).then(setCopied)}>
-          {copied ? 'Скопировано' : 'Копировать'}
-        </button>
-      </div>
+      <p className="muted">This application is based on the authorized Handbook source. Original authorship and third-party notices are retained in the project documentation.</p>
     </section>
   );
 }

@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Handbook",
-  "version": "0.9.12",
-  "identifier": "app.handbook.editor",
+  "productName": "InkForge",
+  "version": "1.0.0-alpha.1",
+  "identifier": "com.parhamfallah.inkforge",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Handbook",
+        "title": "InkForge",
         "width": 1400,
         "height": 900,
         "minWidth": 900,
@@ -23,7 +23,7 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; img-src 'self' asset: http://asset.localhost data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; frame-src 'self' about:; font-src 'self' data: blob:; worker-src 'self' blob:; connect-src 'self' ipc: http://ipc.localhost"
     }
   },
   "bundle": {
@@ -31,7 +31,7 @@
     "targets": [
       "nsis"
     ],
-    "shortDescription": "Текстовый редактор, который пишет вашим почерком",
+    "shortDescription": "Your handwriting. Your typeface. Your identity.",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -39,13 +39,12 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "publisher": "Kuparo",
+    "publisher": "Parham Fallah",
     "category": "Productivity",
-    "longDescription": "Локальный текстовый редактор: вы пишете варианты каждой буквы, а он пишет ваш текст вашим почерком.",
+    "longDescription": "InkForge is an offline handwriting and font studio for creating documents in your own hand.",
     "windows": {
       "nsis": {
         "languages": [
-          "Russian",
           "English"
         ],
         "displayLanguageSelector": false,
