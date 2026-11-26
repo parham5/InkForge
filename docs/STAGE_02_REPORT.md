@@ -39,4 +39,4 @@ The isolated native launch uses WebView2 CDP and a disposable profile; it verifi
 
 ## Stage 02 closeout
 
-Starting checkpoint: `525a188`. Source and regression changes are committed after this report update. `Base/` remains unchanged. Stage 02 is ready to close; do not begin another stage without the owner’s next instruction.
+Starting checkpoint: `525a188`. Implementation and regressions: commit `65a5861` (`feat: make handwriting studio English-first`). This report follows in a documentation-only commit. `Base/` remains unchanged. Stage 02 is ready to close; do not begin another stage without the owner’s next instruction.
