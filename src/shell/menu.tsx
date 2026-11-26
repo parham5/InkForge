@@ -28,38 +28,38 @@ interface Entry {
 
 const MENU: { text: string; items: (Entry | '-')[] }[] = [
   {
-    text: 'Файл',
+    text: 'File',
     items: [
-      { id: 'file.new', text: 'Новый документ', keys: 'Ctrl+N' },
-      { id: 'file.open', text: 'Открыть…', keys: 'Ctrl+O' },
+      { id: 'file.new', text: 'New document', keys: 'Ctrl+N' },
+      { id: 'file.open', text: 'Open…', keys: 'Ctrl+O' },
       '-',
-      { id: 'file.backup', text: 'Резервная копия всего…' },
-      { id: 'file.backupDesks', text: 'Копия вместе со столами (фото)', check: true },
+      { id: 'file.backup', text: 'Back up everything…' },
+      { id: 'file.backupDesks', text: 'Include photographed desks', check: true },
       '-',
-      { id: 'file.saveHandwriting', text: 'Сохранить почерк…' },
-      { id: 'file.loadHandwriting', text: 'Загрузить почерк…' },
+      { id: 'file.saveHandwriting', text: 'Export handwriting…' },
+      { id: 'file.loadHandwriting', text: 'Import handwriting…' },
       '-',
-      { id: 'file.print', text: 'Печать / PDF…', keys: 'Ctrl+P' },
+      { id: 'file.print', text: 'Print / PDF…', keys: 'Ctrl+P' },
       '-',
-      { id: 'app.quit', text: 'Выход' },
+      { id: 'app.quit', text: 'Quit' },
     ],
   },
   {
-    text: 'Настройки',
+    text: 'Settings',
     items: [
-      { id: 'theme.system', text: 'Тема как в системе', check: true },
-      { id: 'theme.light', text: 'Светлая тема', check: true },
-      { id: 'theme.dark', text: 'Тёмная тема', check: true },
+      { id: 'theme.system', text: 'System theme', check: true },
+      { id: 'theme.light', text: 'Light theme', check: true },
+      { id: 'theme.dark', text: 'Dark theme', check: true },
     ],
   },
   {
-    text: 'Информация',
+    text: 'Help',
     items: [
-      { id: 'help.letters', text: 'Как писать буквы' },
-      { id: 'help.sketch', text: 'Команды чертежа и запрос для нейронки' },
-      { id: 'help.keys', text: 'Горячие клавиши и формулы' },
+      { id: 'help.letters', text: 'Writing letters' },
+      { id: 'help.sketch', text: 'Sketch commands and prompts' },
+      { id: 'help.keys', text: 'Keyboard shortcuts and formulas' },
       '-',
-      { id: 'help.about', text: 'О программе' },
+      { id: 'help.about', text: 'About InkForge' },
     ],
   },
 ];
@@ -89,7 +89,7 @@ export function useMenuKeys(run: (id: CommandId) => void) {
 /** The window menu, in the title bar. «Выход» only where there is a window to close. */
 export function WebMenu({ run, checked }: { run: (id: CommandId) => void; checked: Checked }) {
   return (
-    <nav className="web-menu no-print" aria-label="Меню">
+    <nav className="web-menu no-print" aria-label="Menu">
       {MENU.map((g) => (
         <details key={g.text} className="menu">
           <summary>{g.text}</summary>

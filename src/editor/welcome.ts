@@ -10,15 +10,15 @@ export function welcomeContent(): DocContent {
     type: 'doc',
     content: [
       p('Welcome to InkForge — your handwriting, your typeface, your identity.'),
-      p('1. Откройте вкладку «Почерк» и напишите каждую букву несколько раз. Чем больше вариантов, тем живее текст: движок смешивает их и придумывает новые.'),
-      p('2. Возвращайтесь сюда и печатайте. Буквы, которых ещё нет, подчёркнуты — кликните по такой букве и допишите её прямо здесь.'),
-      p('3. Кнопка «Отрендерить» показывает текст так, будто он написан ручкой: каждая буква уникальна, строки чуть плывут. Оттуда же печать в PDF.'),
-      p('Ниже — живой HTML-блок. Фигуры можно двигать, подписывать и соединять стрелками. Код и данные блока открываются кнопками в его шапке.'),
+      p('1. Open Handwriting and write each letter several times. More samples give your writing more natural variation.'),
+      p('2. Return here and type. Missing letters are underlined; select one to add it to your handwriting.'),
+      p('3. Render the document to see your handwriting on the page. Use Print to save a PDF.'),
+      p('Below is an interactive HTML block. Move, label, and connect the shapes. Its header opens the code and data.'),
       {
         type: 'htmlBlock',
         attrs: { title: shapes.title, code: shapes.code, data: shapes.data, height: 380 },
       },
-      p('Форматирования здесь нет и не будет: только ваш почерк и блоки.'),
+      p('Your handwriting and embedded blocks make the page your own.'),
     ],
   };
 }

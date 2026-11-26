@@ -34,7 +34,7 @@ function WindowButtons() {
   }, []);
   return (
     <div className="window-buttons">
-      <button onClick={() => void appWindow().then((w) => w.minimize())} title="Свернуть" aria-label="Свернуть">
+      <button onClick={() => void appWindow().then((w) => w.minimize())} title="Minimize" aria-label="Minimize">
         <svg viewBox="0 0 10 10" width="10" height="10" aria-hidden>
           <path d="M0 5.5h10" stroke="currentColor" />
         </svg>
@@ -46,7 +46,7 @@ function WindowButtons() {
         }}
         onMouseEnter={snapLater}
         onMouseLeave={snapCancel}
-        aria-label={maximized ? 'Свернуть в окно' : 'Развернуть'}
+        aria-label={maximized ? 'Restore window' : 'Maximize'}
       >
         <svg viewBox="0 0 10 10" width="10" height="10" aria-hidden fill="none" stroke="currentColor">
           {maximized ? (
@@ -59,7 +59,7 @@ function WindowButtons() {
           )}
         </svg>
       </button>
-      <button className="close" onClick={() => void flushWrites().then(appWindow).then((w) => w.close())} title="Закрыть" aria-label="Закрыть">
+      <button className="close" onClick={() => void flushWrites().then(appWindow).then((w) => w.close())} title="Close" aria-label="Close">
         <svg viewBox="0 0 10 10" width="10" height="10" aria-hidden>
           <path d="M0.5 0.5l9 9M9.5 0.5l-9 9" stroke="currentColor" />
         </svg>
@@ -72,7 +72,7 @@ function WindowButtons() {
 export function TitleBar({ run, checked }: { run: (id: CommandId) => void; checked: Partial<Record<CommandId, boolean>> }) {
   return (
     <header className="titlebar no-print" data-tauri-drag-region>
-      <img className="titlebar-icon" src="/favicon.svg" alt="" width={16} height={16} data-tauri-drag-region />
+      <img className="titlebar-icon" src="/inkforge-icon.png" alt="" width={16} height={16} data-tauri-drag-region />
       <span className="titlebar-name" data-tauri-drag-region>
         InkForge
       </span>
