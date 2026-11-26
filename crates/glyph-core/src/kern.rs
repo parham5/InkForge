@@ -1,0 +1,201 @@
+//! Optical kerning from the actual ink.
+//!
+//! Each glyph gets a horizontal profile: for every 20-unit band of height, the
+//! leftmost and rightmost ink. Two neighbours are compared band by band; the
+//! closest approach decides the correction. Letters with an open side ("Г",
+//! "Т", "У", a period after "г") are pulled closer, letters that would collide
+//! are pushed apart. Joined cursive pairs are never kerned — their anchors
+//! already position them.
+
+use crate::geom::Stroke;
+
+pub const BAND: f64 = 20.0;
+const Y_MIN: f64 = -500.0;
+pub const BANDS: usize = 90; // -500 .. 1300
+
+/// Leftmost and rightmost ink per height band (±infinity when the band is empty).
+#[derive(Clone, Debug)]
+pub struct Profile {
+    pub left: Vec<f64>,
+    pub right: Vec<f64>,
+}
+
+impl Profile {
+    pub fn empty() -> Self {
+        Profile { left: vec![f64::INFINITY; BANDS], right: vec![f64::NEG_INFINITY; BANDS] }
+    }
+
+    fn add(&mut self, band: usize, x: f64) {
+        self.left[band] = self.left[band].min(x);
+        self.right[band] = self.right[band].max(x);
+    }
+
+    /// Profile of closed contours, shifted by `dx`.
+    pub fn of(contours: &[Vec<[f64; 2]>], dx: f64) -> Profile {
+        let mut p = Profile::empty();
+        for c in contours {
+            for i in 0..c.len() {
+                let a = c[i];
+                let b = c[(i + 1) % c.len()];
+                let (lo, hi) = (a[1].min(b[1]), a[1].max(b[1]));
+                let first = band_of(lo);
+                let last = band_of(hi);
+                for band in first..=last {
+                    // x where the edge crosses the middle of the band (clamped to the edge)
+                    let yc = (Y_MIN + (band as f64 + 0.5) * BAND).clamp(lo, hi);
+                    let t = if (b[1] - a[1]).abs() < 1e-9 { 0.5 } else { (yc - a[1]) / (b[1] - a[1]) };
+                    p.add(band, a[0] + (b[0] - a[0]) * t.clamp(0.0, 1.0) + dx);
+                }
+            }
+        }
+        p
+    }
+
+    /// Adds the ink of another profile of the same glyph.
+    pub fn merge(&mut self, other: &Profile) {
+        for i in 0..BANDS {
+            self.left[i] = self.left[i].min(other.left[i]);
+            self.right[i] = self.right[i].max(other.right[i]);
+        }
+    }
+
+    /// Profile of centre lines drawn with a pen of `radius`, shifted by `dx` and
+    /// scaled by `scale` around x = 0 (a cheap stand-in for the outline).
+    pub fn of_strokes(strokes: &[Stroke], radius: f64, dx: f64, scale: f64) -> Profile {
+        let mut p = Profile::empty();
+        for s in strokes {
+            for q in s {
+                let (x, y) = ((q.x + dx) * scale, q.y * scale);
+                for band in band_of(y - radius)..=band_of(y + radius) {
+                    p.add(band, x - radius);
+                    p.add(band, x + radius);
+                }
+            }
+        }
+        p
+    }
+
+    /// Envelope over several variants: the widest possible ink, so a kern
+    /// value that is safe for the envelope is safe for every variant.
+    pub fn envelope(profiles: &[(Profile, f64)]) -> (Vec<f64>, Vec<f64>) {
+        let mut left = vec![f64::INFINITY; BANDS];
+        let mut right_rel = vec![f64::NEG_INFINITY; BANDS];
+        for (p, advance) in profiles {
+            for i in 0..BANDS {
+                left[i] = left[i].min(p.left[i]);
+                right_rel[i] = right_rel[i].max(p.right[i] - advance);
+            }
+        }
+        (left, right_rel)
+    }
+}
+
+/// Height of the middle of a band.
+pub fn band_center(band: usize) -> f64 {
+    Y_MIN + (band as f64 + 0.5) * BAND
+}
+
+/// How far a joined letter must move right so its ink clears the previous
+/// letter (0 when it already does). Bands near the join line are skipped:
+/// there the two letters meet on purpose.
+pub fn joined_overlap(right_rel: &[f64], left: &[f64], join_y: f64, keep_out: f64, gap: f64) -> f64 {
+    joined_overlap_at(right_rel, left, &[join_y], keep_out, gap)
+}
+
+/// The same, skipping the bands near any of several heights (the exit of
+/// one letter and the start of the next, joined by a connecting stroke).
+pub fn joined_overlap_at(right_rel: &[f64], left: &[f64], join_ys: &[f64], keep_out: f64, gap: f64) -> f64 {
+    let mut need: f64 = 0.0;
+    for i in 0..BANDS {
+        if join_ys.iter().any(|y| (band_center(i) - y).abs() < keep_out) {
+            continue;
+        }
+        if right_rel[i].is_finite() && left[i].is_finite() {
+            need = need.max(right_rel[i] + gap - left[i]);
+        }
+    }
+    need
+}
+
+fn band_of(y: f64) -> usize {
+    (((y - Y_MIN) / BAND).floor().max(0.0) as usize).min(BANDS - 1)
+}
+
+/// Kerning between a glyph whose right profile is given relative to its
+/// advance (`right_rel`) and the next glyph's left profile.
+/// `side_bearing` is the normal distance each letter keeps on its side.
+pub fn pair_kern(right_rel: &[f64], left: &[f64], side_bearing: f64) -> f64 {
+    let mut gap = f64::INFINITY;
+    for i in 0..BANDS {
+        if right_rel[i].is_finite() && left[i].is_finite() {
+            gap = gap.min(left[i] - right_rel[i]);
+        }
+        // Diagonal neighbours: shapes approaching at a slant.
+        if i + 1 < BANDS {
+            if right_rel[i].is_finite() && left[i + 1].is_finite() {
+                gap = gap.min(left[i + 1] - right_rel[i] + BAND * 0.5);
+            }
+            if right_rel[i + 1].is_finite() && left[i].is_finite() {
+                gap = gap.min(left[i] - right_rel[i + 1] + BAND * 0.5);
+            }
+        }
+    }
+    if !gap.is_finite() {
+        return 0.0;
+    }
+    let normal = 2.0 * side_bearing.max(10.0);
+    if gap < 0.6 * normal {
+        // Too close: push apart so the letters do not collide.
+        return 0.6 * normal - gap;
+    }
+    // Open shapes: close 70% of the extra room, never more than a third of an em.
+    -((gap - normal).max(0.0) * 0.7).min(330.0)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn rect(x0: f64, y0: f64, x1: f64, y1: f64) -> Vec<[f64; 2]> {
+        vec![[x0, y0], [x0, y1], [x1, y1], [x1, y0]]
+    }
+
+    #[test]
+    fn open_shape_is_pulled_closer() {
+        // "Г": stem on the left plus a bar at the top; next letter is low ("о").
+        let g = vec![rect(0.0, 0.0, 60.0, 700.0), rect(0.0, 640.0, 400.0, 700.0)];
+        let o = vec![rect(0.0, 0.0, 300.0, 450.0)];
+        let sb = 45.0;
+        let (g_adv, pg) = (400.0 + sb, Profile::of(&g, 0.0));
+        let po = Profile::of(&o, sb);
+        let (_, right_rel) = Profile::envelope(&[(pg, g_adv)]);
+        let (left, _) = Profile::envelope(&[(po, 300.0 + 2.0 * sb)]);
+        let k = pair_kern(&right_rel, &left, sb);
+        assert!(k < -150.0, "Г + о should tighten a lot, got {k}");
+    }
+
+    #[test]
+    fn joined_letters_that_collide_are_moved_apart() {
+        // The previous letter's bowl reaches 80 units past its exit (high up);
+        // the next one starts right at its entry. They meet at the join line, y = 60.
+        let prev = vec![rect(0.0, 0.0, 380.0, 450.0)];
+        let next = vec![rect(0.0, 0.0, 300.0, 450.0)];
+        let (_, right_rel) = Profile::envelope(&[(Profile::of(&prev, 0.0), 300.0)]);
+        let (left, _) = Profile::envelope(&[(Profile::of(&next, 0.0), 300.0)]);
+        let need = joined_overlap(&right_rel, &left, 60.0, 120.0, 10.0);
+        assert!((need - 90.0).abs() < 1.0, "80 units of overlap plus the gap, got {need}");
+        let apart = Profile::of(&next, 100.0);
+        let (left, _) = Profile::envelope(&[(apart, 300.0)]);
+        assert_eq!(joined_overlap(&right_rel, &left, 60.0, 120.0, 10.0), 0.0);
+    }
+
+    #[test]
+    fn plain_neighbours_keep_their_spacing() {
+        let a = vec![rect(0.0, 0.0, 300.0, 450.0)];
+        let sb = 45.0;
+        let pa = Profile::of(&a, sb);
+        let (left, right_rel) = Profile::envelope(&[(pa, 300.0 + 2.0 * sb)]);
+        let k = pair_kern(&right_rel, &left, sb);
+        assert!(k.abs() < 1.0, "two boxes already sit at the normal distance, got {k}");
+    }
+}

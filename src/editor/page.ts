@@ -1,0 +1,210 @@
+// A4 sheet geometry in CSS pixels (1 CSS px = 1/96 in, so this prints at true size).
+export const MM = 96 / 25.4;
+
+export const SHEET_W = Math.round(210 * MM); // 794
+export const SHEET_H = Math.round(297 * MM); // 1123
+export const SHEET_GAP = 28;
+export const PITCH = SHEET_H + SHEET_GAP;
+
+/** Size of a sheet in CSS pixels. */
+export interface SheetSize {
+  w: number;
+  h: number;
+}
+
+export const A4: SheetSize = { w: SHEET_W, h: SHEET_H };
+
+/** Paper a photo of a desk may show (documents themselves are always A4). */
+export type SheetKind = 'a4' | 'notebook' | 'a5';
+
+export const SHEET_KINDS: Record<SheetKind, { name: string; mm: [number, number] }> = {
+  a4: { name: 'A4', mm: [210, 297] },
+  notebook: { name: 'Тетрадный', mm: [165, 205] },
+  a5: { name: 'A5', mm: [148, 210] },
+};
+
+export function sheetSize(kind: SheetKind): SheetSize {
+  if (kind === 'a4') return A4;
+  const [w, h] = SHEET_KINDS[kind].mm;
+  return { w: w * MM, h: h * MM };
+}
+
+export type PaperStyle = 'ruled' | 'grid' | 'plain';
+
+/**
+ * What the drawings («Чертёж») are drawn with: a pen or a pencil, in a colour
+ * (null: the text's ink for a pen, graphite for a pencil).
+ */
+export interface DrawPen {
+  tool: 'pen' | 'pencil';
+  color: string | null;
+  /** Labels in the text's pen even when the lines are in pencil. */
+  labelsInPen: boolean;
+  /** How crooked the lines are: 0 — as with a ruler, 1 — a steady hand, up to 2.5. */
+  wobble: number;
+  /** Line thickness factor (1 — the handwriting's pen). */
+  weight: number;
+  /** How much the thickness breathes along a line: 0 — even, 1 — as the pen, up to 2. */
+  pressure: number;
+  /** How far lines run past their ends: 0 — exactly to the point, 1 — a little, up to 2. */
+  overshoot: number;
+  /** How unevenly points are drawn (size, shape, a ring not quite closed, a little off the spot): 0 — all alike, 1 — a hand, up to 2. */
+  points: number;
+  /** How lines meet open points: 0 — exactly at the ring, 1 — short of it, onto it or into it, each end its own way, up to 2. */
+  joins: number;
+  /** Circles and arcs from 6 mm across drawn with compasses: even radius and pressure, a hole in the centre (always so on a blank). */
+  compass: boolean;
+}
+
+export const DEFAULT_DRAW_PEN: DrawPen = { tool: 'pen', color: null, labelsInPen: false, wobble: 1, weight: 1, pressure: 1, overshoot: 1, points: 1, joins: 1, compass: true };
+
+/** Limits of the drawing pen's sliders. */
+export const DRAW_PEN_RANGES = { wobble: [0, 2.5], weight: [0.4, 2.5], pressure: [0, 2], overshoot: [0, 2], points: [0, 2], joins: [0, 2] } as const;
+
+/** A drawing's own pen over the document's: what the drawing does not set comes from `base`. */
+export function drawPenOf(base: DrawPen, own: unknown): DrawPen {
+  const o = (own && typeof own === 'object' ? own : {}) as Partial<DrawPen>;
+  const num = (k: keyof typeof DRAW_PEN_RANGES) => {
+    const v = o[k];
+    const [lo, hi] = DRAW_PEN_RANGES[k];
+    return typeof v === 'number' && Number.isFinite(v) ? Math.min(Math.max(v, lo), hi) : base[k];
+  };
+  return {
+    tool: o.tool === 'pen' || o.tool === 'pencil' ? o.tool : base.tool,
+    color: 'color' in o && (o.color === null || typeof o.color === 'string') ? o.color : base.color,
+    labelsInPen: typeof o.labelsInPen === 'boolean' ? o.labelsInPen : base.labelsInPen,
+    compass: typeof o.compass === 'boolean' ? o.compass : base.compass,
+    wobble: num('wobble'),
+    weight: num('weight'),
+    pressure: num('pressure'),
+    overshoot: num('overshoot'),
+    points: num('points'),
+    joins: num('joins'),
+  };
+}
+
+/** Page setup of a document: margins in millimetres, paper look, pen colour, numbering, drawing pen. */
+export interface PageSetup {
+  margins: { top: number; bottom: number; left: number; right: number };
+  paper: PaperStyle;
+  ink: string;
+  /** Show the document title at the top of the first sheet. */
+  showTitle: boolean;
+  /** Number the sheets at the bottom. */
+  pageNumbers: boolean;
+  /** Number of the first sheet (a continuation of another notebook starts at 7). */
+  firstNumber: number;
+  /** What the document's drawings are drawn with (each drawing may choose its own). */
+  drawPen: DrawPen;
+  /** A pink margin line on the right too (the left one is always there on ruled and squared paper). */
+  rightLine: boolean;
+  /** The blank the document is written on (its id in `blanks`), or null: paper of its own. */
+  blank: string | null;
+}
+
+export const DEFAULT_PAGE: PageSetup = {
+  margins: { top: 20, bottom: 20, left: 25, right: 15 },
+  paper: 'ruled',
+  ink: '#1f2a6b',
+  showTitle: true,
+  pageNumbers: true,
+  firstNumber: 1,
+  drawPen: DEFAULT_DRAW_PEN,
+  rightLine: false,
+  blank: null,
+};
+
+export const MARGIN_PRESETS: { name: string; margins: PageSetup['margins'] }[] = [
+  { name: 'Обычные', margins: { top: 20, bottom: 20, left: 25, right: 15 } },
+  { name: 'Узкие', margins: { top: 12, bottom: 12, left: 12, right: 12 } },
+  { name: 'Широкие', margins: { top: 25, bottom: 25, left: 35, right: 25 } },
+];
+
+/** Pen colours; any other colour can be picked too. */
+export const INK_COLORS: { name: string; color: string }[] = [
+  { name: 'Тёмно-синяя', color: '#1f2a6b' },
+  { name: 'Чёрная', color: '#1b1c20' },
+  { name: 'Тёмно-фиолетовая', color: '#4b2a7b' },
+];
+
+export function pageSetup(raw: Partial<PageSetup> | undefined): PageSetup {
+  return {
+    margins: { ...DEFAULT_PAGE.margins, ...(raw?.margins ?? {}) },
+    paper: raw?.paper ?? DEFAULT_PAGE.paper,
+    ink: raw?.ink ?? DEFAULT_PAGE.ink,
+    showTitle: raw?.showTitle ?? DEFAULT_PAGE.showTitle,
+    pageNumbers: raw?.pageNumbers ?? DEFAULT_PAGE.pageNumbers,
+    firstNumber: Math.round(Math.min(Math.max(Number(raw?.firstNumber ?? DEFAULT_PAGE.firstNumber) || 0, 0), 9999)),
+    drawPen: drawPenOf(DEFAULT_DRAW_PEN, raw?.drawPen),
+    rightLine: raw?.rightLine ?? DEFAULT_PAGE.rightLine,
+    blank: typeof raw?.blank === 'string' ? raw.blank : null,
+  };
+}
+
+/**
+ * The page as it is written on a blank: the blank is the whole sheet — no
+ * margins (drawings go anywhere on it, by the sheet), title, page numbers or
+ * printed lines of its own.
+ */
+export function onBlank(setup: PageSetup): PageSetup {
+  return { ...setup, margins: { top: 0, bottom: 0, left: 0, right: 0 }, paper: 'plain', showTitle: false, pageNumbers: false, rightLine: false };
+}
+
+/** Number printed on sheet `index` (from 0), or null when the sheets are not numbered. */
+export function sheetNumber(setup: Pick<PageSetup, 'pageNumbers' | 'firstNumber'>, index: number): number | null {
+  return setup.pageNumbers ? setup.firstNumber + index : null;
+}
+
+/** Sheet geometry for a page setup, in stack pixels. */
+export interface Geometry {
+  /** The sheet itself: A4, a blank's paper, or another paper in a photo. */
+  sheet: SheetSize;
+  /** From the top of one sheet to the next in the editor's stack. */
+  pitch: number;
+  margin: { top: number; bottom: number; left: number; right: number };
+  contentW: number;
+  contentH: number;
+  /** Top of the writable area of page `p`. */
+  contentTop: (p: number) => number;
+  /** Bottom of the writable area of page `p`. */
+  contentBottom: (p: number) => number;
+  /** Where the pink margin line on the left is (sheet px): 14 px before the text, on the sheet. */
+  leftLine: number;
+  /** Where the pink margin line on the right is (sheet px), or null when there is none. */
+  rightLine: number | null;
+}
+
+/**
+ * `sheet`: another paper size (text re-flowed onto it); `exact`: margins in
+ * fractions of a pixel, for ink that must meet printed lines in a photo.
+ */
+export function geometry(setup: PageSetup, sheet: SheetSize = A4, exact = false): Geometry {
+  const px = (mm: number) => {
+    const v = Math.min(Math.max(mm, 0), 60) * MM;
+    return exact ? v : Math.round(v);
+  };
+  const margin = {
+    top: px(setup.margins.top),
+    bottom: px(setup.margins.bottom),
+    left: px(setup.margins.left),
+    right: px(setup.margins.right),
+  };
+  const pitch = sheet.h + SHEET_GAP;
+  return {
+    sheet,
+    pitch,
+    margin,
+    contentW: sheet.w - margin.left - margin.right,
+    contentH: sheet.h - margin.top - margin.bottom,
+    contentTop: (p) => p * pitch + margin.top,
+    contentBottom: (p) => p * pitch + sheet.h - margin.bottom,
+    leftLine: Math.max(1, margin.left - 14),
+    // As far into the right margin as the left line is into the left one (narrow margins: at the edge).
+    rightLine: setup.rightLine ? Math.min(sheet.w - 1, sheet.w - margin.right + 14) : null,
+  };
+}
+
+/** Height of a paper stack with `pages` sheets `pitch` apart. */
+export function stackHeight(pages: number, pitch = PITCH): number {
+  return pages * pitch - SHEET_GAP;
+}
