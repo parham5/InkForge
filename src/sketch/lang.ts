@@ -1,4 +1,4 @@
-// The language of «Чертёж» blocks: GeoGebra-style commands, one per line.
+// The language of «Drawing» blocks: GeoGebra-style commands, one per line.
 //
 // The text says only *what* to draw. How it looks — the hand, the pen, where
 // the labels go — is decided by the app, so the same text always gives the
@@ -106,7 +106,7 @@ function tokenize(src: string): Tok[] {
     }
     if (c in QUOTES) {
       const end = src.indexOf(QUOTES[c], i + 1);
-      if (end < 0) throw new Error('не закрыта кавычка');
+      if (end < 0) throw new Error('Unclosed quotation mark');
       toks.push({ k: 'str', v: src.slice(i + 1, end) });
       i = end + 1;
       continue;
@@ -125,7 +125,7 @@ function tokenize(src: string): Tok[] {
       if (src[j] === '_') {
         if (src[j + 1] === '{') {
           const end = src.indexOf('}', j);
-          if (end < 0) throw new Error('не закрыта фигурная скобка в индексе');
+          if (end < 0) throw new Error('Unclosed brace in subscript');
           j = end + 1;
         } else {
           let k = j + 1;
@@ -165,7 +165,7 @@ function tokenize(src: string): Tok[] {
       i++;
       continue;
     }
-    throw new Error(`непонятный знак «${c}»`);
+    throw new Error(`Unexpected character «${c}»`);
   }
   return toks;
 }
@@ -187,7 +187,7 @@ class Parser {
   private take(v: string) {
     if (!this.isOp(v)) {
       const t = this.peek();
-      throw new Error(t ? `ожидалась «${v}» вместо «${show(t)}»` : `ожидалась «${v}»`);
+      throw new Error(t ? `Expected «${v}» instead of «${show(t)}»` : `Expected «${v}»`);
     }
     this.i++;
   }
@@ -195,7 +195,7 @@ class Parser {
   all(): Expr {
     const e = this.expr();
     const rest = this.peek();
-    if (rest) throw new Error(`лишнее «${show(rest)}»`);
+    if (rest) throw new Error(`Unexpected trailing token «${show(rest)}»`);
     return e;
   }
 
@@ -268,7 +268,7 @@ class Parser {
 
   private atom(): Expr {
     const t = this.toks[this.i++];
-    if (!t) throw new Error('строка оборвалась');
+    if (!t) throw new Error('Unexpected end of line');
     if (t.k === 'num') return { t: 'num', v: t.v };
     if (t.k === 'str') return { t: 'str', v: t.v };
     if (t.k === 'op') {
@@ -287,7 +287,7 @@ class Parser {
         return { t: 'abs', a };
       }
       if (t.v === '√') return { t: 'call', name: 'sqrt', args: [this.postfix()] };
-      throw new Error(`не ожидалось «${t.v}»`);
+      throw new Error(`Unexpected token «${t.v}»`);
     }
     if (this.isOp('(')) return { t: 'call', name: t.v, args: this.args() };
     if (PREFIX_FUNCTIONS.has(t.v.toLowerCase()) && this.startsAtom()) {
@@ -362,9 +362,9 @@ export function parseLine(raw: string): Statement | null {
     return { kind: 'function', name: lhs[0].v, param: lhs[2].v, expr };
   }
   if (lhs.some((t) => t.k === 'id' && canon(t.v) === 'y')) {
-    throw new Error('такие уравнения не рисуются: запишите y = …, Circle(…) или Curve(…)');
+      throw new Error('This equation cannot be plotted. Use y = …, Circle(…) or Curve(…)');
   }
-  throw new Error('слева от «=» должно быть имя: A = (1, 2) или f(x) = …');
+    throw new Error('The left side of = must be a name, such as A = (1, 2) or f(x) = …');
 }
 
 /** 2.5 → «2,5», −3 with a real minus: numbers as they are written by hand. */

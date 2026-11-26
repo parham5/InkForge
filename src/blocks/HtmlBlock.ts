@@ -58,7 +58,7 @@ export const HtmlBlock = Node.create({
   addAttributes() {
     return {
       kind: { default: 'html', rendered: false },
-      title: { default: 'Блок', rendered: false },
+      title: { default: 'Block', rendered: false },
       code: { default: '', rendered: false },
       data: { default: {}, rendered: false },
       height: { default: 260, rendered: false },
@@ -77,7 +77,7 @@ export const HtmlBlock = Node.create({
         tag: 'div[data-html-block]',
         getAttrs: (el) => ({
           kind: el.getAttribute('data-kind') === 'sketch' ? 'sketch' : el.getAttribute('data-kind') === 'note' ? 'note' : 'html',
-          title: el.getAttribute('data-title') ?? 'Блок',
+          title: el.getAttribute('data-title') ?? 'Block',
           code: el.getAttribute('data-code') ?? '',
           data: parseJson(el.getAttribute('data-data')),
           height: Number(el.getAttribute('data-height')) || 260,

@@ -25,7 +25,7 @@ type Drag = { i: number; mode: 'move'; grab: number } | { i: number; mode: 'tilt
  */
 export function PhraseStudio({ onDone }: { onDone?: (saved: string[]) => void }) {
   const { style, byChar } = useHandwriting();
-  const [lang, setLang] = useState<PhraseLang>('ru');
+  const [lang, setLang] = useState<PhraseLang>('en');
   const recent = useRef<string[]>([]);
   const byCharRef = useRef(byChar);
   byCharRef.current = byChar;
@@ -36,7 +36,7 @@ export function PhraseStudio({ onDone }: { onDone?: (saved: string[]) => void })
     recent.current = [...recent.current, p.text].slice(-8);
     return p.text;
   }, []);
-  const [phrase, setPhrase] = useState(() => pick('ru'));
+  const [phrase, setPhrase] = useState(() => pick('en'));
   const [stage, setStage] = useState<'write' | 'mark'>('write');
   const [bounds, setBounds] = useState<Boundary[]>([]);
   const [strokeCount, setStrokeCount] = useState(0);
@@ -412,7 +412,7 @@ export function PhraseStudio({ onDone }: { onDone?: (saved: string[]) => void })
         ) : (
           <>
             <button className="btn primary" onClick={() => void save()}>
-              Сохранить {letters.length} {letters.length === 1 ? 'букву' : letters.length < 5 ? 'буквы' : 'букв'}
+              Save {letters.length} {letters.length === 1 ? 'letter' : letters.length < 5 ? 'letters' : 'letters'}
             </button>
             <label className="check inline">
               <input type="checkbox" checked={savePairs} onChange={(e) => setSavePairs(e.target.checked)} />and letter pairs

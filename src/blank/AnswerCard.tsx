@@ -16,13 +16,13 @@ export function AnswerCard({ report, onClose }: { report: AnswerReport; onClose:
   return (
     <div className="answer-card float no-print" role="status">
       <header>
-        <strong>{report.tasks.length ? `Нейронка заполнила: ${report.tasks.join(', ')}` : 'Ответ не разложился'}</strong>
+        <strong>{report.tasks.length ? `AI completed: ${report.tasks.join(', ')}` : 'Could not place the response'}</strong>
         <button className="link-btn" onClick={onClose} aria-label="Close">
           ✕
         </button>
       </header>
       <p className="muted small">
-        Блоков: {report.blocks}. {report.problems.length ? `Ошибок: ${report.problems.length}.` : 'Ошибок нет.'} Ctrl+Z убирает всю вставку.
+        Blocks: {report.blocks}. {report.problems.length ? `Errors: ${report.problems.length}.` : 'No errors.'} Ctrl+Z undoes the entire insertion.
       </p>
       <ul>
         {byTask.map((t) => (
@@ -42,14 +42,14 @@ export function AnswerCard({ report, onClose }: { report: AnswerReport; onClose:
           </li>
         ))}
       </ul>
-      {report.names.length > 0 && <p className="muted small">На бланке подписано, какую точку как назвала нейронка: проверьте, совпадает ли с печатью.</p>}
+      {report.names.length > 0 && <p className="muted small">The form shows the AI’s point names. Check that they match the printed labels.</p>}
       {report.problems.length > 0 && (
         <button
           className="btn small primary"
           onClick={() => void copyText(fixPrompt(report.problems)).then((ok) => setCopied(ok))}
-          title="Короткий запрос с ошибками — вставить в тот же чат; ответ снова Ctrl+V"
+          title="Copy a short correction prompt into the same chat, then paste the new response with Ctrl+V"
         >
-          {copied ? 'Скопировано ✓' : 'Попросить исправить'}
+          {copied ? 'Copied ✓' : 'Request corrections'}
         </button>
       )}
     </div>

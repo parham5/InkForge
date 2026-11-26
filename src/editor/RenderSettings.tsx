@@ -6,16 +6,16 @@ import type { LayerShow, PrinterKind, WearSettings } from '../wear/wear';
 
 /** The stages of a rendered sheet that can be left out (and are left out of the files too). */
 const SHOWN: { key: keyof LayerShow; label: string; hint: string }[] = [
-  { key: 'print', label: 'печать бланка', hint: 'напечатанный бланк под текстом' },
-  { key: 'drawings', label: 'чертежи', hint: 'линии чертежей и графиков' },
-  { key: 'text', label: 'текст', hint: 'буквы, надписи, подписи' },
-  { key: 'wear', label: 'следы', hint: 'потёртости, ластик, проколы циркуля' },
-  { key: 'folds', label: 'складки', hint: 'складки бумаги' },
+  { key: 'print', label: 'printed form', hint: 'printed form beneath the handwriting' },
+  { key: 'drawings', label: 'drawings', hint: 'drawing and graph lines' },
+  { key: 'text', label: 'text', hint: 'letters, annotations and labels' },
+  { key: 'wear', label: 'wear', hint: 'smudges, eraser marks and compass punctures' },
+  { key: 'folds', label: 'folds', hint: 'paper folds' },
 ];
 
 const LINES: SliderDef[] = [
-  { key: 'lineJitter', label: 'Line irregularity', min: 0, max: 1, step: 0.05, hint: 'случайное расстояние между строками: 0 — ровно по линейке' },
-  { key: 'sag', label: 'Baseline sag', min: 0, max: 1, step: 0.05, hint: 'строка уходит вниз, слова и буквы проседают ниже линии' },
+  { key: 'lineJitter', label: 'Line irregularity', min: 0, max: 1, step: 0.05, hint: 'Random line spacing: 0 follows the ruling exactly' },
+  { key: 'sag', label: 'Baseline sag', min: 0, max: 1, step: 0.05, hint: 'Lines slope downward, and words and letters dip below the baseline' },
 ];
 
 const SPACING: SliderDef[] = [
@@ -27,11 +27,11 @@ type Part = 'lines' | 'text' | 'wear';
 
 /** The traces' sliders: what each does. */
 const WEAR_SLIDERS: { key: 'smudge' | 'size' | 'erasers' | 'depth' | 'folds'; label: string; min: number; max: number; step: number; hint: string }[] = [
-  { key: 'smudge', label: 'Smudges', min: 0, max: 2, step: 0.1, hint: 'графит, размазанный рукой у линий и букв, и крошки грифеля: 0 — нет, 1 — обычно, 2 — грязная работа' },
-  { key: 'size', label: 'Smudge size', min: 0.5, max: 2, step: 0.1, hint: 'насколько велики пятна от руки' },
-  { key: 'erasers', label: 'Eraser marks', min: 0, max: 3, step: 1, hint: 'сколько стёртых линий на листе: бледный след линии и серое пятно ластика вокруг' },
-  { key: 'depth', label: 'Puncture depth', min: 0.5, max: 2, step: 0.1, hint: 'насколько глубоко вдавлена бумага у прокола иглы циркуля' },
-  { key: 'folds', label: 'Folds', min: 0, max: 2, step: 0.1, hint: 'мягкие складки там, где лист тянули рукой: 0 — ровный лист, 2 — мятый' },
+  { key: 'smudge', label: 'Smudges', min: 0, max: 2, step: 0.1, hint: 'Graphite smudges and pencil crumbs: 0 none, 1 typical, 2 heavily smudged' },
+  { key: 'size', label: 'Smudge size', min: 0.5, max: 2, step: 0.1, hint: 'Size of hand smudges' },
+  { key: 'erasers', label: 'Eraser marks', min: 0, max: 3, step: 1, hint: 'Number of erased lines, with faint stroke traces and surrounding eraser marks' },
+  { key: 'depth', label: 'Puncture depth', min: 0.5, max: 2, step: 0.1, hint: 'Depth of the indentation around a compass puncture' },
+  { key: 'folds', label: 'Folds', min: 0, max: 2, step: 0.1, hint: 'Soft folds from handling the paper: 0 flat, 2 crumpled' },
 ];
 
 /** Traces of work on the rendered sheets: shown here, printed and in every export while on. */
@@ -40,7 +40,7 @@ function WearPart() {
   const set = (patch: Partial<WearSettings>) => void saveWear({ ...wear, ...patch });
   return (
     <section>
-      <div className="render-show" title="Что видно на отрендеренном листе — и что попадёт в печать и файлы">
+      <div className="render-show" title="What appears on the rendered page, in print and in exported files">
         <span className="small muted">Show:</span>
         {SHOWN.map((x) => (
           <label key={x.key} className="check inline small" title={x.hint}>
@@ -49,7 +49,7 @@ function WearPart() {
           </label>
         ))}
       </div>
-      <label className="slider" title="Каким принтером напечатан бланк: на экране, в файлах и на снимке «На столе»">
+      <label className="slider" title="Printer appearance for the form on screen, in exports and in desk photos">
         <span>Form printer</span>
         <select value={wear.printer} onChange={(e) => set({ printer: e.target.value as PrinterKind })}>
           <option value="new">new</option>
@@ -57,9 +57,9 @@ function WearPart() {
           <option value="tired">worn</option>
         </select>
       </label>
-      <label className="check" title="Видно после «Render»; пока включено — и при печати, в PDF, PNG, SVG и «На столе»">
+      <label className="check" title="Visible after rendering and included in print, PDF, PNG, SVG and desk photos while enabled">
         <input type="checkbox" checked={wear.on} onChange={(e) => set({ on: e.target.checked })} />
-        Wear работы: потёртости карандаша, ластик, проколы циркуля
+        Work marks: pencil smudges, eraser marks and compass punctures
       </label>
       {wear.on && (
         <>
@@ -71,25 +71,25 @@ function WearPart() {
               <input type="range" min={s.min} max={s.max} step={s.step} value={wear[s.key]} onChange={(e) => set({ [s.key]: Number(e.target.value) })} />
             </label>
           ))}
-          <label className="slider" title="Куда рука смазывает графит: правша — вправо и вниз от линий">
+          <label className="slider" title="Smudge direction: right-handed writing smudges graphite down and to the right">
             <span>Writing hand</span>
             <select value={wear.hand} onChange={(e) => set({ hand: e.target.value === 'left' ? 'left' : 'right' })}>
               <option value="right">right</option>
               <option value="left">left</option>
             </select>
           </label>
-          <label className="check" title="Кроме мягких складок изредка — острый залом">
+          <label className="check" title="Occasional sharp creases in addition to soft folds">
             <input type="checkbox" checked={wear.sharp} onChange={(e) => set({ sharp: e.target.checked })} />
             Sharp creases
           </label>
-          <label className="check" title="В центрах окружностей и дуг, начерченных циркулем">
+          <label className="check" title="At the centers of compass-drawn circles and arcs">
             <input type="checkbox" checked={wear.holes} onChange={(e) => set({ holes: e.target.checked })} />
             Compass punctures
           </label>
-          <button className="btn small" onClick={() => set({ seed: wear.seed + 1 })} title="Те же настройки, другие места следов и складок">
+          <button className="btn small" onClick={() => set({ seed: wear.seed + 1 })} title="Keep these settings and randomize wear and fold positions">
             ↺ Shuffle wear
           </button>
-          <button className="btn small" onClick={() => set({ printerSeed: wear.printerSeed + 1 })} title="Другие полосы, пятна и точки тонера">
+          <button className="btn small" onClick={() => set({ printerSeed: wear.printerSeed + 1 })} title="Randomize toner streaks, smudges and specks">
             ↺ Shuffle printer effects
           </button>
         </>
@@ -132,7 +132,7 @@ export function RenderSettings() {
           {SPACING.map((s) => (
             <Slider key={s.key} s={s} style={style} />
           ))}
-          <label className="slider" title="Сколько разных вариантов каждой буквы чередуется в тексте">
+          <label className="slider" title="Number of variants used for each letter in the text">
             <span>Variants per letter</span>
             <select value={style.variants} onChange={(e) => updateStyle({ variants: Number(e.target.value) })}>
               {[1, 3, 5, 7, 11, 13].map((n) => (
@@ -142,15 +142,15 @@ export function RenderSettings() {
               ))}
             </select>
           </label>
-          <Check k="connect" label="Слитное письмо (соединять по точкам входа/выхода)" style={style} />
+          <Check k="connect" label="Cursive writing: connect entry and exit points" style={style} />
           <Check
             k="bridge"
-            label="Соединять в рендере живым штрихом: буквы не гнутся, связка идёт от выхода к началу следующей, даже если она написана без входа"
+            label="Draw natural connecting strokes without bending the letters, even when the next letter has no entry stroke"
             style={style}
           />
-          <Check k="kerning" label="Оптический кернинг (Г, Т, У, точки — ближе)" style={style} />
-          <Check k="pairs" label="Использовать записанные пары букв (ст, но…)" style={style} />
-          <button className="btn small" onClick={() => updateStyle({ seed: style.seed + 1 })} title="Другой выбор вариантов букв во всём тексте">
+          <Check k="kerning" label="Optical kerning: bring Г, Т, У and punctuation closer" style={style} />
+          <Check k="pairs" label="Use recorded letter pairs (ст, но…)" style={style} />
+          <button className="btn small" onClick={() => updateStyle({ seed: style.seed + 1 })} title="Choose different letter variants throughout the text">
             Shuffle variants
           </button>
         </section>

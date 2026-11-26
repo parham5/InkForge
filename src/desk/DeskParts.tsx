@@ -6,7 +6,7 @@ import { CloseIcon } from '../ui/icons';
 import type { Photo } from './photo';
 
 /** About how long is left, in words. */
-const timeLeft = (sec: number) => (sec < 50 ? `ещё около ${Math.max(5, Math.ceil(sec / 5) * 5)} с` : `ещё около ${Math.max(1, Math.round(sec / 60))} мин`);
+const timeLeft = (sec: number) => (sec < 50 ? `about ${Math.max(5, Math.ceil(sec / 5) * 5)} s remaining` : `about ${Math.max(1, Math.round(sec / 60))} min remaining`);
 
 /** How far the text's layout got: `part` 0..1, and the seconds left once they can be told. */
 export function LayoutProgress({ part, left }: { part: number; left: number | null }) {
@@ -14,7 +14,7 @@ export function LayoutProgress({ part, left }: { part: number; left: number | nu
   return (
     <div className="desk-busy desk-progress" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}>
       <div className="desk-progress-text">
-        <span>Раскладываю текст по листу…</span>
+        <span>Laying out text on the page…</span>
         <span className="desk-progress-num">
           {percent} %{left !== null && ` · ${timeLeft(left)}`}
         </span>
@@ -45,7 +45,7 @@ export function Hint({ children, side = 'left', mark = '?' }: { children: ReactN
         : { top: at.bottom + 8, left: Math.max(150, Math.min(at.left + at.width / 2, window.innerWidth - 150)), transform: 'translateX(-50%)' };
   return (
     <span className="desk-hint-q">
-      <button type="button" ref={ref} className="desk-q" aria-label="Подсказка" onMouseEnter={show} onMouseLeave={hide} onFocus={show} onBlur={hide}>
+      <button type="button" ref={ref} className="desk-q" aria-label="Help" onMouseEnter={show} onMouseLeave={hide} onFocus={show} onBlur={hide}>
         {mark}
       </button>
       {place &&
@@ -198,12 +198,12 @@ export function PhotoStrip({
             <Thumb photo={p.photo} size={72} />
             <span className="desk-strip-n">{i + 1}</span>
           </button>
-          <button type="button" className="desk-strip-x" aria-label="Убрать фото" title="Убрать из экспорта" onClick={() => onRemove(p.id)}>
+          <button type="button" className="desk-strip-x" aria-label="Remove photo" title="Remove from export" onClick={() => onRemove(p.id)}>
             <CloseIcon />
           </button>
         </span>
       ))}
-      <button type="button" className="desk-strip-add" title="Добавить фото" aria-label="Добавить фото" onClick={onAdd}>
+      <button type="button" className="desk-strip-add" title="Add photo" aria-label="Add photo" onClick={onAdd}>
         ＋
       </button>
     </div>
@@ -226,7 +226,7 @@ export function Shutter({ value, onChange, box }: { value: number; onChange: (v:
       <div
         className="desk-shutter-handle"
         style={{ left: `${value * 100}%` }}
-        title="До / после: тяните — слева исходное фото; двойной щелчок убирает"
+        title="Before / after: drag to compare; the original is on the left. Double-click to dismiss"
         onPointerDown={(e) => {
           e.currentTarget.setPointerCapture(e.pointerId);
           drag(e);
@@ -234,7 +234,7 @@ export function Shutter({ value, onChange, box }: { value: number; onChange: (v:
         onPointerMove={drag}
         onDoubleClick={() => onChange(0)}
       >
-        <span className="desk-shutter-grip">до · после</span>
+        <span className="desk-shutter-grip">before · after</span>
       </div>
     </div>
   );
@@ -243,7 +243,7 @@ export function Shutter({ value, onChange, box }: { value: number; onChange: (v:
 /** How close the photo is looked at, while it is zoomed: a click fits it again. */
 export function ZoomPill({ percent, onReset }: { percent: number; onReset: () => void }) {
   return (
-    <button className="zoom-pill desk-zoom-pill float" onClick={onReset} title="Масштаб снимка: колесо мыши, Ctrl + «+» / «−»; двигать — средней кнопкой или с пробелом; щелчок — весь снимок (Ctrl + 0)">
+    <button className="zoom-pill desk-zoom-pill float" onClick={onReset} title="Photo zoom: wheel or Ctrl + +/−; pan with the middle mouse button or Space; click to fit (Ctrl + 0)">
       {Math.round(percent)} % · ⟲
     </button>
   );

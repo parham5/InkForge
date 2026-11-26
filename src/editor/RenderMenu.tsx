@@ -5,7 +5,7 @@ import { RenderSettings } from './RenderSettings';
 export function RenderMenu() {
   return (
     <details className="menu">
-      <summary className="rail-btn" title="Render settings: строки, интервалы, соединения, следы работы" aria-label="Render settings">
+      <summary className="rail-btn" title="Render settings: lines, spacing, connections and wear" aria-label="Render settings">
         <SlidersIcon />
       </summary>
       <div className="menu-items render-menu">

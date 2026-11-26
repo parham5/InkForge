@@ -5,11 +5,19 @@
 // there) and count every sign, digit and letter.
 import { changeCase } from '../model/alphabet';
 
-export type PhraseLang = 'ru' | 'la' | 'uk' | 'math';
+export type PhraseLang = 'en' | 'ru' | 'la' | 'uk' | 'math';
 export type CaseMode = 'lower' | 'capital' | 'upper';
 
 /** Base words (lower case). Together they contain every letter of their alphabet. */
 export const PHRASE_WORDS: Record<PhraseLang, string[]> = {
+  en: [
+    'the', 'quick', 'brown', 'fox', 'jumps', 'over', 'lazy', 'dog', 'bright', 'vivid', 'zebra', 'wizard',
+    'quiet', 'journey', 'amazing', 'craft', 'sphinx', 'quartz', 'rhythm', 'oxygen', 'galaxy', 'keyboard',
+    'handwriting', 'letter', 'beautiful', 'flow', 'smooth', 'connected', 'practice', 'unique', 'identity',
+    'pack my box with five dozen liquor jugs', 'sphinx of black quartz, judge my vow', 'how vexingly quick daft zebras jump',
+    'the five boxing wizards jump quickly', 'bright stars shine above quiet fields', 'every artist shapes a personal style',
+    'smooth letters flow together with care', 'write clearly and let each word breathe',
+  ],
   ru: [
     'привет', 'строка', 'молоко', 'ночной', 'жизнь', 'щука', 'цветы', 'фея', 'юла', 'хвост', 'эхо', 'съёмка',
     'йогурт', 'чайник', 'буква', 'шёпот', 'зебра', 'мягкий', 'гусь', 'дом', 'анна', 'борис', 'вера', 'галина',
@@ -34,7 +42,7 @@ export const PHRASE_WORDS: Record<PhraseLang, string[]> = {
   ],
 };
 
-export const LANG_TITLES: Record<PhraseLang, string> = { ru: 'Русский', la: 'Latin', uk: 'Українська', math: 'Формулы' };
+export const LANG_TITLES: Record<PhraseLang, string> = { en: 'English', ru: 'Russian', la: 'Latin', uk: 'Ukrainian', math: 'Formulas' };
 
 const CASES: CaseMode[] = ['lower', 'capital', 'upper'];
 export const TARGET_VARIANTS = 3;
@@ -57,7 +65,7 @@ export function pickPhrase(lang: PhraseLang, count: (letter: string) => number, 
     for (const mode of math ? (['lower'] as CaseMode[]) : CASES) {
       const text = math ? word : changeCase(word, mode);
       if (recent.includes(text)) continue;
-      const letters = new Set([...text].filter((c) => (math ? /\S/u : /\p{L}/u).test(c)));
+      const letters = new Set([...text].filter((c) => math ? /\S/u.test(c) : lang === 'en' ? /[A-Za-z0-9.,!?;:'"()-]/u.test(c) : /\p{L}/u.test(c)));
       let gain = 0;
       for (const l of letters) gain += Math.max(0, TARGET_VARIANTS - count(l));
       candidates.push({ text, mode, gain });

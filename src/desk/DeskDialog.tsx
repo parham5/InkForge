@@ -115,31 +115,31 @@ const PROGRESS_EVERY = 250;
 /** Scanner looks kept at once: each is a copy of a whole photo. */
 const SCANS_KEPT = 4;
 
-/** Version of the remembered choice: before 2 «подогнать под лист» was the default and is not kept. */
+/** Version of the remembered choice: before 2 «подогнать под page» was the default and is not kept. */
 const SHEET_VERSION = 2;
 
 const formatMm = (s: SheetChoice): [number, number] => (s.kind === 'custom' ? s.custom : SHEET_KINDS[s.kind].mm);
 
 const SIDES: [keyof Margins, string][] = [
-  ['left', 'слева'],
-  ['right', 'справа'],
-  ['top', 'сверху'],
-  ['bottom', 'снизу'],
+  ['left', 'left'],
+  ['right', 'right'],
+  ['top', 'top'],
+  ['bottom', 'bottom'],
 ];
 
 const PAPER_NAMES: [PaperStyle, string][] = [
-  ['plain', 'чистый'],
-  ['ruled', 'в линейку'],
-  ['grid', 'в клетку'],
+  ['plain', 'plain'],
+  ['ruled', 'ruled'],
+  ['grid', 'grid'],
 ];
 
 const PENS: [PenKind, string][] = [
-  ['ballpoint', 'шариковая'],
-  ['gel', 'гелевая'],
-  ['pencil', 'карандаш'],
+  ['ballpoint', 'ballpoint'],
+  ['gel', 'gel'],
+  ['pencil', 'pencil'],
 ];
 
-const STEPS = ['Фото', 'Page', 'Помехи', 'Чернила'];
+const STEPS = ['Photo', 'Page', 'Occlusions', 'Ink'];
 /** A side bowing more than this, px, makes the sheet count as curved. */
 const CURVED = 1.5;
 const NONE = [false, false, false, false];
@@ -210,7 +210,7 @@ function topLooksSideways(c: Pt[], [w, h]: [number, number]): boolean {
   return across / along > (w / h) * 1.3;
 }
 
-const num = (v: number, digits = 1) => v.toLocaleString('ru-RU', { maximumFractionDigits: digits, minimumFractionDigits: digits });
+const num = (v: number, digits = 1) => v.toLocaleString('en-US', { maximumFractionDigits: digits, minimumFractionDigits: digits });
 const keyOf = (d: Desk) => JSON.stringify(d.corners);
 /** The sheet's shape: corners and, when curved, its bow and grid. */
 const shapeOf = (corners: Pt[], bend: DeskBend | null) => JSON.stringify([corners, bend?.bows ?? bend?.bulge ?? null, bend?.grid ?? null]);
@@ -295,11 +295,11 @@ function formatHint(r: Ruling, paperMm: [number, number], byGrid: boolean): stri
   if (byGrid && r.kind === 'grid' && r.colStep !== null) return null;
   const a4 = isA4(paperMm);
   const ratio = r.kind === 'grid' ? r.step / 5 : r.step / 8;
-  const what = r.kind === 'grid' ? `Grid вышла ${num(r.step)} мм вместо 5` : `Lines вышли через ${num(r.step)} мм`;
-  if (Math.abs(ratio - 0.707) < 0.05) return `${what}: похоже, лист меньше выбранного (${a4 ? 'A5?' : 'проверьте формат'}).`;
-  if (Math.abs(ratio - 1.414) < 0.08) return `${what}: похоже, лист больше выбранного (${!a4 ? 'A4?' : 'проверьте формат'}).`;
-  if (r.kind === 'grid' && Math.abs(ratio - 1) > 0.08) return `${what}: проверьте формат листа.`;
-  if (r.kind === 'ruled' && (r.step < 5.5 || r.step > 11)) return `${what}: проверьте формат листа.`;
+  const what = r.kind === 'grid' ? `Measured grid spacing: ${num(r.step)} mm instead of 5` : `Measured ruling spacing: ${num(r.step)} mm`;
+  if (Math.abs(ratio - 0.707) < 0.05) return `${what}: the page appears smaller than the selected size (${a4 ? 'A5?' : 'check paper size'}).`;
+  if (Math.abs(ratio - 1.414) < 0.08) return `${what}: the page appears larger than the selected size (${!a4 ? 'A4?' : 'check paper size'}).`;
+  if (r.kind === 'grid' && Math.abs(ratio - 1) > 0.08) return `${what}: check the paper size.`;
+  if (r.kind === 'ruled' && (r.step < 5.5 || r.step > 11)) return `${what}: check the paper size.`;
   return null;
 }
 
@@ -311,7 +311,7 @@ interface Props {
 }
 
 /**
- * Export → «На столе (фото)»: the document's handwriting written onto photos
+ * Export → «On a desk (photos)»: the document's handwriting written onto photos
  * of real sheets of paper. Photos → where the sheet is → what lies on it → ink → JPG.
  */
 export function DeskDialog(props: Props) {
@@ -368,7 +368,7 @@ export function DeskDialog(props: Props) {
   /** How the photo is looked at (zoomed, moved): anew for each photo and step. */
   const [view, setView] = useState<View>(FIT);
   const resultFit = useRef<Fit | null>(null);
-  /** The crop frame is being set; which proportions it keeps; how much of the desk «По листу» leaves round the sheet, mm. */
+  /** The crop frame is being set; which proportions it keeps; how much of the desk «Fit to paper» leaves round the sheet, mm. */
   const [cropping, setCropping] = useState(false);
   const [cropShape, setCropShape] = useState<CropShape>('free');
   const [cropRoom, setCropRoom] = useState(8);
@@ -379,7 +379,7 @@ export function DeskDialog(props: Props) {
   const [brushRadius, setBrushRadius] = useState(40);
   /** Messages closed (or faded) by now. */
   const [gone, setGone] = useState<string[]>([]);
-  /** The desk in «Мои столы» this export is kept as (from then on it saves itself), and its name. */
+  /** The desk in «My desks» this export is kept as (from then on it saves itself), and its name. */
   const [deskId, setDeskId] = useState<string | null>(null);
   const [deskName, setDeskName] = useState('');
   const [saving, setSaving] = useState(false);
@@ -471,7 +471,7 @@ export function DeskDialog(props: Props) {
 
   /** A name for a new desk: its photo's, or the date for several. */
   const defaultName = (ds: Desk[]) =>
-    ds.length === 1 ? ds[0].name : `Стол от ${new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })}`;
+    ds.length === 1 ? ds[0].name : `Desk from ${new Date().toLocaleDateString('en-US', { day: '2-digit', month: '2-digit' })}`;
 
   /** Writes this export as desk `id`: markup, findings and settings, and the photos not written yet or with a new mask. */
   const writeNow = async (id: string) => {
@@ -538,7 +538,7 @@ export function DeskDialog(props: Props) {
     const run = saveChain.current.then(() => writeNow(id));
     saveChain.current = run.catch(() => undefined);
     return run
-      .catch((err) => setError(`Стол не сохранился: ${err instanceof Error ? err.message : String(err)}`))
+      .catch((err) => setError(`Could not save desk: ${err instanceof Error ? err.message : String(err)}`))
       .finally(() => !dirty.current && setSaving(false));
   };
   /** Everything of the kept desk written. */
@@ -556,7 +556,7 @@ export function DeskDialog(props: Props) {
     return () => clearTimeout(t);
   }, [deskId, desks, sheet, look, blurGain, calib, assign, pageDesk, page, step, curId, deskName, print, capture]);
 
-  /** Keeps this export in «Мои столы». */
+  /** Keeps this export in «My desks». */
   const keepDesk = () => {
     const id = crypto.randomUUID();
     setDeskName(defaultName(desks));
@@ -565,7 +565,7 @@ export function DeskDialog(props: Props) {
   };
 
   const close = async () => {
-    setBusy('Сохраняю стол…');
+    setBusy('Saving desk…');
     await settle();
     onClose();
   };
@@ -583,7 +583,7 @@ export function DeskDialog(props: Props) {
   /** The analysis, looking at this desk's photo. */
   const analysisOf = async (d: Desk) => {
     const a = analyzer.current;
-    if (!a) throw new Error('анализ снимка закрыт');
+    if (!a) throw new Error('photo analysis is closed');
     await a.use(d.id, d.photo);
     return a;
   };
@@ -641,11 +641,11 @@ export function DeskDialog(props: Props) {
   const applyLines = (d: Desk, lines: number[][]) => {
     const turn = turnByLines(lines, d.photo.width, d.photo.height, focalOf(d));
     if (!turn) {
-      setFoundNote((n) => ({ ...n, [d.id]: 'Линии не сходятся так, как на листе: розовые положите вдоль строк или верхнего края, голубые — вдоль полей или боковых краёв.' }));
+      setFoundNote((n) => ({ ...n, [d.id]: 'The lines do not match the paper. Align pink lines with the ruling or top edge, and blue lines with the margins or side edges.' }));
       return;
     }
     setHandTilt(d, anglesOf(turn), lines);
-    setFoundNote((n) => ({ ...n, [d.id]: `Перспектива по линиям: ${describeTilt(anglesOf(turn))}.` }));
+    setFoundNote((n) => ({ ...n, [d.id]: `Perspective from lines: ${describeTilt(anglesOf(turn))}.` }));
   };
 
   /** Looks for the sheet and puts the corners on it (unless the user already moved them). */
@@ -671,13 +671,13 @@ export function DeskDialog(props: Props) {
       const cover = full && !blankId && sureTilt(tilt) ? coverCorners(tilt.rot, d.photo.width, d.photo.height, focalOf(d)) : null;
       if (cover) {
         patch(d.id, { corners: cover, snapped: NONE, bend: null });
-        say(`Page во весь кадр, перспектива найдена по линиям на снимке: ${describeTilt(anglesOf(tilt!.rot))}. Уголки — за краями кадра.`);
+        say(`The page fills the frame; perspective was detected from photo lines: ${describeTilt(anglesOf(tilt!.rot))}. Corners are outside the frame.`);
       } else if (found?.scan) {
         patch(d.id, { corners: found.corners, snapped: found.snapped, bend: null });
-        say('Это скан: лист занимает весь кадр — без перспективы и изгиба.');
+        say('This is a scan: the page fills the frame, without perspective or curvature.');
       } else if (patchy) {
         patch(d.id, { corners: frameOf(d.photo), snapped: NONE, bend: null });
-        say(`Края листа не видны — он во весь кадр; перспектива найдена по линиям на снимке: ${describeTilt(anglesOf(tilt!.rot))}.`);
+        say(`Page edges are not visible; perspective was detected from photo lines: ${describeTilt(anglesOf(tilt!.rot))}.`);
       } else if (found && found.confidence >= 0.6) {
         // Part of the sheet beyond the frame: its corners there drawn by the lines' perspective.
         const beyond = sidesBeyond(found.corners, found.snapped, d.photo.width, d.photo.height);
@@ -687,7 +687,7 @@ export function DeskDialog(props: Props) {
             : null;
         if (done) {
           patch(d.id, { corners: done, snapped: found.snapped, bend: null });
-          say(`Page виден не весь: уголки за краями кадра достроены по перспективе снимка (${describeTilt(anglesOf(tilt!.rot))}). Проверьте видимые уголки в лупе.`);
+          say(`The page is partly outside the frame; missing corners were estimated from perspective (${describeTilt(anglesOf(tilt!.rot))}). Check visible corners with the magnifier.`);
           return;
         }
         const curved = await curve(d, found.corners, false).catch(() => null);
@@ -697,16 +697,16 @@ export function DeskDialog(props: Props) {
         const all = found.snapped.every(Boolean);
         say(
           curved
-            ? `Page найден и он изогнут: края выгнуты до ${num(curved.bend!.max)} px — изгиб учтён. Проверьте уголки в лупе.`
+            ? `Curved page detected; maximum edge deflection: ${num(curved.bend!.max)} px. Curvature is accounted for. Check corners with the magnifier.`
             : all
-              ? 'Page найден, уголки встали на его края. Проверьте их в лупе.'
-              : 'Page найден, но не все края видны: проверьте уголки.',
+              ? 'Page detected and corners aligned with its edges. Check them with the magnifier.'
+              : 'Page detected, but some edges are hidden. Check the corners.',
         );
       } else {
-        say('Page не нашёлся: поставьте уголки сами — стороны прилипнут к краям листа.');
+        say('Page not detected. Place the corners manually; sides will snap to page edges.');
       }
     } catch (err) {
-      setError(`Анализ снимка не работает: ${err instanceof Error ? err.message : String(err)}. Уголки можно поставить вручную.`);
+      setError(`Photo analysis failed: ${err instanceof Error ? err.message : String(err)}. You can place the corners manually.`);
     }
   };
 
@@ -737,7 +737,7 @@ export function DeskDialog(props: Props) {
 
   /** The photo turned a quarter clockwise (a scan or a photo that came on its side): a new photo in its place, its sheet found anew. */
   const rotatePhoto = async (d: Desk) => {
-    setBusy('Поворачиваю снимок…');
+    setBusy('Rotating photo…');
     try {
       const { width: w, height: h } = d.photo;
       const canvas = new OffscreenCanvas(h, w);
@@ -751,7 +751,7 @@ export function DeskDialog(props: Props) {
       setPageDesk((pd) => Object.fromEntries(Object.entries(pd).map(([p, id]) => [p, id === d.id ? next.id : id])));
       setCurId(next.id);
       d.photo.bitmap.close();
-      setBusy('Ищу лист на фото…');
+      setBusy('Detecting page in photo…');
       await findSheet(next, false);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -765,7 +765,7 @@ export function DeskDialog(props: Props) {
     setNote(null);
     const added: Desk[] = [];
     for (const [i, file] of files.entries()) {
-      setBusy(files.length > 1 ? `Открываю фото ${i + 1} из ${files.length}…` : 'Открываю фото…');
+      setBusy(files.length > 1 ? `Opening photo ${i + 1} of ${files.length}…` : 'Opening photo…');
       try {
         added.push(fresh(await loadPhoto(file, WORK_SIDE), file.name.replace(/\.[^.]+$/, '')));
       } catch (err) {
@@ -779,7 +779,7 @@ export function DeskDialog(props: Props) {
     setCurId(added[0].id);
     setStep(1);
     for (const [i, d] of added.entries()) {
-      setBusy(added.length > 1 ? `Ищу лист на фото ${i + 1} из ${added.length}…` : 'Ищу лист на фото…');
+      setBusy(added.length > 1 ? `Detecting page in photo ${i + 1} of ${added.length}…` : 'Detecting page in photo…');
       await findSheet(d, false);
     }
     setBusy(null);
@@ -804,16 +804,16 @@ export function DeskDialog(props: Props) {
     crop: p.crop ?? null,
   });
 
-  /** Opens a desk from «Мои столы» instead of the photos here: its photos, markup and settings as they were saved. */
+  /** Opens a desk from «My desks» instead of the photos here: its photos, markup and settings as they were saved. */
   const openSaved = async (s: SavedDesk) => {
     if (s.id === deskId) return;
-    if (!deskId && desks.length && !confirm('Фото этого экспорта не сохранены в «Мои столы». Open стол вместо них?')) return;
+    if (!deskId && desks.length && !confirm('These export photos are not saved in My desks. Open a saved desk instead?')) return;
     setError(null);
-    setBusy('Открываю стол…');
+    setBusy('Opening desk…');
     try {
       await settle();
       const photos = await openDesk(s);
-      if (!photos.length) throw new Error('Фото этого стола не нашлись.');
+      if (!photos.length) throw new Error('The photos for this desk could not be found.');
       const opened = photos.map(({ id, photo, blob, mask }) => {
         blobs.current.set(id, blob);
         written.current.set(id, mask);
@@ -850,7 +850,7 @@ export function DeskDialog(props: Props) {
   /** Adds the photos of a saved desk, with their markup, to this export. */
   const addSaved = async (s: SavedDesk) => {
     setError(null);
-    setBusy('Открываю фото стола…');
+    setBusy('Opening desk photos…');
     try {
       const added = (await openDesk(s)).map(({ id, photo, blob, mask }) => {
         // A copy: the saved desk keeps its own.
@@ -975,12 +975,12 @@ export function DeskDialog(props: Props) {
     return { ...now, ...p };
   };
 
-  // «Помехи»: the printed lines and the things on the current sheet.
+  // «Occlusions»: the printed lines and the things on the current sheet.
   const curKey = cur ? shapeOf(cur.corners, cur.bend) + cur.maskKey : '';
   useEffect(() => {
     if (step !== 2 || !cur || !valid) return;
     let alive = true;
-    setPreparing('Ищу линовку и предметы на листе…');
+    setPreparing('Detecting ruling and objects on the paper…');
     void prepare(cur.id, { ruling: true, mask: true })
       .catch((err) => alive && setError(String(err)))
       .finally(() => alive && setPreparing(null));
@@ -997,7 +997,7 @@ export function DeskDialog(props: Props) {
   };
   const usedDesks = [...new Set(Array.from({ length: pageCount }, (_, p) => deskFor(p)).filter((d): d is Desk => !!d))];
 
-  // «Чернила»: everything measured for the photos the sheets go onto.
+  // «Ink»: everything measured for the photos the sheets go onto.
   const usedKey = usedDesks.map((d) => d.id + shapeOf(d.corners, d.bend) + d.maskKey).join('|');
   useEffect(() => {
     if (step !== 3) return;
@@ -1005,7 +1005,7 @@ export function DeskDialog(props: Props) {
     void (async () => {
       for (const [i, d] of usedDesks.entries()) {
         if (!alive) return;
-        setPreparing(usedDesks.length > 1 ? `Измеряю фото ${i + 1} из ${usedDesks.length}: резкость, шум, блики…` : 'Измеряю снимок: резкость, шум, блики…');
+        setPreparing(usedDesks.length > 1 ? `Measuring photo ${i + 1} of ${usedDesks.length}: sharpness, noise and glare…` : 'Measuring photo: sharpness, noise and glare…');
         await prepare(d.id, { ruling: paperKind !== 'plain', mask: true, measure: true }).catch((err) => alive && setError(String(err)));
       }
       if (alive) setPreparing(null);
@@ -1131,7 +1131,7 @@ export function DeskDialog(props: Props) {
 
   const draw = async (d: Desk, p: number, wanted: () => boolean = () => true) => {
     const canvas = canvasRef.current;
-    if (!canvas || !layout) throw new Error('нечего рисовать');
+    if (!canvas || !layout) throw new Error('nothing to render');
     if (!renderer.current) {
       renderer.current = new DeskRenderer(canvas);
       shown.current = null;
@@ -1200,7 +1200,7 @@ export function DeskDialog(props: Props) {
   useEffect(() => {
     if (step !== 3 || !shownDesk || !layout || !isConvexClockwise(shownDesk.corners)) return;
     let alive = true;
-    setBusy('Пишу текст на листе…');
+    setBusy('Rendering text on paper…');
     void draw(shownDesk, page, () => alive)
       .then((r) => r && alive && setInkReady((n) => n + 1))
       .catch((err) => alive && setError(err instanceof Error ? err.message : String(err)))
@@ -1234,7 +1234,7 @@ export function DeskDialog(props: Props) {
     try {
       const c = await (await analysisOf(d)).calibrate(x, y, 4 * perMm, d.measure?.sigma ?? FALLBACK_BLUR);
       if (!c) {
-        setError('Здесь нет чернил: щёлкните прямо по слову, написанному настоящей ручкой на этом листе.');
+        setError('No ink found here. Click directly on a word written with a real pen on this paper.');
         return;
       }
       setError(null);
@@ -1247,7 +1247,7 @@ export function DeskDialog(props: Props) {
   /** Width of the handwriting's pen on this paper, mm. */
   const penMm = layout ? ((getHandwriting().style.weight * layout.fontSize) / 1000) * pageScale(layout) / MM : 0;
 
-  const fileName = (p: number) => `${safeFilename(base.title)}${pageCount > 1 ? ` — лист ${p + 1}` : ''} (фото).jpg`;
+  const fileName = (p: number) => `${safeFilename(base.title)}${pageCount > 1 ? ` — page ${p + 1}` : ''} (photos).jpg`;
   /** All the sheets at once: by the desk's name (or the document's), «Стол_1.jpg», «Стол_2.jpg»… */
   const sheetFile = (p: number) => `${safeFilename(deskName.trim() || base.title)}_${p + 1}.jpg`;
 
@@ -1259,7 +1259,7 @@ export function DeskDialog(props: Props) {
       for (const [i, p] of pages.entries()) {
         const d0 = deskFor(p);
         if (!d0) continue;
-        setBusy(pages.length > 1 ? `Сохраняю лист ${i + 1} из ${pages.length}…` : 'Сохраняю…');
+        setBusy(pages.length > 1 ? `Saving page ${i + 1} of ${pages.length}…` : 'Saving…');
         const d = (await prepare(d0.id, { ruling: paperKind !== 'plain', mask: true, measure: true })) ?? d0;
         const r = await draw(d, p);
         if (!r) continue;
@@ -1277,12 +1277,12 @@ export function DeskDialog(props: Props) {
     }
   };
 
-  const paperName = isA4(paperMm) ? 'A4' : `${num(paperMm[0])} × ${num(paperMm[1])} мм`;
+  const paperName = isA4(paperMm) ? 'A4' : `${num(paperMm[0])} × ${num(paperMm[1])} mm`;
   const lineNote = layout?.ref
     ? (() => {
         const n = Math.round(layout.ref.pitch / layout.ref.lines.step);
-        const what = layout.ref.lines.kind === 'grid' ? (n === 1 ? 'клетку' : n < 5 ? 'клетки' : 'клеток') : n === 1 ? 'линейку' : 'линейки';
-        return `строка через ${n} ${what} (${num(layout.ref.pitch / MM)} мм)`;
+        const what = layout.ref.lines.kind === 'grid' ? (n === 1 ? 'grid cell' : n < 5 ? 'grid cells' : 'grid cells') : n === 1 ? 'ruled line' : 'ruled lines';
+        return `line spacing: ${n} ${what} (${num(layout.ref.pitch / MM)} mm)`;
       })()
     : null;
   /** The letters' size now: their line height as a share of the line of text. */
@@ -1291,25 +1291,25 @@ export function DeskDialog(props: Props) {
     ? null
     : sheet.mode === 'document'
       ? layout.ref
-        ? `Строки и листы — как в документе: ${lineNote}, буквы ×${num(pageScale(layout), 2)} от редактора. Листов: ${layout.layers.length}.${
-            sheet.every !== null && Math.round(layout.ref.pitch / layout.ref.lines.step) < sheet.every ? ' Шире строка не помещается: лист документа длиннее листа тетради.' : ''
+        ? `Lines and pages match the document: ${lineNote}, letter scale ×${num(pageScale(layout), 2)} relative to the editor. Pages: ${layout.layers.length}.${
+            sheet.every !== null && Math.round(layout.ref.pitch / layout.ref.lines.step) < sheet.every ? ' Wider spacing does not fit: the document page is longer than the notebook paper.' : ''
           }`
         : looseMargins && Object.values(looseMargins).some((v) => v !== null)
-          ? 'Lines и листы — как в документе, лист вписан между полями.'
+          ? 'Lines and pages match the document, fitted between the margins.'
           : !isA4(paperMm)
-            ? 'Page A4 уменьшен целиком: буквы мельче, чем в документе.'
+            ? 'The entire A4 page is scaled down; letters are smaller than in the document.'
             : null
-      : `Text заново разбит на листы ${paperName}${lineNote ? ` по линовке, ${lineNote}` : ''}: ${layout.layers.length}.`;
+      : `Text is reflowed onto pages of size ${paperName}${lineNote ? ` following the ruling, ${lineNote}` : ''}: ${layout.layers.length}.`;
 
   const measured = shownDesk?.measure ?? null;
   const measureNote =
     shownDesk && measured
       ? [
-          measured.sigma !== null ? `размытость ${num(measured.sigma)} px` : 'размытость и резкость — по умолчанию: краёв листа не видно',
-          measured.sharpen >= 0.05 ? `телефон добавил резкости ×${num(measured.sharpen)}` : null,
-          measured.noise ? 'шум измерен по чистой бумаге' : 'шум не измерить: мало чистой бумаги',
-          shownDesk.glare ? 'есть блик — в нём чернила бледнеют' : 'бликов нет',
-          shownDesk.mask?.objects ? `предметов на листе: ${shownDesk.mask.objects}` : null,
+          measured.sigma !== null ? `blur ${num(measured.sigma)} px` : 'default blur and sharpness: page edges are not visible',
+          measured.sharpen >= 0.05 ? `camera sharpening ×${num(measured.sharpen)}` : null,
+          measured.noise ? 'noise measured from blank paper' : 'not enough blank paper to measure noise',
+          shownDesk.glare ? 'glare detected; ink fades in highlighted areas' : 'no glare',
+          shownDesk.mask?.objects ? `objects on paper: ${shownDesk.mask.objects}` : null,
         ]
           .filter(Boolean)
           .join(', ')
@@ -1335,7 +1335,7 @@ export function DeskDialog(props: Props) {
       patch(d.id, { bend: null });
       return;
     }
-    setBusy('Ищу изогнутые края…');
+    setBusy('Detecting curved edges…');
     void curve(d, d.corners, true)
       .then((c) => c && patch(d.id, { ...c, touched: true }))
       .catch((err) => setError(String(err)))
@@ -1396,25 +1396,25 @@ export function DeskDialog(props: Props) {
   if (cur && (step === 1 || step === 2) && foundNote[cur.id]) messages.push({ key: `found:${cur.id}:${foundNote[cur.id]}`, kind: 'info', text: foundNote[cur.id] });
   if (note) messages.push({ key: `note:${note}`, kind: 'info', text: note });
   if (step === 1 && cur && !valid) {
-    messages.push({ key: 'twisted', kind: 'warn', text: 'Уголки перекрутились: расставьте их по кругу, по часовой стрелке от верхнего левого.' });
+    messages.push({ key: 'twisted', kind: 'warn', text: 'Corners are crossed. Arrange them clockwise, starting at the top-left corner.' });
   }
   // (Corners outside the frame are the photo's frame seen in perspective: its shape, not the sheet's.)
   const beyond = !!cur && cur.corners.some(([x, y]) => x < -1 || y < -1 || x > cur.photo.width + 1 || y > cur.photo.height + 1);
   if (step === 1 && cur && valid && !blankId && !beyond && sheet.orient !== 'landscape' && topLooksSideways(cur.corners, paperFor(cur))) {
-    messages.push({ key: `sideways:${cur.id}`, kind: 'warn', text: 'Похоже, upper листа отмечен сбоку.', action: { label: '↻ Повернуть', run: () => turnTop(cur) } });
+    messages.push({ key: `sideways:${cur.id}`, kind: 'warn', text: 'The top of the page appears to be marked on a side edge.', action: { label: '↻ Rotate', run: () => turnTop(cur) } });
   }
   if (step === 2 && cur && hasRuling(cur)) {
     const r = cur.ruling;
     const hint = r && formatHint(r, paperFor(cur), sheet.byGrid);
-    if (!r && paperKind !== 'plain') messages.push({ key: `nolines:${cur.id}`, kind: 'warn', text: 'Линии не нашлись: текст ляжет как на чистом листе.' });
+    if (!r && paperKind !== 'plain') messages.push({ key: `nolines:${cur.id}`, kind: 'warn', text: 'No ruling detected; text will be placed as on plain paper.' });
     if (hint) messages.push({ key: `format:${hint}`, kind: 'warn', text: hint });
     if (r && sheet.paper === 'plain' && !blankId) {
       const grid = r.kind === 'grid';
       messages.push({
         key: `suggest:${cur.id}`,
         kind: 'warn',
-        text: `На листе ${grid ? 'клетка' : 'линейка'}: подогнать текст под неё?`,
-        action: { label: grid ? 'Да, в клетку' : 'Да, в линейку', run: () => changeSheet({ paper: r.kind }) },
+        text: `The paper has ${grid ? 'grid' : 'ruling'}: align text to it?`,
+        action: { label: grid ? 'Yes, use the grid' : 'Yes, use the ruling', run: () => changeSheet({ paper: r.kind }) },
       });
     }
   }
@@ -1434,27 +1434,27 @@ export function DeskDialog(props: Props) {
   );
 
   const rulingLine = (() => {
-    if (!cur || !hasRuling(cur)) return <p className="muted small">Ищу…</p>;
+    if (!cur || !hasRuling(cur)) return <p className="muted small">Detecting…</p>;
     const r = cur.ruling;
-    if (!r) return <p className="muted small">{paperKind === 'plain' ? 'Линовки на листе нет.' : 'Линии не нашлись.'}</p>;
-    const what = r.kind === 'grid' ? `Grid ${num(r.colStep ?? r.step)} мм` : `Ruled через ${num(r.step)} мм`;
+    if (!r) return <p className="muted small">{paperKind === 'plain' ? 'No ruling on this paper.' : 'No ruling detected.'}</p>;
+    const what = r.kind === 'grid' ? `Grid ${num(r.colStep ?? r.step)} mm` : `Ruling every ${num(r.step)} mm`;
     return (
       <p className="small">
         {what}
-        {sheet.byGrid && cur.gridSize ? ` · лист ${num(cur.gridSize[0])} × ${num(cur.gridSize[1])} мм` : ''}
+        {sheet.byGrid && cur.gridSize ? ` · page ${num(cur.gridSize[0])} × ${num(cur.gridSize[1])} mm` : ''}
       </p>
     );
   })();
   const rulingHint =
     cur?.ruling && hasRuling(cur) ? (
       <>
-        {cur.ruling.kind === 'grid' ? `Grid ${num(cur.ruling.colStep ?? cur.ruling.step)} × ${num(cur.ruling.step)} мм` : `Ruled через ${num(cur.ruling.step)} мм`}
-        {Math.abs(cur.ruling.slope) > 0.001 ? `, наклон к краю ${num((Math.atan(cur.ruling.slope) * 180) / Math.PI, 2)}°` : ''}.
-        {sheet.byGrid && cur.gridSize ? ` Размер листа прочитан по клеткам (каждая — 5 мм).` : ''}
-        {cur.bend?.lines && ` Изгиб уточнён по линовке: строки отклонялись от прямой на ${num(cur.bend.lines.before, 2)} мм, теперь на ${num(cur.bend.lines.after, 2)} мм.`}
+        {cur.ruling.kind === 'grid' ? `Grid ${num(cur.ruling.colStep ?? cur.ruling.step)} × ${num(cur.ruling.step)} mm` : `Ruling every ${num(cur.ruling.step)} mm`}
+        {Math.abs(cur.ruling.slope) > 0.001 ? `, slope relative to edge ${num((Math.atan(cur.ruling.slope) * 180) / Math.PI, 2)}°` : ''}.
+        {sheet.byGrid && cur.gridSize ? ` Paper size measured from 5 mm grid cells.` : ''}
+        {cur.bend?.lines && ` Curvature refined using ruling: line deviation was ${num(cur.bend.lines.before, 2)} mm, now ${num(cur.bend.lines.after, 2)} mm.`}
       </>
     ) : (
-      'Линии клетки или линейки, найденные на листе: по ним ложатся строки текста.'
+      'Detected grid or ruling lines used to align text.'
     );
 
   return createPortal(
@@ -1463,14 +1463,14 @@ export function DeskDialog(props: Props) {
         className={`desk-dialog ${hasPanel ? 'has-panel' : ''} ${hasRail ? 'has-rail' : ''} ${hasStrip ? 'has-strip' : ''}`}
         role="dialog"
         aria-modal="true"
-        aria-label="Text на фото листа"
+        aria-label="Handwriting on a photo of paper"
       >
         <header className="desk-head">
           <div className="desk-title float">
-            <span>На столе</span>
-            {deskId && <input className="desk-name" value={deskName} onChange={(e) => setDeskName(e.target.value)} aria-label="Имя стола" title="Имя стола в «Мои столы»" />}
+            <span>On a desk</span>
+            {deskId && <input className="desk-name" value={deskName} onChange={(e) => setDeskName(e.target.value)} aria-label="Desk name" title="Desk name in My desks" />}
           </div>
-          <nav className="pill float desk-steps" aria-label="Шаги">
+          <nav className="pill float desk-steps" aria-label="Steps">
             {STEPS.map((name, i) => (
               <button key={name} className={i === step ? 'on' : ''} disabled={stepOff(i)} onClick={() => setStep(i)}>
                 <span className="desk-step-n">{i + 1}</span>
@@ -1480,13 +1480,13 @@ export function DeskDialog(props: Props) {
           </nav>
           <div className="desk-head-end">
             {deskId ? (
-              <span className="desk-saved" title="Стол в «Мои столы» сохраняется сам">
-                {saving ? 'Сохраняю…' : 'Сохранено ✓'}
+              <span className="desk-saved" title="This desk is saved automatically in My desks">
+                {saving ? 'Saving…' : 'Saved ✓'}
               </span>
             ) : (
               desks.length > 0 && (
-                <button className="btn desk-keep" disabled={!!busy} onClick={keepDesk} title="Все фото, разметка и настройки — в «Мои столы»; дальше стол сохраняется сам">
-                  Сохранить стол
+                <button className="btn desk-keep" disabled={!!busy} onClick={keepDesk} title="Save all photos, annotations and settings to My desks; subsequent changes are saved automatically">
+                  Save desk
                 </button>
               )
             )}
@@ -1500,29 +1500,29 @@ export function DeskDialog(props: Props) {
           <div className="desk-rail float">
             {step === 1 && (
               <>
-                <Tool icon={<TurnIcon />} label="Верх листа — на следующую сторону" onClick={() => turnTop(cur)} />
-                <Tool icon={<RotatePhotoIcon />} label="Повернуть снимок на 90° (скан или фото пришли боком)" disabled={!!busy} onClick={() => void rotatePhoto(cur)} />
+                <Tool icon={<TurnIcon />} label="Move the page top to the next side" onClick={() => turnTop(cur)} />
+                <Tool icon={<RotatePhotoIcon />} label="Rotate photo 90° to correct a sideways scan or photo" disabled={!!busy} onClick={() => void rotatePhoto(cur)} />
                 <Tool
                   icon={<FindSheetIcon />}
-                  label="Найти лист заново"
+                  label="Detect page again"
                   disabled={!!busy}
                   onClick={() => {
-                    setBusy('Ищу лист на фото…');
+                    setBusy('Detecting page in photo…');
                     void findSheet(cur, true).finally(() => setBusy(null));
                   }}
                 />
                 <Tool
                   icon={<ScanIcon />}
-                  label="Скан: лист занимает весь снимок, без перспективы и изгиба"
+                  label="Scan: the page fills the image without perspective or curvature"
                   onClick={() => patch(cur.id, { corners: frameOf(cur.photo), snapped: NONE, bend: null, touched: true })}
                 />
-                <Tool icon={<CurveIcon />} label={cur.bend ? 'Изогнутый лист: выключить' : 'Изогнутый лист: края дугой, страница у корешка'} on={!!cur.bend} disabled={!!busy} onClick={() => toggleBend(cur)} />
+                <Tool icon={<CurveIcon />} label={cur.bend ? 'Curved page: disable' : 'Curved page: bowed edges or a page near the binding'} on={!!cur.bend} disabled={!!busy} onClick={() => toggleBend(cur)} />
                 <span className="rail-sep" />
                 <Hint side="right">
-                  Перетащите уголки на уголки листа: отпущенный уголок прилипает к краям (сплошная линия — край найден, пунктир — нет). С Alt — без
-                  прилипания, с Shift — точнее, стрелками — на ¼ пикселя, Tab — следующий уголок.
-                  {' '}Ромбики на краях гнут край: отпущенный прилипает к краю на снимке (с Alt — нет), двойной щелчок по краю добавляет ромбик, Alt + щелчок убирает.
-                  {cur.bend && ' Квадратные точки сетки изогнутого листа можно тянуть там, где текст должен лечь иначе.'}
+                  Drag handles to the page corners. Released handles snap to edges: solid lines indicate detected edges, dashed lines indicate missing edges. Hold Alt to disable
+                  snapping, Shift for precision, arrow keys for quarter-pixel movement, and Tab for the next corner.
+                  {' '}Drag diamond handles to curve an edge. They snap to the photo edge unless Alt is held. Double-click an edge to add a handle; Alt-click to remove one.
+                  {cur.bend && ' Drag square grid points to adjust text placement on curved paper.'}
                 </Hint>
               </>
             )}
@@ -1530,7 +1530,7 @@ export function DeskDialog(props: Props) {
               <>
                 <Tool
                   icon={<EraseIcon />}
-                  label="Стереть: здесь текст не пишется"
+                  label="Erase: exclude handwriting from this area"
                   on={tool === 'brush' && brush === 'erase'}
                   onClick={() => {
                     setBrush('erase');
@@ -1539,28 +1539,28 @@ export function DeskDialog(props: Props) {
                 />
                 <Tool
                   icon={<BrushIcon />}
-                  label="Вернуть бумагу"
+                  label="Restore paper"
                   on={tool === 'brush' && brush === 'restore'}
                   onClick={() => {
                     setBrush('restore');
                     setTool('brush');
                   }}
                 />
-                <Tool icon={<MarginsIcon />} label="Поля: тянуть розовые линии" on={tool === 'margins'} onClick={() => setTool('margins')} />
-                <Tool icon={<DotIcon />} label="Размер кисти">
+                <Tool icon={<MarginsIcon />} label="Margins: drag the pink lines" on={tool === 'margins'} onClick={() => setTool('margins')} />
+                <Tool icon={<DotIcon />} label="Brush size">
                   <label className="slider desk-brush">
                     <span>
-                      Кисть, px <output>{brushRadius}</output>
+                      Brush, px <output>{brushRadius}</output>
                     </span>
                     <input type="range" min={6} max={200} step={2} value={brushRadius} onChange={(e) => setBrushRadius(Number(e.target.value))} />
-                    <span className="muted small">Клавиши [ и ] — меньше и больше</span>
+                    <span className="muted small">Use [ and ] to decrease or increase brush size</span>
                   </label>
                 </Tool>
                 <span className="rail-sep" />
-                <Tool icon={<AgainIcon />} label="Найти предметы заново (кисть забудется)" onClick={() => patch(cur.id, { maskKey: null })} />
+                <Tool icon={<AgainIcon />} label="Detect objects again (resets brush edits)" onClick={() => patch(cur.id, { maskKey: null })} />
                 <Tool
                   icon={<ClearIcon />}
-                  label="Clear: убрать все красные отметки"
+                  label="Clear all red exclusion marks"
                   disabled={!cur.mask}
                   onClick={() => cur.mask && patch(cur.id, { mask: { ...cur.mask, objects: 0, data: new Uint8Array(cur.mask.data.length).fill(255) } })}
                 />
@@ -1571,14 +1571,14 @@ export function DeskDialog(props: Props) {
                 {look.pen !== 'pencil' && (
                   <Tool
                     icon={<PipetteIcon />}
-                    label={picking ? 'Щёлкните по слову на фото…' : 'Взять цвет с настоящей ручки: щёлкнуть по слову на листе'}
+                    label={picking ? 'Click a word in the photo…' : 'Sample real pen color: click a handwritten word on the paper'}
                     on={picking}
                     onClick={() => setPicking(!picking)}
                   />
                 )}
                 <Tool
                   icon={<CropIcon />}
-                  label="Обрезка: что из снимка сохранять"
+                  label="Crop: choose the saved area"
                   on={cropping}
                   disabled={!shownDesk}
                   onClick={() => {
@@ -1586,7 +1586,7 @@ export function DeskDialog(props: Props) {
                     setCropping(!cropping);
                   }}
                 />
-                <Tool icon={<ActualIcon />} label="Масштаб 1:1 (колесо мыши — ближе или дальше)" on={actual} onClick={() => setView(actual || !resultFit.current ? FIT : oneToOne(resultFit.current))} />
+                <Tool icon={<ActualIcon />} label="Actual size (use the wheel to zoom)" on={actual} onClick={() => setView(actual || !resultFit.current ? FIT : oneToOne(resultFit.current))} />
               </>
             )}
           </div>
@@ -1608,50 +1608,50 @@ export function DeskDialog(props: Props) {
               }}
             >
               <div className="desk-drop-zone">
-                <p className="desk-drop-title">Перетащите сюда фото листов</p>
+                <p className="desk-drop-title">Drop photos of paper here</p>
                 <div className="desk-drop-row">
                   <button className="btn primary" onClick={() => fileRef.current?.click()}>
-                    {desks.length ? 'Добавить фото…' : 'Выбрать фото…'}
+                    {desks.length ? 'Add photos…' : 'Choose photos…'}
                   </button>
                   <Hint side="below">
-                    Программа напишет текст документа на этих листах — с перспективой, под тем же светом и с теми же тенями, что на снимках. Нужны пустые листы,
-                    снятые сверху при ровном свете: одно фото на все листы документа или по фото на лист. JPG, PNG или WebP; большие фото уменьшаются до{' '}
-                    {WORK_SIDE} px по длинной стороне.
+                    The application writes your document onto these pages, matching perspective, lighting and shadows. Use blank sheets,
+                    photographed from above in even light. Use one photo for all pages or a separate photo per page. JPG, PNG and WebP are supported; large photos are resized to{' '}
+                    {WORK_SIDE} px on the longer side.
                   </Hint>
                 </div>
               </div>
               {saved.length > 0 && (
                 <section className="desk-shelf">
                   <h3>
-                    Мои столы
-                    <Hint side="right">Стол — это все фото экспорта с разметкой и настройками. Открытый стол встаёт как был и сохраняется сам. «+ фото» добавляет его фото к фото здесь.</Hint>
+                    My desks
+                    <Hint side="right">A desk stores all export photos, annotations and settings. Opening a desk restores it and enables autosave. + photos adds its photos to this export.</Hint>
                   </h3>
                   <ul>
                     {saved.map((s) => (
                       <li key={s.id} className={`desk-shelf-card float ${s.id === deskId ? 'on' : ''}`}>
-                        <button className="desk-shelf-open" onClick={() => void openSaved(s)} title="Open этот стол: фото, разметку и настройки">
+                        <button className="desk-shelf-open" onClick={() => void openSaved(s)} title="Open this desk with its photos, annotations and settings">
                           <SavedThumb blob={s.thumb} />
                           <span className="desk-shelf-name">{s.name}</span>
                           <span className="muted small">
-                            {s.photos.length} фото · {new Date(s.updatedAt).toLocaleDateString('ru-RU')}
+                            {s.photos.length} photos · {new Date(s.updatedAt).toLocaleDateString('en-US')}
                           </span>
                         </button>
                         <div className="desk-shelf-actions">
                           {s.id !== deskId && (
-                            <button className="link-btn" disabled={!!busy} onClick={() => void addSaved(s)} title="Добавить фото этого стола к фото здесь">
-                              + фото
+                            <button className="link-btn" disabled={!!busy} onClick={() => void addSaved(s)} title="Add this desk’s photos to this export">
+                              + photos
                             </button>
                           )}
                           <button
                             className="link-btn danger"
-                            title="Delete из «Мои столы»"
+                            title="Delete from My desks"
                             onClick={() => {
-                              if (!confirm(`Delete «${s.name}» из «Мои столы»?`)) return;
+                              if (!confirm(`Delete «${s.name}» from My desks?`)) return;
                               if (s.id === deskId) setDeskId(null);
                               void deleteDesk(s.id);
                             }}
                           >
-                            удалить
+                            delete
                           </button>
                         </div>
                       </li>
@@ -1732,12 +1732,12 @@ export function DeskDialog(props: Props) {
             }
           >
             {step === 3 && inkReady > 0 && (
-              <div className="desk-stages" role="group" aria-label="Показать до этапа">
-                <span className="small muted">Показать до:</span>
+              <div className="desk-stages" role="group" aria-label="Show up to stage">
+                <span className="small muted">Show up to:</span>
                 <Pill value={stage} onChange={setStage} options={STAGES.map((s) => [s.id, s.name, s.hint] as [Stage, ReactNode, string])} />
                 {split > 0 && (
-                  <label className="small" title="Что показывает шторка слева">
-                    слева{' '}
+                  <label className="small" title="What appears to the left of the comparison slider">
+                    left{' '}
                     <select value={leftStage} onChange={(e) => setLeftStage(e.target.value as Stage)}>
                       {STAGES.map((s) => (
                         <option key={s.id} value={s.id}>
@@ -1778,16 +1778,16 @@ export function DeskDialog(props: Props) {
           <aside className={`desk-panel float ${step === 0 ? 'short' : ''}`}>
             <div className="desk-panel-body">
               {step === 0 && (
-                <Section title="Фото" hint="Каждое фото — лист на столе. Его можно взять для всех листов документа или для одного; это выбирается на шаге «Чернила».">
+                <Section title="Photo" hint="Each photo shows a sheet on a desk. Use it for all document pages or just one, as selected in the Ink step.">
                   <p className="small">
-                    {desks.length} {desks.length === 1 ? 'фото' : 'фото'} в этом экспорте. Щёлкните по фото внизу, чтобы разметить его.
+                    {desks.length} {desks.length === 1 ? 'photos' : 'photos'} in this export. Click a thumbnail below to adjust its annotations.
                   </p>
                 </Section>
               )}
 
               {step === 1 && cur && (
                 <>
-                  <Section title="Формат листа" hint="Размер настоящего листа. На листе в клетку он читается по самим клеткам (каждая — 5 мм), если включено «размер по клеткам».">
+                  <Section title="Paper size" hint="Physical paper size. On grid paper, measure it from 5 mm cells by enabling size from grid.">
                     <Pill
                       wrap
                       value={sheet.kind}
@@ -1796,14 +1796,14 @@ export function DeskDialog(props: Props) {
                         ...(Object.keys(SHEET_KINDS) as SheetKind[]).map(
                           (k) => [k, <span className="desk-fmt">{SHEET_KINDS[k].name}<small>{SHEET_KINDS[k].mm[0]}×{SHEET_KINDS[k].mm[1]}</small></span>] as [DeskFormat, ReactNode],
                         ),
-                        ['custom', <span className="desk-fmt">Свой<small>{num(sheet.custom[0], 0)}×{num(sheet.custom[1], 0)}</small></span>],
+                        ['custom', <span className="desk-fmt">Custom<small>{num(sheet.custom[0], 0)}×{num(sheet.custom[1], 0)}</small></span>],
                       ]}
                     />
                     {sheet.kind === 'custom' && (
                       <div className="desk-size">
                         {([0, 1] as const).map((i) => (
                           <label key={i}>
-                            {i ? 'высота' : 'ширина'}
+                            {i ? 'height' : 'width'}
                             <input
                               type="number"
                               min={50}
@@ -1815,30 +1815,30 @@ export function DeskDialog(props: Props) {
                                 if (v >= 50 && v <= 600) changeSheet({ custom: i ? [sheet.custom[0], v] : [v, sheet.custom[1]] });
                               }}
                             />
-                            мм
+                            mm
                           </label>
                         ))}
                       </div>
                     )}
                     <div className="desk-field">
-                      <span>Page лежит</span>
+                      <span>Page orientation</span>
                       <Pill
                         value={sheet.orient ?? 'auto'}
                         onChange={(orient) => changeSheet({ orient })}
                         options={[
-                          ['auto', 'авто', blankId ? 'Как показывают уголки: верхний край длиннее — альбомный' : 'Книжный (верх — короткая сторона)'],
-                          ['portrait', 'книжный'],
-                          ['landscape', 'альбомный'],
+                          ['auto', 'auto', blankId ? 'Use the corners: a longer top edge means landscape' : 'Portrait (the top is a short side)'],
+                          ['portrait', 'portrait'],
+                          ['landscape', 'landscape'],
                         ]}
                       />
                     </div>
                     <label className="check">
                       <input type="checkbox" checked={sheet.byGrid} onChange={(e) => changeSheet({ byGrid: e.target.checked })} />
-                      Размер в клетку — по клеткам
+                      Measure paper size from grid cells
                     </label>
                   </Section>
                   {!blankId && (
-                    <Section title="Paper" hint="Чистая, в линейку или в клетку: на линованной бумаге строки текста ложатся на её линии.">
+                    <Section title="Paper" hint="Plain, ruled or grid paper. Text follows the ruling on lined paper.">
                       <Pill value={sheet.paper} onChange={(k) => changeSheet({ paper: k })} options={PAPER_NAMES.map(([k, name]) => [k, name] as [PaperStyle, ReactNode])} />
                     </Section>
                   )}
@@ -1851,36 +1851,36 @@ export function DeskDialog(props: Props) {
                     const lines = t?.lines.length ?? 0;
                     return (
                       <Section
-                        title="Перспектива"
-                        hint="Как телефон держали над листом. Пока края листа в кадре, перспектива берётся по уголкам. Если лист выходит за кадр, она ищется по прямым линиям на снимке (строки и клетки, края стола и других листов) — их можно показать — или задаётся вручную: проведите две пары линий вдоль листа или поправьте ползунками."
+                        title="Perspective"
+                        hint="Camera angle above the paper. Visible corners determine perspective. If the page extends outside the frame, straight photo lines are used. Show detected lines, draw two pairs of reference lines, or adjust the sliders manually."
                         aside={
                           cur.handTilt && (
-                            <button className="link-btn" onClick={() => setHandTilt(cur, null)} title="Забыть ручную перспективу">
-                              ↺ как найдено
+                            <button className="link-btn" onClick={() => setHandTilt(cur, null)} title="Reset manual perspective">
+                              ↺ use detected values
                             </button>
                           )
                         }
                       >
                         <p className="small">
                           {cur.handTilt
-                            ? `Задана вручную${cur.handLines ? ' по линиям' : ''}: ${describeTilt(cur.handTilt)}.`
+                            ? `Set manually${cur.handLines ? ' from lines' : ''}: ${describeTilt(cur.handTilt)}.`
                             : t === undefined
-                              ? 'Ищу прямые линии на снимке…'
+                              ? 'Detecting straight lines in photo…'
                               : found
-                                ? `Найдена по линиям на снимке${found.by === 'one' ? ' (по одному направлению)' : ''}: ${describeTilt(anglesOf(found.rot))}.`
+                                ? `Detected from photo lines${found.by === 'one' ? ' (one direction only)' : ''}: ${describeTilt(anglesOf(found.rot))}.`
                                 : t && t.confidence >= SURE_TILT
-                                  ? 'По линиям на снимке лист снят прямо.'
-                                  : `Прямых линий на снимке ${lines ? 'мало' : 'нет'} — перспектива не найдена.`}
+                                  ? 'Photo lines indicate a straight-on view.'
+                                  : `Straight lines in photo: ${lines ? 'too few' : 'none'} — perspective not detected.`}
                         </p>
-                        {whole && <p className="muted small">Края листа в кадре — перспектива берётся по уголкам.</p>}
+                        {whole && <p className="muted small">Page edges are visible; perspective is determined by the corners.</p>}
                         <label className="check">
                           <input type="checkbox" checked={showLines && !drawing} disabled={!lines || drawing} onChange={(e) => setShowLines(e.target.checked)} />
-                          Показать найденные линии{lines ? ` (${lines})` : ''}
+                          Show detected lines{lines ? ` (${lines})` : ''}
                         </label>
                         {whole && !drawing ? null : drawing ? (
                           <>
                             <p className="muted small">
-                              Перетащите концы линий: розовые — вдоль строк или верхнего края листа, голубые — вдоль полей или боковых краёв. Чем длиннее линии и дальше друг от друга, тем точнее.
+                              Drag line endpoints: align pink lines with ruling or the top edge, and blue lines with margins or side edges. Longer, more widely separated lines improve accuracy.
                             </p>
                             <button className="btn" onClick={() => setGuides(null)}>
                               Done
@@ -1890,9 +1890,9 @@ export function DeskDialog(props: Props) {
                           <button
                             className="btn"
                             onClick={() => setGuides({ id: cur.id, lines: cur.handLines ?? startLines(t?.lines, cur.corners, w, h) })}
-                            title="Провести на снимке две пары линий вдоль листа: по ним перспектива считается точно"
+                            title="Draw two pairs of lines along the paper to calculate perspective accurately"
                           >
-                            ✎ Провести линии
+                            ✎ Draw reference lines
                           </button>
                         )}
                         {!whole && (
@@ -1906,11 +1906,11 @@ export function DeskDialog(props: Props) {
                   })()}
                   {cur.bend && (
                     <Section
-                      title="Изогнутый лист"
-                      hint={`Края повторяют снимок: на каждом столько точек, сколько нужно, чтобы пройти по всем изгибам. Ромбики на краях можно тянуть, двойной щелчок по краю добавляет точку.${paperKind !== 'plain' ? ' На линованном листе сетка сама подстроится под линии на шаге «Помехи» — так густо, как нужно.' : ''}`}
+                      title="Curved paper"
+                      hint={`Edges follow the photo with as many control points as needed. Drag diamond handles to adjust them; double-click an edge to add a point.${paperKind !== 'plain' ? ' On lined paper, the grid automatically adapts to the ruling during the Occlusions step.' : ''}`}
                       aside={
-                        <button className="link-btn" disabled={!!busy} onClick={() => toggleBend(cur, true)} title="Найти изогнутые края заново по снимку">
-                          ↺ как найдено
+                        <button className="link-btn" disabled={!!busy} onClick={() => toggleBend(cur, true)} title="Detect curved edges again from the photo">
+                          ↺ use detected values
                         </button>
                       }
                     >
@@ -1920,12 +1920,12 @@ export function DeskDialog(props: Props) {
                         return (
                           <>
                             <p className="small">
-                              Края выгнуты до {num(cur.bend.max)} px; точек на краях: {bows.map((b) => b.t.length - 2).join(', ')}
-                              {g.nx > 5 ? `; сетка ${g.nx}×${g.ny}` : ''}.
+                              Maximum edge deflection: {num(cur.bend.max)} px; edge points: {bows.map((b) => b.t.length - 2).join(', ')}
+                              {g.nx > 5 ? `; grid ${g.nx}×${g.ny}` : ''}.
                             </p>
                             {bows.some((b) => b.t.length > 5) && (
-                              <button className="link-btn" onClick={() => editBows(cur, simpleBows(bows), null)} title="Каждый край — одной плавной дугой (если точки легли на что-то лишнее)">
-                                Упростить
+                              <button className="link-btn" onClick={() => editBows(cur, simpleBows(bows), null)} title="Use one smooth arc per edge if detected points follow unrelated objects">
+                                Simplify
                               </button>
                             )}
                           </>
@@ -1940,16 +1940,16 @@ export function DeskDialog(props: Props) {
                 <>
                   {!blankId && (
                   <>
-                  <Section title="Линовка" hint={rulingHint}>
+                  <Section title="Ruling" hint={rulingHint}>
                     {rulingLine}
                   </Section>
                   <Section
-                    title="Поля"
-                    hint="Text пишется между розовыми линиями. Инструментом «Поля» слева их можно тянуть целиком или за конец — тогда линия поворачивается вокруг другого конца. Линии прилипают к клетке (с Alt — нет), двойной щелчок выпрямляет линию вдоль клетки. Число можно ввести и здесь."
+                    title="Margins"
+                    hint="Text is placed between the pink margin lines. Use the Margins tool to move a line or rotate it by dragging an endpoint. Lines snap to the grid unless Alt is held. Double-click to align a line with the grid, or enter values here."
                     aside={
                       cur.margins && (
-                        <button className="link-btn" onClick={() => patch(cur.id, { margins: null })} title="Поля, как их нашла программа">
-                          ↺ как найдено
+                        <button className="link-btn" onClick={() => patch(cur.id, { margins: null })} title="Restore detected margins">
+                          ↺ use detected values
                         </button>
                       )
                     }
@@ -1977,13 +1977,13 @@ export function DeskDialog(props: Props) {
                                   className="desk-mm-input"
                                   defaultValue={num(v.a)}
                                   inputMode="decimal"
-                                  aria-label={`Поле ${name}, мм`}
-                                  title={side === 'left' || side === 'right' ? 'у верхнего края, мм' : 'у левого края, мм'}
+                                  aria-label={`Margin ${name}, mm`}
+                                  title={side === 'left' || side === 'right' ? 'at the top edge, mm' : 'at the left edge, mm'}
                                   onBlur={(e) => commit(e.currentTarget)}
                                   onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
                                 />
-                                <span className="muted small desk-mm-end">{turned ? `→ ${num(v.b)}` : 'мм'}</span>
-                                <button className="desk-x" aria-label={`Убрать поле ${name}`} title="Убрать" onClick={() => patch(cur.id, { margins: { ...m, [side]: null } })}>
+                                <span className="muted small desk-mm-end">{turned ? `→ ${num(v.b)}` : 'mm'}</span>
+                                <button className="desk-x" aria-label={`Remove margin ${name}`} title="Remove" onClick={() => patch(cur.id, { margins: { ...m, [side]: null } })}>
                                   <CloseIcon />
                                 </button>
                               </>
@@ -1995,7 +1995,7 @@ export function DeskDialog(props: Props) {
                                   setTool('margins');
                                 }}
                               >
-                                + добавить
+                                + add
                               </button>
                             )}
                           </li>
@@ -2005,8 +2005,8 @@ export function DeskDialog(props: Props) {
                   </Section>
                   </>
                   )}
-                  <Section title="Предметы на листе" hint="Красным — где текст не пишется: ручка, пальцы, всё, что не похоже на бумагу. Кисти слева добавляют красное или возвращают бумагу.">
-                    <p className="small">{cur.maskKey === keyOf(cur) && cur.mask ? `Найдено: ${cur.mask.objects}` : 'Ищу…'}</p>
+                  <Section title="Objects on paper" hint="Red marks areas excluded from handwriting, such as pens, fingers and other objects. Use the brushes to exclude areas or restore paper.">
+                    <p className="small">{cur.maskKey === keyOf(cur) && cur.mask ? `Detected: ${cur.mask.objects}` : 'Detecting…'}</p>
                   </Section>
                 </>
               )}
@@ -2015,12 +2015,12 @@ export function DeskDialog(props: Props) {
                 <>
                   {shownDesk && (cropping || shownDesk.crop) && (
                     <Section
-                      title="Обрезка"
-                      hint="Что из снимка сохранять. Тяните стороны и углы рамки, внутри неё — двигать; Shift держит пропорции. Снимок режется пиксель в пиксель, без пересжатия. У каждого фото своя обрезка."
+                      title="Crop"
+                      hint="Choose the saved image area. Drag frame edges or corners to resize, or drag inside to move. Hold Shift to preserve proportions. Cropping preserves pixel resolution without resampling. Each photo has its own crop."
                       aside={
                         shownDesk.crop && (
-                          <button className="link-btn" onClick={() => patch(shownDesk.id, { crop: null })} title="Сохранять весь снимок">
-                            ↺ весь снимок
+                          <button className="link-btn" onClick={() => patch(shownDesk.id, { crop: null })} title="Save the entire photo">
+                            ↺ entire photo
                           </button>
                         )
                       }
@@ -2037,23 +2037,23 @@ export function DeskDialog(props: Props) {
                               if (a) patch(shownDesk.id, { crop: fitAspect(shownDesk.crop ?? [0, 0, w, h], a, w, h) });
                             }}
                             options={[
-                              ['free', 'свободно'],
-                              ['photo', 'как снимок'],
+                              ['free', 'free'],
+                              ['photo', 'match photo'],
                               [3 / 4, '3:4'],
                               [4 / 3, '4:3'],
                               [1, '1:1'],
-                              ['sheet', 'как лист'],
+                              ['sheet', 'match paper'],
                             ]}
                           />
-                          <label className="slider" title="Сколько стола оставить вокруг листа">
+                          <label className="slider" title="Desk area to keep around the paper">
                             <span>
-                              Отступ от листа <output>{cropRoom} мм</output>
+                              Paper padding <output>{cropRoom} mm</output>
                             </span>
                             <input type="range" min={0} max={20} step={1} value={cropRoom} onChange={(e) => setCropRoom(Number(e.target.value))} />
                           </label>
                           <div className="desk-field">
-                            <button className="btn" onClick={() => patch(shownDesk.id, { crop: cropBySheet(shownDesk, cropRoom, cropShape) })} title="Рамка вокруг листа с отступом; где лист выходит за кадр — по краю кадра">
-                              По листу
+                            <button className="btn" onClick={() => patch(shownDesk.id, { crop: cropBySheet(shownDesk, cropRoom, cropShape) })} title="Frame the page with padding, clipping to the photo boundary where necessary">
+                              Fit to paper
                             </button>
                             <button className="btn primary" onClick={() => setCropping(false)}>
                               Done
@@ -2062,25 +2062,25 @@ export function DeskDialog(props: Props) {
                         </>
                       ) : (
                         <p className="small">
-                          Сохранится {Math.round(shownDesk.crop![2] - shownDesk.crop![0])} × {Math.round(shownDesk.crop![3] - shownDesk.crop![1])} px.{' '}
+                          Saved size: {Math.round(shownDesk.crop![2] - shownDesk.crop![0])} × {Math.round(shownDesk.crop![3] - shownDesk.crop![1])} px.{' '}
                           <button className="link-btn" onClick={() => setCropping(true)}>
-                            Изменить
+                            Edit
                           </button>
                         </p>
                       )}
                     </Section>
                   )}
                   {(pageCount > 1 || desks.length > 1) && (
-                    <Section title="Page документа" hint="Какой лист документа сейчас на фото. Если фото несколько, каждому листу можно дать своё: выберите лист и щёлкните по фото внизу.">
+                    <Section title="Document page" hint="Choose the document page shown in the photo. To assign separate photos, select a page and click a thumbnail below.">
                       {pageCount > 1 && (
                         <div className="desk-pager">
-                          <button className="btn small" disabled={page === 0} onClick={() => setPage(page - 1)} aria-label="Предыдущий лист">
+                          <button className="btn small" disabled={page === 0} onClick={() => setPage(page - 1)} aria-label="Previous page">
                             ‹
                           </button>
                           <span>
-                            {page + 1} из {pageCount}
+                            {page + 1} of {pageCount}
                           </span>
-                          <button className="btn small" disabled={page >= pageCount - 1} onClick={() => setPage(page + 1)} aria-label="Следующий лист">
+                          <button className="btn small" disabled={page >= pageCount - 1} onClick={() => setPage(page + 1)} aria-label="Next page">
                             ›
                           </button>
                         </div>
@@ -2091,38 +2091,38 @@ export function DeskDialog(props: Props) {
                             value={assign}
                             onChange={setAssign}
                             options={[
-                              ['one', 'одно фото на все'],
-                              ['each', 'своё для листа'],
+                              ['one', 'one photo for all pages'],
+                              ['each', 'a photo per page'],
                             ]}
                           />
-                          <p className="muted small">На фото {desks.findIndex((d) => d.id === shownDesk?.id) + 1}: щёлкните по другому внизу, чтобы сменить.</p>
+                          <p className="muted small">Using photo {desks.findIndex((d) => d.id === shownDesk?.id) + 1}: click another thumbnail below to change it.</p>
                         </>
                       )}
                     </Section>
                   )}
                   {!blankId && (!isA4(paperMm) || sheet.paper !== 'plain') && (
-                    <Section title="Text" hint={reflowNote ?? 'Как текст ложится на лист.'}>
+                    <Section title="Text" hint={reflowNote ?? 'How text is placed on the paper.'}>
                       <Pill
                         value={sheet.mode}
                         onChange={(mode) => changeSheet({ mode })}
                         options={[
-                          ['document', 'как в документе', 'Те же строки и те же листы, что в редакторе'],
-                          ['fit', 'заполнить лист', 'Text заново разбит по листу: на него войдёт больше'],
+                          ['document', 'match document', 'Keep the editor’s lines and pages'],
+                          ['fit', 'fill paper', 'Reflow text to fit more on each sheet'],
                         ]}
                       />
                       {layout?.ref && (
                         <>
                           <div className="desk-field">
-                            <span>Строка через, {layout.ref.lines.kind === 'grid' ? 'клеток' : 'линеек'}</span>
-                            <Pill value={sheet.every} onChange={(every) => changeSheet({ every })} options={[null, 1, 2, 3].map((n) => [n, n ?? 'авто'] as [number | null, ReactNode])} />
+                            <span>Line spacing in {layout.ref.lines.kind === 'grid' ? 'grid cells' : 'ruled lines'}</span>
+                            <Pill value={sheet.every} onChange={(every) => changeSheet({ every })} options={[null, 1, 2, 3].map((n) => [n, n ?? 'auto'] as [number | null, ReactNode])} />
                           </div>
-                          <label className="slider" title="Высота строки букв в доле строки тетради: меньше — мельче буквы">
+                          <label className="slider" title="Letter height as a proportion of the ruling interval; smaller values make smaller letters">
                             <span>
-                              Letter size, % строки
+                              Letter size, % of line spacing
                               <output>
                                 {sheet.letters !== null && (
                                   <button className="link-btn" onClick={() => changeSheet({ letters: null })}>
-                                    ↺ авто{' '}
+                                    ↺ auto{' '}
                                   </button>
                                 )}
                                 {Math.round(100 * (sheet.letters ?? lettersNow ?? 1))}
@@ -2140,25 +2140,25 @@ export function DeskDialog(props: Props) {
                         </>
                       )}
                       {layout?.ref?.lines.kind === 'grid' && (
-                        <label className="check" title="Единица чертежа — целое число клеток, оси идут по линиям клетки">
+                        <label className="check" title="Drawing units use whole grid cells, with axes aligned to grid lines">
                           <input type="checkbox" checked={sheet.squares} onChange={(e) => changeSheet({ squares: e.target.checked })} />
-                          Drawings по клеткам
+                          Align drawings to grid
                         </label>
                       )}
                     </Section>
                   )}
                   {shownDesk && (
                     <Section
-                      title="Съёмка"
-                      hint="Как снимок «снят». Когда края листа видны, перспектива и изгиб берутся с самого снимка. Если лист занимает весь кадр, наклон телефона ищется по прямым линиям на снимке (строки и клетки тетради, края стола и других листов, рамки): они сходятся вдали. Если линий нет: при ровном свете — как страница из приложения-сканера (свет выровнен, лист прямой); при неровном на бланке камера досоздаётся. Slant можно поправить ползунками; объектив чуть выгибает линии у краёв, бумага слегка волнится там, где на снимке тени."
+                      title="Camera"
+                      hint="Camera appearance. Visible edges determine perspective and curvature. For full-frame paper, straight photo lines determine camera tilt. Without lines, even lighting uses a flat scan appearance; uneven lighting uses an estimated camera. Adjust tilt with the sliders. Lens distortion and subtle paper curvature follow the photo."
                     >
                       <Pill
                         value={capture.mode}
                         onChange={(mode) => changeCapture({ mode })}
                         options={[
-                          ['auto', 'авто'],
-                          ['photo', 'как снимок'],
-                          ['scan', 'как сканер'],
+                          ['auto', 'auto'],
+                          ['photo', 'match photo'],
+                          ['scan', 'scan appearance'],
                         ]}
                       />
                       {(() => {
@@ -2167,8 +2167,8 @@ export function DeskDialog(props: Props) {
                           return (
                             <p className="muted small">
                               {how === 'scan'
-                                ? 'Как страница сканер-приложения: свет выровнен, лист прямой.'
-                                : 'Как на снимке: перспектива и изгиб листа — с фото.'}
+                                ? 'Scan appearance: even lighting and flat paper.'
+                                : 'Match photo: use the photo’s perspective and paper curvature.'}
                             </p>
                           );
                         const found = sureTilt(shownDesk.tilt) ? shownDesk.tilt : null;
@@ -2177,17 +2177,17 @@ export function DeskDialog(props: Props) {
                           <>
                             <p className="muted small">
                               {shownDesk.handTilt
-                                ? `Page во весь кадр — наклон задан вручную: ${describeTilt(angles)}.`
+                                ? `Full-frame page, manual tilt: ${describeTilt(angles)}.`
                                 : found
-                                  ? `Page во весь кадр — перспектива найдена по линиям на снимке${found.by === 'one' ? ' (по одному направлению)' : ''}: ${describeTilt(angles)}.`
-                                  : `Page во весь кадр, прямых линий на снимке нет — наклон досоздан: ${describeTilt(angles)}.`}{' '}
+                                  ? `Full-frame page, perspective detected from photo lines${found.by === 'one' ? ' (one direction only)' : ''}: ${describeTilt(angles)}.`
+                                  : `Full-frame page without straight reference lines, estimated tilt: ${describeTilt(angles)}.`}{' '}
                               {shownDesk.handTilt ? (
-                                <button className="link-btn" onClick={() => setHandTilt(shownDesk, null)} title="Забыть ручной наклон">
-                                  ↺ {found ? 'как найдено' : 'досоздать'}
+                                <button className="link-btn" onClick={() => setHandTilt(shownDesk, null)} title="Reset manual tilt">
+                                  ↺ {found ? 'use detected values' : 'estimate again'}
                                 </button>
                               ) : (
-                                <button className="link-btn" onClick={() => changeCapture({ seed: capture.seed + 1 })} title={found ? 'Другой объектив и место листа в кадре' : 'Другой наклон телефона и другой объектив'}>
-                                  ↺ другая камера
+                                <button className="link-btn" onClick={() => changeCapture({ seed: capture.seed + 1 })} title={found ? 'Randomize lens and page position' : 'Randomize camera tilt and lens'}>
+                                  ↺ another camera
                                 </button>
                               )}
                             </p>
@@ -2200,99 +2200,99 @@ export function DeskDialog(props: Props) {
                   {blankId && (
                     <Section
                       title="Print"
-                      hint="Бланк печатается на чистый лист с фото, поверх пишет ручка. Альбомный бланк на книжном листе повёрнут, как его кладёт принтер. Принтер не печатает идеально ровно: лёгкий перекос и сдвиг (до 0,3° и 1 мм) делают снимок правдоподобнее."
+                      hint="Print the form onto the blank paper in the photo, then overlay handwriting. Landscape forms rotate on portrait paper as in a real printer. Slight rotation and offset, up to 0.3° and 1 mm, add realistic printer alignment."
                     >
-                      {!blankRow && <p className="muted small">Бланк этого документа не нашёлся: печатать нечего.</p>}
+                      {!blankRow && <p className="muted small">The document’s form image is missing; there is nothing to print.</p>}
                       <Pill
                         value={print.color ? 'color' : 'bw'}
                         onChange={(v) => changePrint({ color: v === 'color' })}
                         options={[
-                          ['bw', 'ч/б принтер', 'Чёрно-белый лазерный: цветное выйдет серым'],
-                          ['color', 'цветной', 'Цвета бланка, как на картинке'],
+                          ['bw', 'monochrome printer', 'Monochrome laser printer: colors print in grayscale'],
+                          ['color', 'color', 'Keep the form image colors'],
                         ]}
                       />
                       {layout && layout.size.w > layout.size.h !== layout.paper.w > layout.paper.h && (
                         <div className="desk-field">
-                          <span>Верх бланка</span>
+                          <span>Form top edge</span>
                           <Pill
                             value={print.turnAuto ? 0 : print.turn}
                             onChange={(turn) => changePrint(turn === 0 ? { turnAuto: true } : { turnAuto: false, turn: turn as 1 | -1 })}
                             options={[
-                              [0, 'авто', 'Так, чтобы бланк на снимке стоял прямо'],
-                              [-1, '← слева', 'Верх бланка у левого края листа'],
-                              [1, 'справа →', 'Верх бланка у правого края листа'],
+                              [0, 'auto', 'Keep the form upright in the photo'],
+                              [-1, '← left', 'Form top at the left paper edge'],
+                              [1, 'right →', 'Form top at the right paper edge'],
                             ]}
                           />
                         </div>
                       )}
                       <div className="desk-field">
-                        <label className="check" title="Лёгкий поворот и сдвиг печати, как у настоящего принтера">
+                        <label className="check" title="Slight rotation and offset, like a real printer">
                           <input type="checkbox" checked={print.skew} onChange={(e) => changePrint({ skew: e.target.checked })} />
-                          Чуть криво, как принтер
+                          Natural printer misalignment
                         </label>
                         {print.skew && (
-                          <button className="link-btn" onClick={() => changePrint({ seed: print.seed + 1 })} title="Другой перекос">
-                            ↺ другой
+                          <button className="link-btn" onClick={() => changePrint({ seed: print.seed + 1 })} title="Randomize misalignment">
+                            ↺ another
                           </button>
                         )}
                       </div>
-                      <LookSlider label="Густота тонера" hint="Меньше — бледнее, как при экономии тонера" min={0.3} max={1.6} step={0.05} value={print.toner} onChange={(v) => changePrint({ toner: v })} />
+                      <LookSlider label="Toner density" hint="Lower values produce lighter printing, like toner-saving mode" min={0.3} max={1.6} step={0.05} value={print.toner} onChange={(v) => changePrint({ toner: v })} />
                       <div className="desk-field">
-                        <span>Принтер</span>
+                        <span>Printer</span>
                         <Pill
                           value={wear.printer}
                           onChange={(printer) => void saveWear({ ...wear, printer })}
                           options={[
-                            ['new', 'new', 'Почти как в файле: чуть серый чёрный, мягкие края'],
-                            ['usual', 'standard', 'Офисный лазерный: полосы по ходу бумаги, неровная плотность, редкие точки тонера'],
-                            ['tired', 'worn', 'Изношенный барабан: заметные светлые полосы, бледный край, грязь, иногда повтор печати ниже'],
+                            ['new', 'new', 'Close to the original: slightly gray blacks and soft edges'],
+                            ['usual', 'standard', 'Office laser printer: feed-direction streaks, uneven density and occasional toner specks'],
+                            ['tired', 'worn', 'Worn drum: pale streaks, faded edges, smudges and occasional ghosting'],
                           ] as [PrinterKind, ReactNode, string][]}
                         />
-                        <button className="link-btn" onClick={() => void saveWear({ ...wear, printerSeed: wear.printerSeed + 1 })} title="Другие полосы, пятна и точки">
-                          ↺ другой принтер
+                        <button className="link-btn" onClick={() => void saveWear({ ...wear, printerSeed: wear.printerSeed + 1 })} title="Randomize streaks, smudges and specks">
+                          ↺ another printer
                         </button>
                       </div>
                     </Section>
                   )}
                   <Section
-                    title="Ручка"
-                    hint="Шариковая, гелевая или карандаш. Цвет можно взять с настоящей ручки: пипетка слева, затем щелчок по слову, написанному ею на этом листе."
+                    title="Pen"
+                    hint="Ballpoint, gel pen or pencil. To sample a real pen color, use the eyedropper and click a word written with that pen on this paper."
                   >
                     <Pill value={look.pen} onChange={(pen) => changeLook({ pen })} options={PENS.map(([k, name]) => [k, name] as [PenKind, ReactNode])} />
                     {look.pen !== 'pencil' && calib && (
                       <div className="desk-calib">
                         <span className="desk-swatch" style={{ background: calibSwatch ?? undefined }} />
                         <span className="small">
-                          Цвет настоящей ручки
+                          Real pen color
                           {calib.mm > 0 && penMm > 0 && (
                             <Hint>
-                              Штрих настоящей ручки {num(calib.mm, 2)} мм, у пера почерка {num(penMm, 2)} мм.
+                              Real pen stroke: {num(calib.mm, 2)} mm; handwriting pen: {num(penMm, 2)} mm.
                             </Hint>
                           )}
                         </span>
                         <button className="link-btn" onClick={() => setCalib(null)}>
-                          сбросить
+                          reset
                         </button>
                       </div>
                     )}
-                    <LookSlider label="Густота чернил" hint="Толщина слоя: меньше — бледнее и прозрачнее" min={0.15} max={1} step={0.01} value={look.density} onChange={(v) => changeLook({ density: v })} />
+                    <LookSlider label="Ink density" hint="Ink layer thickness: lower values are paler and more transparent" min={0.15} max={1} step={0.01} value={look.density} onChange={(v) => changeLook({ density: v })} />
                   </Section>
                   <details className="desk-more">
                     <summary>
-                      Как на снимке
-                      <Hint>Размытость, шум и фактура берутся с самого снимка; трогать их нужно редко.{measureNote ? ` По снимку: ${measureNote}.` : ''}</Hint>
+                      Match photo
+                      <Hint>Blur, noise and texture are measured from the photo and rarely need adjustment.{measureNote ? ` Photo measurements: ${measureNote}.` : ''}</Hint>
                     </summary>
                     <LookSlider
-                      label="Размытость, px"
-                      hint="Как у самого снимка: 0 — идеально резко"
+                      label="Blur, px"
+                      hint="Match photo blur; 0 is perfectly sharp"
                       min={0}
                       max={3}
                       step={0.05}
                       value={blurValue}
                       onChange={(v) => setBlurGain(v / (shownDesk?.measure?.sigma ?? FALLBACK_BLUR))}
                     />
-                    <LookSlider label="Шум, ×" hint="Зерно камеры под чернилами: 1 — как на самом снимке" min={0} max={3} step={0.05} value={look.grain} onChange={(v) => changeLook({ grain: v })} />
-                    <LookSlider label="Фактура бумаги, ×" hint="Насколько волокна бумаги проступают в чернилах" min={0} max={2} step={0.05} value={look.texture} onChange={(v) => changeLook({ texture: v })} />
+                    <LookSlider label="Noise, ×" hint="Camera grain beneath the ink: 1 matches the photo" min={0} max={3} step={0.05} value={look.grain} onChange={(v) => changeLook({ grain: v })} />
+                    <LookSlider label="Paper texture, ×" hint="Visibility of paper fibers through the ink" min={0} max={2} step={0.05} value={look.texture} onChange={(v) => changeLook({ texture: v })} />
                     <button
                       className="link-btn"
                       onClick={() => {
@@ -2300,7 +2300,7 @@ export function DeskDialog(props: Props) {
                         changeLook({ grain: 1, texture: 1 });
                       }}
                     >
-                      ↺ как на снимке
+                      ↺ match photo
                     </button>
                   </details>
                 </>
@@ -2308,17 +2308,17 @@ export function DeskDialog(props: Props) {
             </div>
 
             <footer className="desk-panel-foot">
-              {step === 0 && desks.length > 0 && next(1, 'Дальше: лист')}
-              {step === 1 && next(2, 'Дальше: помехи', !valid)}
-              {step === 2 && next(3, 'Дальше: чернила', !allValid)}
+              {step === 0 && desks.length > 0 && next(1, 'Next: paper')}
+              {step === 1 && next(2, 'Next: occlusions', !valid)}
+              {step === 2 && next(3, 'Next: ink', !allValid)}
               {step === 3 && (
                 <>
                   <button className="btn primary wide" disabled={!inkReady || !!busy} onClick={() => void savePages([page])} title={fileName(page)}>
-                    Сохранить JPG{pageCount > 1 ? ` (лист ${page + 1})` : ''}
+                    Save JPG{pageCount > 1 ? ` (page ${page + 1})` : ''}
                   </button>
                   {pageCount > 1 && (
                     <button className="btn wide" disabled={!inkReady || !!busy} onClick={() => void savePages(Array.from({ length: pageCount }, (_, i) => i))}>
-                      Все листы ({pageCount})
+                      All pages ({pageCount})
                     </button>
                   )}
                 </>
@@ -2365,9 +2365,9 @@ function TiltSliders({ value, onChange }: { value: Angles; onChange: (a: Angles)
   );
   return (
     <>
-      {one('pitch', 'Наклон вверх-вниз', 'Меньше нуля — верх листа дальше от камеры, больше — низ', 25)}
-      {one('yaw', 'Slant вбок', 'Больше нуля — левый край листа дальше от камеры, меньше — правый', 25)}
-      {one('roll', 'Поворот', 'Телефон повёрнут вокруг объектива', 10)}
+      {one('pitch', 'Vertical tilt', 'Negative: top edge farther from camera; positive: bottom edge farther', 25)}
+      {one('yaw', 'Horizontal tilt', 'Positive: left edge farther from camera; negative: right edge farther', 25)}
+      {one('roll', 'Rotation', 'Camera rotation around the lens axis', 10)}
     </>
   );
 }

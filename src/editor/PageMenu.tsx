@@ -97,7 +97,7 @@ export function PageMenu({ setup, blank, onChange, fontSize, onFontSize, onAllNo
   /** Paper of the document's own instead of the blank (its picture is forgotten). */
   const choosePaper = (paper: PaperStyle) => {
     if (setup.blank) {
-      if (!confirm('Убрать бланк? Drawings останутся, а картинку бланка потом придётся открыть заново.')) return;
+      if (!confirm('Remove the form? Drawings will remain, but you will need to reopen the form image to restore it.')) return;
       void db.blanks.delete(setup.blank);
     }
     onChange({ ...setup, paper, blank: null });
@@ -112,7 +112,7 @@ export function PageMenu({ setup, blank, onChange, fontSize, onFontSize, onAllNo
       </summary>
       <div className="menu-items page-menu">
         {!blank && (
-        <label className="font-size-row" title="Размер почерка во всех документах">
+        <label className="font-size-row" title="Handwriting size in all documents">
           <span>
             Letter size <output>{fontSize} px</output>
           </span>
@@ -134,7 +134,7 @@ export function PageMenu({ setup, blank, onChange, fontSize, onFontSize, onAllNo
           ))}
           <label
             className={`icon-btn ${setup.blank ? 'on' : ''}`}
-            title="Бланк: картинка задания (PNG, JPG, WebP) как лист документа — чертежи кладутся поверх неё"
+            title="Use a task image (PNG, JPG or WebP) as the document page, with drawings overlaid"
             aria-label="Import form image"
           >
             {BLANK_ICON}
@@ -156,8 +156,8 @@ export function PageMenu({ setup, blank, onChange, fontSize, onFontSize, onAllNo
               <button
                 key={p.name}
                 className={`icon-btn ${same(p.margins) ? 'on' : ''}`}
-                title={`Поля: ${p.name.toLowerCase()}`}
-                aria-label={`Поля: ${p.name.toLowerCase()}`}
+                title={`Margins: ${p.name.toLowerCase()}`}
+                aria-label={`Margins: ${p.name.toLowerCase()}`}
                 onClick={() => onChange({ ...setup, margins: p.margins })}
               >
                 <PageIcon>
@@ -176,7 +176,7 @@ export function PageMenu({ setup, blank, onChange, fontSize, onFontSize, onAllNo
           {SIDES.map((s) => (
             <label key={s.key}>
               <span>
-                {s.name} <output>{setup.margins[s.key]} мм</output>
+                {s.name} <output>{setup.margins[s.key]} mm</output>
               </span>
               <input
                 type="range"
@@ -193,13 +193,13 @@ export function PageMenu({ setup, blank, onChange, fontSize, onFontSize, onAllNo
         <div className="page-menu-foot">
           {!setup.blank && (
           <>
-          <label className="check inline" title="Розовая линия поля справа, как слева (на листе в линейку и в клетку)">
+          <label className="check inline" title="Show a pink right margin line matching the left margin on ruled and grid paper">
             <input type="checkbox" checked={setup.rightLine} onChange={(e) => onChange({ ...setup, rightLine: e.target.checked })} />
             Right margin line
           </label>
           <label className="check inline">
             <input type="checkbox" checked={setup.showTitle} onChange={(e) => onChange({ ...setup, showTitle: e.target.checked })} />
-            Title на листе
+            Title on page
           </label>
           <div className="numbering-row">
             <label className="check inline">
@@ -208,7 +208,7 @@ export function PageMenu({ setup, blank, onChange, fontSize, onFontSize, onAllNo
             </label>
             {setup.pageNumbers && (
               <label className="first-number" title="First page number">
-                с
+                from
                 <input
                   type="number"
                   min={0}
@@ -227,8 +227,8 @@ export function PageMenu({ setup, blank, onChange, fontSize, onFontSize, onAllNo
                 key={c.color}
                 className={`swatch ${setup.ink === c.color ? 'on' : ''}`}
                 style={{ ['--sw' as string]: c.color }}
-                title={`${c.name} ручка`}
-                aria-label={`${c.name} ручка`}
+                title={`${c.name} pen`}
+                aria-label={`${c.name} pen`}
                 onClick={() => onChange({ ...setup, ink: c.color })}
               />
             ))}
@@ -242,7 +242,7 @@ export function PageMenu({ setup, blank, onChange, fontSize, onFontSize, onAllNo
                 ? { ink: setup.ink }
                 : { paper: setup.paper, margins: setup.margins, ink: setup.ink, showTitle: setup.showTitle, pageNumbers: setup.pageNumbers, rightLine: setup.rightLine }
             }
-            what={setup.blank ? 'цвет чернил' : 'бумага, поля, название, нумерация, чернила'}
+            what={setup.blank ? 'ink color' : 'paper, margins, title, numbering and ink'}
           />
         </div>
       </div>
@@ -257,7 +257,7 @@ function BlankSettings({ blank, onPatch, onAllNotes }: { blank: Blank; onPatch: 
   return (
     <div className="blank-settings">
       <div className="blank-name" title={blank.name}>
-        Бланк: <strong>{blank.name}</strong>
+        Form: <strong>{blank.name}</strong>
       </div>
       <div className="blank-row">
         <span>Paper</span>
@@ -283,36 +283,36 @@ function BlankSettings({ blank, onPatch, onAllNotes }: { blank: Blank; onPatch: 
           <button
             className={blank.print === 'fit' ? 'on' : ''}
             onClick={() => onPatch({ print: 'fit' })}
-            title="Как печатает принтер «по размеру страницы»: при печати и «На столе» вся страница — бланк, чертежи, надписи — уменьшается вместе, у края остаётся полоска около 4 мм"
+            title="Fit to page: shrink the entire page, including form, drawings and annotations, leaving a margin of about 4 mm in print and desk photos"
           >
-            по листу · {fit} %
+            fit to page · {fit} %
           </button>
           <button
             className={blank.print === 'actual' ? 'on' : ''}
             onClick={() => onPatch({ print: 'actual' })}
-            title="Без уменьшения: края бланка могут не пропечататься"
+            title="Actual size: the printer may clip the form edges"
           >
             100 %
           </button>
         </div>
       </div>
-      <label className="font-size-row" title="Высота заглавных букв почерка на этом бланке: подписи чертежей и новые надписи">
+      <label className="font-size-row" title="Uppercase letter height on this form, used for drawing labels and new annotations">
         <span>
-          Буквы на бланке <output>{String(letters).replace('.', ',')} мм</output>
+          Form letter size <output>{String(letters)} mm</output>
         </span>
         <input type="range" min={2} max={6} step={0.1} value={letters} onChange={(e) => onPatch({ letters: Number(e.target.value) })} />
       </label>
       <div className="blank-row">
-        <button className="link-btn" onClick={() => void printLetters(blank).then((v) => onPatch({ letters: v }))} title="Как печатный текст бланка, чуть крупнее">
-          ↺ по бланку
+        <button className="link-btn" onClick={() => void printLetters(blank).then((v) => onPatch({ letters: v }))} title="Match the printed form text, slightly enlarged">
+          ↺ match form
         </button>
         {onAllNotes && (
-          <button className="link-btn" onClick={() => onAllNotes(letters)} title="Сделать все надписи документа этого размера">
-            все надписи — {String(letters).replace('.', ',')} мм
+          <button className="link-btn" onClick={() => onAllNotes(letters)} title="Apply this size to all annotations in the document">
+            all annotations — {String(letters)} mm
           </button>
         )}
       </div>
-      <p className="muted small">Чертежи кладите поверх бланка («⇱ Поверх»): их место — на листе бумаги, в миллиметрах.</p>
+      <p className="muted small">Place drawings over the form using ⇱ Overlay. Their positions are measured in millimeters on the paper.</p>
     </div>
   );
 }

@@ -41,6 +41,8 @@ function pointDemo(sign: string): string {
 }
 
 /** How far a group is: a thin bar that fills when every sign has three variants. */
+const ENGLISH_REQUIRED = [...'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?;:\'"()-_/@#$%&*+=\\[]{}<>'];
+
 function GroupProgress({ chars, counts }: { chars: string[]; counts: (ch: string) => number }) {
   const got = chars.map((ch) => Math.min(counts(ch), TARGET_VARIANTS));
   const done = got.filter((n) => n >= TARGET_VARIANTS).length;
@@ -49,7 +51,7 @@ function GroupProgress({ chars, counts }: { chars: string[]; counts: (ch: string
   return (
     <div
       className="group-progress"
-      title={missing.length ? `Ещё нужны: ${missing.slice(0, 40).join(' ')}${missing.length > 40 ? ' …' : ''}` : `У каждой — минимум ${TARGET_VARIANTS} варианта`}
+      title={missing.length ? `Still needed: ${missing.slice(0, 40).join(' ')}${missing.length > 40 ? ' …' : ''}` : `Each has at least ${TARGET_VARIANTS} samples`}
     >
       <div className="group-progress-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent}>
         <div className={`progress-fill ${percent === 100 ? 'full' : ''}`} style={{ width: `${percent}%` }} />
@@ -64,15 +66,16 @@ function GroupProgress({ chars, counts }: { chars: string[]; counts: (ch: string
 export function Studio() {
   const { byChar, style, derived, learned } = useHandwriting();
   const [mode, setMode] = useState<Mode>('letters');
-  const [current, setCurrent] = useState('а');
-  const [shelf, setShelf] = useState<Shelf>('cyr-lower');
+  const [current, setCurrent] = useState('a');
+  const [shelf, setShelf] = useState<Shelf>('lat-lower');
   const [phrase, setPhrase] = useState(PANGRAM);
   const [newPair, setNewPair] = useState('');
 
   // Remember the open letter and mode; don't write before the saved ones have been read.
   const [restored, setRestored] = useState(false);
   useEffect(() => {
-    void Promise.all([getSetting('studio.char', 'а'), getSetting<Mode>('studio.mode', 'letters')]).then(([ch, m]) => {
+    void Promise.all([getSetting<string>('studio.char', 'a'), getSetting<Mode>('studio.mode', 'letters')]).then(([savedChar, m]) => {
+      const ch = [...savedChar].length === 1 && ENGLISH_REQUIRED.includes(savedChar) ? savedChar : 'a';
       setCurrent(ch);
       setShelf(shelfOf(ch));
       setMode(m);
@@ -89,8 +92,8 @@ export function Studio() {
   // The groups of every shelf: the suggested pairs plus any the user recorded, and the extra signs.
   const groups = useMemo<CharGroup[]>(() => {
     const ownPairs = [...byChar.keys()].filter((k) => isPair(k) && !SUGGESTED_PAIRS.includes(k));
-    const latinPairs = ownPairs.filter((p) => pairShelf(p) === 'lat-lower');
-    const list = CHAR_GROUPS.map((g) => (g.id === 'pairs' ? { ...g, chars: [...g.chars, ...ownPairs.filter((p) => !latinPairs.includes(p))] } : g));
+    const latinPairs = [...SUGGESTED_PAIRS, ...ownPairs.filter((p) => pairShelf(p) === 'lat-lower')];
+    const list = CHAR_GROUPS.map((g) => g.id === 'pairs' ? { ...g, chars: ownPairs.filter((p) => pairShelf(p) !== 'lat-lower') } : g);
     if (latinPairs.length) list.splice(list.findIndex((g) => g.id === 'lat-lower') + 1, 0, { id: 'lat-pairs', title: 'Letter pairs', chars: latinPairs, shelf: 'lat-lower' });
     list.push({ id: 'extra', title: 'More symbols', chars: extraSigns(byChar.keys()), shelf: 'sym' });
     return list;
@@ -166,7 +169,7 @@ export function Studio() {
             {shown.map((g) => (
               <section key={g.id}>
                 <h4>{g.title}</h4>
-                <GroupProgress chars={g.chars} counts={(ch) => byChar.get(ch)?.length ?? 0} />
+                {['lat-lower', 'lat-upper', 'digits', 'punct'].includes(g.id) ? null : <GroupProgress chars={g.chars} counts={(ch) => byChar.get(ch)?.length ?? 0} />}
                 <div className={`char-grid ${g.id.endsWith('pairs') ? 'pairs' : ''}`}>
                   {g.chars.map((ch) => {
                     const n = byChar.get(ch)?.length ?? 0;
@@ -178,10 +181,10 @@ export function Studio() {
                           n === 0 ? (auto ? 'auto' : 'none') : n < 3 ? 'few' : 'ok'
                         }`}
                         onClick={() => open(ch)}
-                        title={auto ? `${ch}: собрана автоматически из «${derived.get(ch)}»` : `${ch}: вариантов ${n}`}
+                        title={auto ? `${ch}: automatically derived from «${derived.get(ch)}»` : `${ch}: samples ${n}`}
                       >
                         <span>{ch}</span>
-                        {n > 0 ? <small>{n}</small> : auto && <small className="auto-mark">авто</small>}
+                        {n > 0 ? <small>{n}</small> : auto && <small className="auto-mark">auto</small>}
                       </button>
                     );
                   })}
@@ -214,9 +217,9 @@ export function Studio() {
               {lower.toUpperCase()}
             </button>
           </div>
-          <div className="pill float" role="group" aria-label="Алфавит">
+          <div className="pill float" role="group" aria-label="Alphabet">
             <button className={script === 'cyr' ? 'on' : ''} onClick={() => pickShelf(upper ? 'cyr-upper' : 'cyr-lower')} title="Cyrillic">
-              Кир
+              Cyr
             </button>
             <button className={script === 'lat' ? 'on' : ''} onClick={() => pickShelf(upper ? 'lat-upper' : 'lat-lower')} title="Latin">
               Lat
@@ -228,6 +231,10 @@ export function Studio() {
               ○
             </button>
           </div>
+        </div>
+        <div className="english-progress" aria-label="English character completion">
+          <span>English character progress</span>
+          <GroupProgress chars={ENGLISH_REQUIRED} counts={(ch) => byChar.get(ch)?.length ?? 0} />
         </div>
       </aside>
 
@@ -252,8 +259,8 @@ export function Studio() {
                   · {variants.length}
                 </span>
                 {(learned[current] ?? 0) > 0 && (
-                  <span className="muted small" title="Направлений изменчивости вашего письма, которые выучила модель: новые варианты берутся из этого разброса">
-                    модель: {learned[current]}
+                  <span className="muted small" title="Variation dimensions learned from your handwriting; new samples are generated within this range">
+                    model: {learned[current]}
                   </span>
                 )}
               </div>
@@ -289,7 +296,7 @@ export function Studio() {
                 ))}
                 {variants.length === 0 && derivedFrom && (
                   <p className="muted small">
-                    Сейчас собрана автоматически {derivedFrom === 'перо' ? '(вашим пером)' : `из «${derivedFrom}»`}. Своя заменит её.
+                    Currently generated automatically {derivedFrom === 'перо' ? '(using your pen)' : `from “${derivedFrom}»`}. Your own sample will replace it.
                   </p>
                 )}
               </div>
@@ -299,8 +306,8 @@ export function Studio() {
               <section className="variants">
                 <h3>Drawing preview</h3>
                 <p className="muted small">
-                  Рисуйте вокруг перекрестия — это само место точки. Размер как на бумаге рядом с буквами, пунктир — standard размер. Каждая точка чертежа берёт один из вариантов, пока их нет — рисует
-                  программа.
+                  Draw around the crosshair, which marks the point location. The preview shows the actual size beside letters; the dashed outline shows the standard size. Each drawing point uses one of your samples. Until you add a sample, it is drawn by the
+                  application.
                 </p>
                 <div className="point-demo">
                   <SketchFigure code={pointDemo(current)} fontSize={26} />
@@ -308,7 +315,7 @@ export function Studio() {
               </section>
             ) : (
               <section className="variants">
-                <h3>Так движок пишет {isPair(current) ? 'эту пару' : 'эту букву'}</h3>
+                <h3>Handwriting preview for {isPair(current) ? 'this pair' : 'this letter'}</h3>
                 <SynthPreview char={current} />
               </section>
             )}

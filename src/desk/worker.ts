@@ -22,7 +22,7 @@ export type AnalysisOp =
 /** Why the analysis could not be loaded, if so: told to every call instead of leaving it waiting. */
 const ready: Promise<string | null> = init().then(
   () => null,
-  (err) => `Разбор фото не загрузился: ${String(err)}`,
+  (err) => `Photo analysis failed to load: ${String(err)}`,
 );
 let desk: Desk | null = null;
 
@@ -43,7 +43,7 @@ self.onmessage = async (e: MessageEvent<{ id: number; req: AnalysisOp }>) => {
       desk?.free();
       desk = new Desk(req.rgba, req.width, req.height);
     } else {
-      if (!desk) throw new Error('фото ещё не загружено');
+      if (!desk) throw new Error('Photo is not loaded yet');
       switch (req.op) {
         case 'findSheet':
           result = JSON.parse(desk.findSheet());

@@ -13,9 +13,9 @@ export interface SketchExample {
 
 export const EXAMPLES: SketchExample[] = [
   {
-    title: 'Графики функций',
-    task: 'графики синуса и косинуса от −2π до 2π, подписать оба',
-    code: `Title("Графики функций")
+    title: "Function graphs",
+    task: "Plot sine and cosine from −2π to 2π and label both",
+    code: `Title("Function graphs")
 ZoomIn(-2pi, -1.5, 2pi, 1.5)
 f(x) = sin(x)
 g(x) = cos(x)
@@ -24,8 +24,8 @@ SetCaption(f, "y = sin x")
 SetCaption(g, "y = cos x")`,
   },
   {
-    title: 'Треугольник с высотой',
-    task: 'треугольник ABC, высота CH пунктиром, прямой угол при H отмечен',
+    title: "Triangle with altitude",
+    task: "Triangle ABC with a dashed altitude CH and a right-angle marker at H",
     code: `A = (0, 0)
 B = (6, 0)
 C = (2, 4)
@@ -36,8 +36,8 @@ SetLineStyle(h, 1)
 Angle(B, H, C)`,
   },
   {
-    title: 'Точки пересечения',
-    task: 'парабола y = x² − 2, прямая y = x и точки их пересечения A и B',
+    title: "Intersection points",
+    task: "Parabola y = x² − 2, line y = x, and their intersections A and B",
     code: `f(x) = x^2 - 2
 g(x) = x
 SetCaption(f, "y = x^2 - 2")
@@ -46,8 +46,8 @@ A = Intersect(f, g, 1)
 B = Intersect(f, g, 2)`,
   },
   {
-    title: 'Выколотая точка',
-    task: 'график y = (x² − 1)/(x − 1): прямая с выколотой точкой при x = 1',
+    title: "Open point",
+    task: "Graph y = (x² − 1)/(x − 1), with an open point at x = 1",
     code: `f(x) = (x^2 - 1) / (x - 1)
 SetCaption(f, "y = (x^2 - 1)/(x - 1)")
 A = (1, 2)
@@ -55,8 +55,8 @@ SetPointStyle(A, 2)
 SetCaption(A, "")`,
   },
   {
-    title: 'Площадь между графиками',
-    task: 'заштриховать фигуру между параболой y = x² и прямой y = x + 2',
+    title: "Area between graphs",
+    task: "Hatch the region between parabola y = x² and line y = x + 2",
     code: `f(x) = x^2
 g(x) = x + 2
 SetCaption(f, "y = x^2")
@@ -66,17 +66,17 @@ B = Intersect(f, g, 2)
 Hatch(f, g, x(A), x(B))`,
   },
   {
-    title: 'Эпюр плоскости',
-    task: 'эпюр плоскости, заданной треугольником ABC: A(2, 1, 3), B(5, 3, 1), C(1, 4, 4)',
-    code: `Title("Плоскость ABC")
+    title: "Plane projections",
+    task: "Monge projection of plane ABC: A(2, 1, 3), B(5, 3, 1), C(1, 4, 4)",
+    code: `Title("Plane ABC")
 A = (2, 1, 3)
 B = (5, 3, 1)
 C = (1, 4, 4)
 Polygon(A, B, C)`,
   },
   {
-    title: 'Эпюр отрезка в трёх проекциях',
-    task: 'отрезок AB в трёх проекциях и его середина M: A(6, 2, 4), B(2, 4, 1)',
+    title: "Three views of a segment",
+    task: "Segment AB in three projections and its midpoint M: A(6, 2, 4), B(2, 4, 1)",
     code: `Projections(1, 2, 3)
 A = (6, 2, 4)
 B = (2, 4, 1)
@@ -87,44 +87,44 @@ M = Midpoint(A, B)`,
 
 /** How marks are drawn: open points, hatching, dashed lines — for drawings and blanks alike. */
 export const MARK_RULES = [
-  'Выколотые точки (разрыв графика, конец промежутка, который в него не входит) — SetPointStyle(A, 2): незакрашенный кружок, линии через него не проходят. Закрашенные точки — без настроек.',
-  'Заштрихованные области — сечения, грани, площади, области неравенств — только командой Hatch: Hatch(t) для многоугольника или окружности t, Hatch(f, a, b) — между графиком и осью x, Hatch(f, g, a, b) — между графиками. Не рисуй штриховку отрезками.',
-  'Граница полуплоскости, «земля», заделка — HatchedLine(l, P): короткие косые штрихи вдоль l с той стороны, где точка P.',
-  'Невидимый контур — штриховая линия SetLineStyle(…, 1), оси и линии симметрии — штрихпунктир SetLineStyle(…, 4).',
-  'Следы карандаша и ластика, проколы циркуля приложение добавит само — не рисуй их.',
+  "Use SetPointStyle(A, 2) for excluded points, graph discontinuities and open interval endpoints. This draws an open circle which lines do not cross. Filled points need no settings.",
+  "Use Hatch for sections, faces, areas and inequalities: Hatch(t) for polygon or circle t, Hatch(f, a, b) between a graph and the x-axis, and Hatch(f, g, a, b) between graphs. Do not draw hatching with individual segments.",
+  "Use HatchedLine(l, P) for a half-plane boundary, ground or fixed support: short diagonal marks along l on the side containing P.",
+  "Use SetLineStyle(…, 1) for hidden outlines and SetLineStyle(…, 4) for axes and symmetry lines.",
+  "The application adds pencil smudges, eraser marks and compass punctures automatically. Do not draw them.",
 ];
 
 export const RULES = [
-  'Ответь одним блоком кода: команды, по одной на строке. Никаких пояснений ни до, ни после блока.',
-  'Пиши только команды из списка ниже, с английскими именами, как в GeoGebra. Никакого HTML, SVG, TikZ, Python и команд, которых нет в списке.',
-  'Сначала задай точки и функции, потом то, что из них строится: имя можно использовать только ниже строки, где оно задано. Каждое имя задаётся один раз.',
-  'Точки называй заглавными латинскими буквами, при необходимости с индексом или штрихом: A, B, A_1, A_2, A\'. Прямые, отрезки и функции — строчными: a, s, f, g. Имена x и y заняты под оси.',
-  'Дробные числа — через точку: 2.5. Углы в градусах — со знаком °: 30°. Число π — pi. Знак умножения можно не писать: 2x.',
-  'Не задавай цвет, толщину, стиль линий и окно (ZoomIn), если об этом не просят и без этого можно обойтись: приложение само оформит чертёж и подберёт окно. Исключения: невидимые и вспомогательные линии — SetLineStyle(…, 1); линии связи и построения — SetLineThickness(…, 2); несколько графиков на одном чертеже — разные SetColor и SetCaption, чтобы их различать.',
-  'Вспомогательные построения, которые не нужно рисовать, вкладывай прямо в команду — Intersect(PerpendicularLine(C, a), a) — или прячь через Hide(…).',
-  'Точки подписываются своими именами сами. SetCaption — только если нужна другая подпись. Подписи и тексты — по-русски, в кавычках; индексы и степени в них: "A_1", "x^2".',
-  'Задачи в пространстве (начертательная геометрия, эпюр) задавай точками с тремя координатами — A = (x, y, z) — и строй из них Segment, Line, Ray, Polygon, Midpoint. Приложение само нарисует эпюр Монжа: проекции A₁ и A₂, линии связи и ось x₁₂. Не вычисляй проекции сам (никаких A1 = (x, y, 0) или A_2 = (x, z)), не рисуй ось и линии связи. Называй точки пространства без индексов проекций — A, B, C: индексы 1, 2, 3 приложение добавит само. Профильная проекция — Projections(1, 2, 3).',
-  'Команд GeoGebra 3D для плоскостей и тел (Plane, Sphere, Prism, Pyramid…) нет: плоскость задавай треугольником Polygon(A, B, C).',
+  "Reply with one code block containing one command per line. Do not add explanations before or after it.",
+  "Use only commands from the list below, with English GeoGebra-style names. Do not output HTML, SVG, TikZ, Python or unsupported commands.",
+  "Define points and functions before objects built from them. Define each name once and before its first use.",
+  "Name points with uppercase Latin letters, optionally with subscripts or primes: A, B, A_1, A_2, A′. Use lowercase names for lines, segments and functions: a, s, f, g. Names x and y are reserved for axes.",
+  "Use decimal points: 2.5. Append ° for degrees: 30°. Use pi for π. Multiplication signs are optional: 2x.",
+  "Let the application choose color, width, line style and view unless requested otherwise. Exceptions: hidden or auxiliary lines use SetLineStyle(…, 1); projection and construction lines use SetLineThickness(…, 2); distinguish multiple graphs with SetColor and SetCaption.",
+  "Nest hidden auxiliary constructions directly, such as Intersect(PerpendicularLine(C, a), a), or hide them with Hide(…).",
+  "Points are labeled automatically. Use SetCaption only for a different label. Write labels and text in English, in quotes. Use A_1 for subscripts and x^2 for superscripts.",
+  "For spatial or descriptive geometry, define points with three coordinates, A = (x, y, z), and construct Segment, Line, Ray, Polygon and Midpoint from them. The application draws Monge projections A₁ and A₂, links and the x₁₂ axis automatically. Do not calculate projections or draw axes and links yourself. Use spatial names without projection subscripts, such as A, B and C; the application adds 1, 2 and 3. Use Projections(1, 2, 3) for a profile view.",
+  "GeoGebra 3D plane and solid commands (Plane, Sphere, Prism, Pyramid…) are unavailable. Represent a plane with triangle Polygon(A, B, C).",
   ...MARK_RULES,
-  'Комментарии, если нужны, — после знака #.',
+  "Start optional comments with #.",
 ];
 
 /** Plain-text instructions for a chat with a neural net, optionally with the task. */
 export function sketchPrompt(task = ''): string {
   const out: string[] = [];
   out.push(
-    'Ты рисуешь чертежи и графики для приложения InkForge. Приложение само рисует их от руки, почерком пользователя. ' +
-      'Поэтому от тебя нужен только список команд в стиле GeoGebra — что нарисовать, а не как.',
+    "You create drawings and graphs for InkForge. The application renders them in the user’s handwriting. " +
+      "Provide GeoGebra-style commands describing what to draw; the application handles the rendering.",
     '',
-    'ПРАВИЛА ОТВЕТА',
+    "RESPONSE RULES",
     ...RULES.map((r, i) => `${i + 1}. ${r}`),
     '',
-    'ЗАПИСЬ',
-    'A = (2, 3) — точка; f(x) = x^2 - 1 или y = 2x + 1 — график; x = 3 — вертикальная прямая; r = 2 — число;',
-    's = Segment(A, B) — объект с именем s, к нему можно обращаться дальше; Segment(A, B) — без имени;',
-    'A = (x, y, z) — точка в пространстве: чертёж становится эпюром (x — вдоль оси x₁₂, y — к наблюдателю, z — вверх).',
+    "SYNTAX",
+    "A = (2, 3): point; f(x) = x^2 - 1 or y = 2x + 1: graph; x = 3: vertical line; r = 2: number;",
+    "s = Segment(A, B): named object available to later commands; Segment(A, B): unnamed object;",
+    "A = (x, y, z): spatial point. The drawing becomes a Monge projection: x along x₁₂, y toward the viewer, z upward.",
     '',
-    'КОМАНДЫ',
+    "COMMANDS",
   );
   for (const group of GROUPS) {
     out.push(`# ${group.name}`);
@@ -133,10 +133,10 @@ export function sketchPrompt(task = ''): string {
       out.push(`${cmd.forms.map((f) => f.replace('@', name)).join(' | ')} — ${cmd.doc.replace(/@/g, name)}`);
     }
   }
-  out.push('', 'ЧИСЛА И ФОРМУЛЫ');
+  out.push('', "NUMBERS AND FORMULAS");
   for (const f of FORMULA_HELP) out.push(`${f.code} — ${f.doc}`);
-  out.push('', 'ПРИМЕРЫ');
-  for (const ex of EXAMPLES) out.push('', `Задача: ${ex.task}`, '```', ex.code, '```');
-  out.push('', 'ЗАДАЧА', task.trim() || '(опишите здесь, что нарисовать)');
+  out.push('', "EXAMPLES");
+  for (const ex of EXAMPLES) out.push('', `Task: ${ex.task}`, '```', ex.code, '```');
+  out.push('', "TASK", task.trim() || "(describe what to draw here)");
   return out.join('\n');
 }

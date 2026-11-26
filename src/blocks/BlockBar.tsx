@@ -9,7 +9,7 @@ import type { Side } from './drag';
 /** The selected block's actions, in the pill at the bottom of the window. */
 export function BlockBar({ children }: { children: ReactNode }) {
   return createPortal(
-    <div className="block-bar float no-print" role="toolbar" aria-label="Действия с блоком">
+    <div className="block-bar float no-print" role="toolbar" aria-label="Block actions">
       {children}
     </div>,
     document.body,
@@ -28,20 +28,20 @@ export function BlockShield({ onSelect }: { onSelect: () => void }) {
         e.stopPropagation();
         onSelect();
       }}
-      title="Щёлкните, чтобы выбрать блок"
+      title="Click to select the block"
     />
   );
 }
 
 const SIDE_NAMES: Record<Side, string> = {
-  n: 'верхний край',
-  s: 'нижний край',
-  e: 'правый край',
-  w: 'левый край',
-  ne: 'правый верхний угол',
-  nw: 'левый верхний угол',
-  se: 'правый нижний угол',
-  sw: 'левый нижний угол',
+  n: 'top edge',
+  s: 'bottom edge',
+  e: 'right edge',
+  w: 'left edge',
+  ne: 'top-right corner',
+  nw: 'top-left corner',
+  se: 'bottom-right corner',
+  sw: 'bottom-left corner',
 };
 
 /**
@@ -59,14 +59,14 @@ export function BlockHandles({ onMove, onStretch, sides = [] }: { onMove?: (e: R
             className={`block-edge ${side}`}
             contentEditable={false}
             onPointerDown={(e) => e.button === 0 && onStretch(e, side)}
-            title={`Растянуть за ${SIDE_NAMES[side]}`}
+            title={`Resize using the ${SIDE_NAMES[side]}`}
           />
         ))}
       <span
         className="block-move"
         contentEditable={false}
         {...(onMove ? { onPointerDown: (e: React.PointerEvent) => e.button === 0 && onMove(e) } : { 'data-drag-handle': '', draggable: true })}
-        title={onMove ? 'Перетащить по листу (или стрелками, с Shift — быстрее)' : 'Перетащить в другое место текста'}
+        title={onMove ? 'Drag on the page, or use arrow keys; hold Shift to move faster' : 'Drag to another position in the text'}
       >
         ✥
       </span>

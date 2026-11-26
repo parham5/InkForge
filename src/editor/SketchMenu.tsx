@@ -49,8 +49,8 @@ export function SketchMenu({ editor, ink, setup, onChange }: Props) {
             editor?.chain().focus().convertSketchFences().run();
           }}
         >
-          <strong>Найти чертежи в тексте{fences > 0 ? ` (${fences})` : ''}</strong>
-          <span className="muted small">команды между ``` или ёёё</span>
+          <strong>Find drawings in text{fences > 0 ? ` (${fences})` : ''}</strong>
+          <span className="muted small">commands between ``` or ёёё</span>
         </button>
         <button
           onClick={(e) => {
@@ -58,12 +58,12 @@ export function SketchMenu({ editor, ink, setup, onChange }: Props) {
             openHelp('sketch');
           }}
         >
-          <strong>Команды и запрос для нейронки</strong>
+          <strong>Commands and AI prompt</strong>
         </button>
         <div className="sketch-menu-pen">
-          <span className="menu-label">Линии чертежей</span>
+          <span className="menu-label">Drawing lines</span>
           <DrawPenPicker value={setup.drawPen} textInk={setup.ink} onChange={(drawPen) => onChange({ ...setup, drawPen })} />
-          <DefaultsRow part={{ drawPen: setup.drawPen }} what="линии и точки чертежей" />
+          <DefaultsRow part={{ drawPen: setup.drawPen }} what="drawing lines and markers" />
         </div>
       </div>
     </details>

@@ -4,6 +4,7 @@ public/vendor/
 crates/*/pkg/
 validation-hand.ttf
 target/
+test-results/
 *.log
 .DS_Store
 .env

@@ -18,7 +18,7 @@ export function AskDialog({ blank, onClose }: { blank: Blank; onClose: () => voi
   const [areas, setAreas] = useState<Area[]>([]);
   const [picture, setPicture] = useState<{ blob: Blob; url: string } | null>(null);
   const [ask, setAsk] = useState<AskChoice>(DEFAULT_ASK);
-  const [busy, setBusy] = useState<string | null>('Ищу точки на бланке…');
+  const [busy, setBusy] = useState<string | null>('Detecting points on form…');
   const [note, setNote] = useState<string | null>(null);
   const sheet = blankSheet(blank);
   const marksRef = useRef<BlankMark[] | null>(null);
@@ -29,7 +29,7 @@ export function AskDialog({ blank, onClose }: { blank: Blank; onClose: () => voi
     void (async () => {
       setAreas(await freeAreas(blank));
       setMarks(await marksOf(blank, (m) => void db.blanks.update(blank.id, { marks: m })));
-    })().catch((err) => setNote(`Не удалось разметить бланк: ${String(err)}`));
+    })().catch((err) => setNote(`Could not annotate form: ${String(err)}`));
     const esc = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', esc);
     return () => window.removeEventListener('keydown', esc);
@@ -49,7 +49,7 @@ export function AskDialog({ blank, onClose }: { blank: Blank; onClose: () => voi
   useEffect(() => {
     if (!marks) return;
     let alive = true;
-    setBusy('Рисую разметку…');
+    setBusy('Drawing annotations…');
     void markedPicture(blank, marks, areas)
       .then((blob) => {
         if (!alive) return;
@@ -88,42 +88,42 @@ export function AskDialog({ blank, onClose }: { blank: Blank; onClose: () => voi
     });
     if (near >= 0) {
       keep(list.filter((_, i) => i !== near));
-      setNote(`Метка @${near + 1} убрана. Номера после неё сдвинулись.`);
+      setNote(`Marker @${near + 1} removed. Later markers have been renumbered.`);
       return;
     }
     const snap = await snapper(blank);
     const p = e.altKey ? { x: at.x * MM, y: at.y * MM, kind: 'free' as const } : snap(at.x * MM, at.y * MM, sheet);
     keep([...list, markAt(blank, { x: p.x / MM, y: p.y / MM }, p.kind, sheet)]);
-    setNote('Метка добавлена. Номера идут по строкам сверху вниз, слева направо.');
+    setNote('Marker added. Markers are numbered by row, top to bottom and left to right.');
   };
 
   const findAgain = async () => {
-    setBusy('Ищу точки на бланке…');
+    setBusy('Detecting points on form…');
     keep(await findMarks(blank));
-    setNote('Точки найдены заново.');
+    setNote('Points detected again.');
   };
 
   const copyPicture = async () => {
     if (!picture) return;
     try {
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': picture.blob })]);
-      setNote('Картинка скопирована: вставьте её в чат (Ctrl+V), потом скопируйте запрос.');
+      setNote('Image copied. Paste it into your chat with Ctrl+V, then copy the prompt.');
     } catch {
-      await saveFile(picture.blob, `${blank.name} — для нейронки.png`);
-      setNote('Скопировать картинку не дали — она сохранена файлом: перетащите его в чат.');
+      await saveFile(picture.blob, `${blank.name} — for AI.png`);
+      setNote('Clipboard access was unavailable. The image was saved as a file; drag it into your chat.');
     }
   };
   const copyPrompt = async () => {
     if (!marks) return;
     const ok = await copyText(blankPrompt(blank, marks, areas, ask));
-    setNote(ok ? 'Запрос скопирован: вставьте его в чат после картинки и отправьте.' : 'Не удалось скопировать запрос.');
+    setNote(ok ? 'Prompt copied. Paste it into your chat after the image, then send it.' : 'Could not copy prompt.');
   };
 
   return (
     <div className="sketch-help-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className="sketch-help ask-dialog" role="dialog" aria-modal="true" aria-label="Ask AI">
         <header className="ask-head">
-          <h3>Заполнить бланк с нейронкой</h3>
+          <h3>Fill a form with AI</h3>
           <button className="rail-btn" onClick={onClose} aria-label="Close" title="Close (Esc)">
             ✕
           </button>
@@ -131,7 +131,7 @@ export function AskDialog({ blank, onClose }: { blank: Blank; onClose: () => voi
         <div className="ask-body">
           <div className="ask-picture">
             {picture ? (
-              <img src={picture.url} alt="Бланк с разметкой для нейронки" onClick={(e) => void clickPicture(e)} title="Щелчок по метке убирает её, по точке бланка — добавляет (Alt — точно где щёлкнули)" />
+              <img src={picture.url} alt="Form annotated for AI" onClick={(e) => void clickPicture(e)} title="Click a marker to remove it, or a form point to add one. Hold Alt to use the exact click position" />
             ) : (
               <p className="muted">{busy}</p>
             )}
@@ -140,42 +140,42 @@ export function AskDialog({ blank, onClose }: { blank: Blank; onClose: () => voi
             <ol className="ask-steps">
               <li>
                 <button className="btn primary" disabled={!picture} onClick={() => void copyPicture()}>
-                  Копировать картинку
+                  Copy image
                 </button>
-                <span className="muted small">и вставить в чат с нейронкой</span>
+                <span className="muted small">then paste into an AI chat</span>
               </li>
               <li>
                 <button className="btn primary" disabled={!marks} onClick={() => void copyPrompt()}>
-                  Копировать запрос
+                  Copy prompt
                 </button>
-                <span className="muted small">вставить туда же и отправить</span>
+                <span className="muted small">paste into the same chat and send</span>
               </li>
               <li>
                 <span className="small">
-                  Ответ скопировать кнопкой «Копировать» у блока кода и нажать <kbd>Ctrl+V</kbd> в документе: задания лягут на бланк.
+                  Use the code block’s Copy button, then press <kbd>Ctrl+V</kbd> in the document to place the tasks on the form.
                 </span>
               </li>
             </ol>
             <label className="ask-field">
-              <span>Вариант</span>
+              <span>Variant</span>
               <input value={ask.variant} onChange={(e) => changeAsk({ variant: e.target.value })} placeholder="7" />
             </label>
             <label className="ask-field">
-              <span>Подпись</span>
-              <input value={ask.name} onChange={(e) => changeAsk({ name: e.target.value })} placeholder="Прізвище І. П." />
+              <span>Signature</span>
+              <input value={ask.name} onChange={(e) => changeAsk({ name: e.target.value })} placeholder="Name and initials" />
             </label>
             <label className="ask-field">
-              <span>Задания</span>
-              <input value={ask.tasks} onChange={(e) => changeAsk({ tasks: e.target.value })} placeholder="все (или: 3, 4а)" />
+              <span>Tasks</span>
+              <input value={ask.tasks} onChange={(e) => changeAsk({ tasks: e.target.value })} placeholder="all (or: 3, 4a)" />
             </label>
             <label className="ask-field column">
-              <span>Пожелания</span>
-              <textarea rows={3} value={ask.wishes} onChange={(e) => changeAsk({ wishes: e.target.value })} placeholder="например: развёртку крупнее" />
+              <span>Instructions</span>
+              <textarea rows={3} value={ask.wishes} onChange={(e) => changeAsk({ wishes: e.target.value })} placeholder="for example: make the net larger" />
             </label>
             <p className="muted small">
-              Точек: {marks?.length ?? '…'}, свободных мест: {areas.length}. Щелчок по метке на картинке убирает её, по точке бланка — добавляет.{' '}
+              Points: {marks?.length ?? '…'}, free areas: {areas.length}. Click a marker in the image to remove it; click a form point to add one.{' '}
               <button className="link-btn" onClick={() => void findAgain()}>
-                ↺ найти заново
+                ↺ detect again
               </button>
             </p>
             {note && <p className="ask-note small">{note}</p>}

@@ -106,7 +106,7 @@ export function SelectionBar({ editor }: { editor: Editor | null }) {
           key={c.color}
           className={`swatch ${color === c.color ? 'on' : ''}`}
           style={{ ['--sw' as string]: c.color }}
-          title={`${c.name} ручка`}
+          title={`${c.name} pen`}
           onClick={() => editor.chain().focus().setInkColor(c.color).run()}
         />
       ))}

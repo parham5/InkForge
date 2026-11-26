@@ -42,10 +42,10 @@ export function drawGuides(ctx: CanvasRenderingContext2D, w: number, h: number, 
       ctx.fillText(label, w - ctx.measureText(label).width - 6, py - 4);
     }
   };
-  line(CAP_HEIGHT, c.guide, [2, 4], 'прописные');
-  line(X_HEIGHT, c.guide, [6, 5], 'строчные');
-  line(0, c.guideStrong, [], 'строка');
-  line(DESCENDER, c.guide, [2, 4], 'хвосты');
+  line(CAP_HEIGHT, c.guide, [2, 4], 'cap height');
+  line(X_HEIGHT, c.guide, [6, 5], 'x-height');
+  line(0, c.guideStrong, [], 'baseline');
+  line(DESCENDER, c.guide, [2, 4], 'descenders');
   ctx.strokeStyle = c.guide;
   ctx.globalAlpha = 0.25;
   for (let x = -h; x < w; x += 70) {

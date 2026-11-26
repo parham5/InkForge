@@ -738,7 +738,7 @@ kbd {
   position: relative;
 }
 .hand-text p[data-page-break]::after {
-  content: '↧ с новой страницы · Backspace в начале строки — убрать';
+  content: '↧ new page · Backspace at line start to remove';
   position: absolute;
   left: 0;
   top: -20px;
@@ -1365,6 +1365,13 @@ kbd {
 }
 .alphabet-pills .pill button {
   padding: 5px 9px;
+}
+.english-progress {
+  display: grid;
+  gap: 5px;
+  padding: 0 4px;
+  font-size: 10.5px;
+  color: var(--muted);
 }
 .group-progress {
   display: flex;

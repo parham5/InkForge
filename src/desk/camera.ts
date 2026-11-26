@@ -161,14 +161,14 @@ export const anglesOf = (r: Mat3): Angles => ({
 /** How far the sheet leans from square to the camera, degrees. */
 export const tiltOf = (r: Mat3) => Math.acos(Math.max(-1, Math.min(1, r[8]))) / DEG;
 
-/** The turn in words: «верх листа дальше на 6°, левый край — на 2°, повёрнут на 1°». */
+/** The turn in words: «top of the page is farther away by 6°, left край — на 2°, rotated by 1°». */
 export function describeTilt(a: Angles): string {
   const n = (v: number) => `${Math.round(Math.abs(v))}°`;
   const parts: string[] = [];
-  if (Math.abs(a.pitch) >= 0.5) parts.push(`${a.pitch < 0 ? 'верх' : 'низ'} листа дальше на ${n(a.pitch)}`);
-  if (Math.abs(a.yaw) >= 0.5) parts.push(`${a.yaw > 0 ? 'левый' : 'правый'} край дальше на ${n(a.yaw)}`);
-  if (Math.abs(a.roll) >= 0.5) parts.push(`повёрнут на ${n(a.roll)}`);
-  return parts.length ? parts.join(', ') : 'лист снят прямо';
+  if (Math.abs(a.pitch) >= 0.5) parts.push(`${a.pitch < 0 ? 'top' : 'bottom'} of the page is farther away by ${n(a.pitch)}`);
+  if (Math.abs(a.yaw) >= 0.5) parts.push(`${a.yaw > 0 ? 'left' : 'right'} edge is farther away by ${n(a.yaw)}`);
+  if (Math.abs(a.roll) >= 0.5) parts.push(`rotated by ${n(a.roll)}`);
+  return parts.length ? parts.join(', ') : 'straight-on page view';
 }
 
 /** The made-up turn of a hand holding a phone: 2–7° up or down, 1–4° sideways, up to 1.5° round. */

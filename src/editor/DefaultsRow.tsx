@@ -9,7 +9,7 @@ interface Props {
   what: string;
 }
 
-/** «Сохранить по умолчанию»: new documents start with these settings, as this one has them now. */
+/** «Save по умолчанию»: new documents start with these settings, as this one has them now. */
 export function DefaultsRow({ part, what }: Props) {
   const keys = Object.keys(part) as (keyof PageSetup)[];
   const json = JSON.stringify(part);
@@ -30,17 +30,17 @@ export function DefaultsRow({ part, what }: Props) {
         className="link-btn small"
         disabled={state?.same}
         onClick={() => void savePageDefaults(part).then(check)}
-        title={`Новые документы будут начинаться с этими настройками (${what}). Уже открытые документы не меняются.`}
+        title={`New documents will use these settings (${what}). Existing documents are unchanged.`}
       >
-        {state?.same ? '✓ Это настройки по умолчанию' : '★ Сохранить по умолчанию'}
+        {state?.same ? '✓ These are the default settings' : '★ Save as default'}
       </button>
       {state?.saved && (
         <button
           className="link-btn small muted"
           onClick={() => void forgetPageDefaults(keys).then(check)}
-          title={`Новые документы снова начнутся со стандартных настроек (${what})`}
+          title={`New documents will use the standard settings again (${what})`}
         >
-          Стандартные
+          Standard
         </button>
       )}
     </div>

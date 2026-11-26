@@ -19,7 +19,7 @@ export type SheetKind = 'a4' | 'notebook' | 'a5';
 
 export const SHEET_KINDS: Record<SheetKind, { name: string; mm: [number, number] }> = {
   a4: { name: 'A4', mm: [210, 297] },
-  notebook: { name: 'Тетрадный', mm: [165, 205] },
+  notebook: { name: 'Notebook', mm: [165, 205] },
   a5: { name: 'A5', mm: [148, 210] },
 };
 
@@ -115,16 +115,16 @@ export const DEFAULT_PAGE: PageSetup = {
 };
 
 export const MARGIN_PRESETS: { name: string; margins: PageSetup['margins'] }[] = [
-  { name: 'Обычные', margins: { top: 20, bottom: 20, left: 25, right: 15 } },
-  { name: 'Узкие', margins: { top: 12, bottom: 12, left: 12, right: 12 } },
-  { name: 'Широкие', margins: { top: 25, bottom: 25, left: 35, right: 25 } },
+  { name: 'Standard', margins: { top: 20, bottom: 20, left: 25, right: 15 } },
+  { name: 'Narrow', margins: { top: 12, bottom: 12, left: 12, right: 12 } },
+  { name: 'Wide', margins: { top: 25, bottom: 25, left: 35, right: 25 } },
 ];
 
 /** Pen colours; any other colour can be picked too. */
 export const INK_COLORS: { name: string; color: string }[] = [
-  { name: 'Тёмно-синяя', color: '#1f2a6b' },
-  { name: 'Чёрная', color: '#1b1c20' },
-  { name: 'Тёмно-фиолетовая', color: '#4b2a7b' },
+  { name: 'Dark blue', color: '#1f2a6b' },
+  { name: 'Black', color: '#1b1c20' },
+  { name: 'Dark purple', color: '#4b2a7b' },
 ];
 
 export function pageSetup(raw: Partial<PageSetup> | undefined): PageSetup {

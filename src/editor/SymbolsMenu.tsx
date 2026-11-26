@@ -71,7 +71,7 @@ export function SymbolsMenu({ editor, disabled }: { editor: Editor | null; disab
                   className={`symbol-btn ${hasGlyph(ch) ? '' : 'unwritten'}`}
                   style={{ fontFamily: HAND_FONT_STACK }}
                   disabled={disabled}
-                  title={hasGlyph(ch) ? ch : `${ch} — ещё не написан вашей рукой (можно дописать по клику в тексте)`}
+                  title={hasGlyph(ch) ? ch : `${ch} — no handwriting sample yet; click the character in the text to add one`}
                   onClick={() => insert(ch)}
                 >
                   {ch}

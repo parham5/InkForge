@@ -23,16 +23,16 @@ export async function openJson() {
       const n = await importEverything(data);
       const desks = Array.isArray(data.desks) ? await importDesks(data.desks) : 0;
       if (Array.isArray(data.blanks)) await importBlanks(data.blanks);
-      alert(`Загружено из резервной копии: документов — ${n.documents}, вариантов букв — ${n.samples}${desks ? `, столов — ${desks}` : ''}.`);
+      alert(`Restored from backup: documents — ${n.documents}, letter samples — ${n.samples}${desks ? `, desks — ${desks}` : ''}.`);
       return;
     }
     if (data?.format === 'handbook-handwriting' || data?.format === 'inkforge-handwriting') {
       await importHandwriting(data, false);
-      alert(`Почерк добавлен: вариантов букв — ${data.samples.length}.`);
+      alert(`Handwriting imported: letter samples — ${data.samples.length}.`);
       return;
     }
     if (!['handbook-document', 'inkforge-document'].includes(data?.format) || !data.content) throw new Error('This is not an InkForge document (.json)');
-    showDocument((await createDocument(String(data.title ?? 'Без названия'), data.content)).id);
+    showDocument((await createDocument(String(data.title ?? 'Untitled'), data.content)).id);
   } catch (err) {
     alert(String(err));
   }
@@ -58,7 +58,7 @@ export async function loadHandwriting() {
   if (!file) return;
   try {
     const data = JSON.parse(file.text);
-    const replace = confirm('Заменить текущий почерк? «Отмена» — добавить образцы к текущим.');
+    const replace = confirm('Replace your current handwriting? Choose Cancel to add samples to your existing collection.');
     await importHandwriting(data, replace);
   } catch (err) {
     alert(String(err));

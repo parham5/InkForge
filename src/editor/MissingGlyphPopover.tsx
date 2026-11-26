@@ -23,12 +23,12 @@ export function MissingGlyphPopover({ char, rect, onClose }: Props) {
   const top = below ? rect.bottom + 8 : Math.max(rect.top - 338, 12);
 
   return (
-    <div className="popover" style={{ left, top, width }} role="dialog" aria-label={`Написать букву ${char}`}>
+    <div className="popover" style={{ left, top, width }} role="dialog" aria-label={`Write letter ${char}`}>
       <header>
         <strong>
-          Напишите «{char}»
+          Write “{char}»
         </strong>
-        <span className="muted small">{count > 0 ? `вариантов: ${count}` : 'буквы ещё нет в почерке'}</span>
+        <span className="muted small">{count > 0 ? `samples: ${count}` : 'no handwriting sample yet'}</span>
         <button className="btn ghost small" onClick={onClose} aria-label="Close">
           ✕
         </button>
@@ -46,7 +46,7 @@ export function MissingGlyphPopover({ char, rect, onClose }: Props) {
         }}
       />
       <footer>
-        {saved > 0 && <span className="muted small">Saved: {saved}. Можно написать ещё вариант.</span>}
+        {saved > 0 && <span className="muted small">Saved: {saved}. You can add another sample.</span>}
         <button className="btn small" onClick={onClose}>
           Done
         </button>

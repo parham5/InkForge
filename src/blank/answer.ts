@@ -85,7 +85,7 @@ export function parseAnswer(text: string): { tasks: AnswerTask[]; problems: { ta
     const n = NOTE.exec(raw);
     if (n) {
       const place = placeOf(n[1]);
-      if (!place) problems.push({ task: cur.id, text: `непонятно, где надпись «${n[2].trim()}»: «${n[1]}»` });
+      if (!place) problems.push({ task: cur.id, text: `Unknown annotation location for «${n[2].trim()}»: «${n[1]}»` });
       else {
         note = { place, text: n[2].trim() };
         cur.notes.push(note);
@@ -94,7 +94,7 @@ export function parseAnswer(text: string): { tasks: AnswerTask[]; problems: { ta
     }
     if (raw.trim()) cur.lines.push(raw.replace(/\s+$/, ''));
   }
-  if (!tasks.length) problems.push({ task: '?', text: 'нет ни одной строки «задание N»' });
+  if (!tasks.length) problems.push({ task: '?', text: 'No task N line found' });
   return { tasks, problems };
 }
 
@@ -129,7 +129,7 @@ function drawingOf(t: AnswerTask, markAt: (n: number) => SheetMm | null, problem
   let o: SheetMm | null = null;
   if (t.origin && 'mark' in t.origin) {
     o = markAt(t.origin.mark);
-    if (!o) problems.push(`начало @${t.origin.mark}: такой метки нет`);
+    if (!o) problems.push(`origin @${t.origin.mark}: marker not found`);
   } else if (t.origin) o = t.origin.mm;
   o ??= used.map(markAt).find((p): p is SheetMm => !!p) ?? (areas[0] ? { x: areas[0].x + areas[0].w / 2, y: areas[0].y + areas[0].h / 2 } : { x: 100, y: 100 });
   const names: Record<string, number> = {};
@@ -145,7 +145,7 @@ function drawingOf(t: AnswerTask, markAt: (n: number) => SheetMm | null, problem
       return `(${mmText(p.x - o!.x)}, ${mmText(o!.y - p.y)})`;
     });
     if (bad) {
-      problems.push(`строка «${line.trim()}»: метки ${[...line.matchAll(/@(\d+)/g)].map((m) => m[0]).join(', ')} нет на бланке`);
+      problems.push(`line “${line.trim()}»: marker ${[...line.matchAll(/@(\d+)/g)].map((m) => m[0]).join(', ')} not found on form`);
       out.push(`# ${line.trim()}`);
       continue;
     }
@@ -168,7 +168,7 @@ function fillNumbers(text: string, code: string | null, problems: string[]): str
   return text.replace(/\{([^{}]+?)(?::\s*(\d))?\}/g, (whole, _expr: string, digits?: string) => {
     const v = values[i++];
     if (v === null || v === undefined) {
-      problems.push(`в надписи не посчиталось ${whole}`);
+      problems.push(`Could not evaluate annotation expression ${whole}`);
       return '?';
     }
     if (typeof v === 'string') return v;
@@ -226,12 +226,12 @@ export function answerBlocks(
     if (drawing) {
       for (const l of lintDrawing(drawing.code)) said.push(l);
       const errors = sketchErrors(drawing.code);
-      for (const e of errors.slice(0, 5)) said.push(`строка чертежа «${drawing.code.split('\n')[e.line - 1]?.trim()}»: ${e.message}`);
-      blocks.push({ kind: 'sketch', title: `Задание ${t.id}`, code: drawing.code, x: 0, y: 0, w: 360, ai });
+      for (const e of errors.slice(0, 5)) said.push(`drawing line «${drawing.code.split('\n')[e.line - 1]?.trim()}»: ${e.message}`);
+      blocks.push({ kind: 'sketch', title: `Task ${t.id}`, code: drawing.code, x: 0, y: 0, w: 360, ai });
       const box = blankBox(drawing.code);
       if (box) {
         const share = inkUnder(dark, b, sheet, { x: box.x + 8 * MM, y: box.y + 8 * MM, w: Math.max(1, box.w - 16 * MM), h: Math.max(1, box.h - 16 * MM) });
-        if (share > 0.04 && t.origin && 'mm' in t.origin) said.push('чертёж на свободном месте заходит на печать — уменьши его или возьми другую рамку R');
+        if (share > 0.04 && t.origin && 'mm' in t.origin) said.push('The drawing overlaps printed content. Reduce its size or choose another R area');
       }
     }
     for (const n of t.notes) {
@@ -245,7 +245,7 @@ export function answerBlocks(
       const p = n.place;
       if (p.at === 'mark') {
         const m = markAt(p.mark);
-        if (!m) said.push(`надпись у @${p.mark}: такой метки нет`);
+        if (!m) said.push(`annotation at @${p.mark}: marker not found`);
         else {
           const [mx, my] = [m.x * MM, m.y * MM];
           const gap = 2 * MM;
@@ -261,7 +261,7 @@ export function answerBlocks(
         }
       } else if (p.at === 'area') {
         const a = areas[p.area - 1];
-        if (!a) said.push(`надпись в R${p.area}: такой рамки нет`);
+        if (!a) said.push(`annotation in R${p.area}: area not found`);
         else {
           at = { x: a.x + 2, y: a.y + 2 };
           w = Math.min(w, (a.w - 4) * MM);
@@ -288,9 +288,9 @@ export function answerBlocks(
         }
       }
       placed.push(best);
-      blocks.push({ kind: 'note', title: 'Надпись', code: body, x: best.x, y: best.y, w: best.w, size: letters, ai });
+      blocks.push({ kind: 'note', title: 'Annotation', code: body, x: best.x, y: best.y, w: best.w, size: letters, ai });
     }
-    if (!drawing && !t.notes.length) said.push('пустое задание');
+    if (!drawing && !t.notes.length) said.push('empty task');
     for (const s of said) problems.push({ task: t.id, text: s });
   }
   return { blocks, tasks: tasks.map((t) => t.id), problems };

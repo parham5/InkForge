@@ -36,9 +36,9 @@ export const isLineLike = (s: Shape): s is Extract<Shape, { type: 'segment' | 'r
 
 /** P(t) = a + t·(b − a) with the range of t the figure covers. */
 export function lineParams(s: Shape): { a: Vec; d: Vec; t0: number; t1: number } {
-  if (!isLineLike(s)) throw new Error('нужна прямая, отрезок, луч или вектор');
+  if (!isLineLike(s)) throw new Error('Expected a line, segment, ray or vector');
   const d = sub(s.b, s.a);
-  if (len(d) < 1e-12) throw new Error('две точки совпадают — через них не провести прямую');
+  if (len(d) < 1e-12) throw new Error('The points coincide; they cannot define a line');
   if (s.type === 'line') return { a: s.a, d, t0: -Infinity, t1: Infinity };
   if (s.type === 'ray') return { a: s.a, d, t0: 0, t1: Infinity };
   return { a: s.a, d, t0: 0, t1: 1 };
@@ -189,7 +189,7 @@ export function intersect(s1: Shape, s2: Shape, range: [number, number]): Vec[] 
   }
   if (s1.type === 'graph' && isLineLike(s2)) return graphLine(s1.f, s2, clampRange(range, s1.domain));
   if (s2.type === 'graph' && isLineLike(s1)) return graphLine(s2.f, s1, clampRange(range, s2.domain));
-  throw new Error('пересечение таких объектов пока не считается: попробуйте прямые, отрезки, окружности и графики');
+  throw new Error('Intersection is not supported for these objects. Try lines, segments, circles or graphs');
 }
 
 function clampRange(range: [number, number], ...domains: ([number, number] | null)[]): [number, number] {
@@ -240,7 +240,7 @@ export function mapShape(s: Shape, m: (p: Vec) => Vec, flip: boolean, scale: num
     case 'text':
       return { type: 'text', text: s.text, at: s.at && m(s.at) };
     case 'space':
-      throw new Error('повороты, переносы и отражения работают с фигурами на листе, а не в пространстве');
+      throw new Error('Rotation, translation and reflection require 2D shapes, not spatial objects');
     case 'graph': {
       const f = s.f;
       const [t0, t1] = s.domain ?? range;

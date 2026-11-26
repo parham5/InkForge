@@ -101,7 +101,7 @@ async function apply(view: EditorView, text: string, hooks: AnswerHooks) {
     }
     hooks.onReport({ tasks, blocks: blocks.length, problems, names });
   } catch (err) {
-    hooks.onReport({ tasks: [], blocks: 0, problems: [{ task: '?', text: `не удалось разложить ответ: ${String(err)}` }], names: [] });
+    hooks.onReport({ tasks: [], blocks: 0, problems: [{ task: '?', text: `Could not place response: ${String(err)}` }], names: [] });
   } finally {
     hooks.onBusy(false);
   }

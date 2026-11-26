@@ -276,7 +276,7 @@ export function HtmlBlockView({ node, editor, getPos, updateAttributes, deleteNo
       {selected ? (
         <BlockBar>
           {box && (
-            <span className="grip" title="Drawing по бланку: стоит там, где задано в НаБланке(…); начало можно сменить пипеткой «⌖ Начало»">
+            <span className="grip" title="Drawing positioned by OnBlank(…). Use ⌖ Origin to change its origin">
               ⌖
             </span>
           )}
@@ -288,42 +288,42 @@ export function HtmlBlockView({ node, editor, getPos, updateAttributes, deleteNo
               e.currentTarget.focus();
               e.currentTarget.select();
             }}
-            aria-label="Title блока"
+            aria-label="Block title"
           />
           <div className="html-block-tools">
             {!box && (
               <button
                 className={attrs.float ? 'on' : ''}
                 onClick={toggleFloat}
-                title={attrs.float ? 'Вернуть блок в текст' : 'Положить блок поверх текста и двигать свободно'}
+                title={attrs.float ? 'Return block to text flow' : 'Place block over text and move it freely'}
               >
-                {attrs.float ? '↧ В текст' : '⇱ Поверх'}
+                {attrs.float ? '↧ In text' : '⇱ Overlay'}
               </button>
             )}
             {sketch ? (
               <>
                 <PenMenu pen={attrs.pen} onChange={(pen) => updateAttributes({ pen })} />
                 <button className={panel === 'code' ? 'on' : ''} onClick={() => setPanel(panel === 'code' ? null : 'code')}>
-                  Команды
+                  Commands
                 </button>
-                <button onClick={() => setHelp(true)} title="Все команды, примеры и запрос для нейронки">
-                  ? Справка
+                <button onClick={() => setHelp(true)} title="All commands, examples and AI prompt">
+                  ? Help
                 </button>
               </>
             ) : (
               <>
                 <button className={panel === 'data' ? 'on' : ''} onClick={() => setPanel(panel === 'data' ? null : 'data')}>
-                  Данные
+                  Data
                 </button>
                 <button className={panel === 'code' ? 'on' : ''} onClick={() => setPanel(panel === 'code' ? null : 'code')}>
-                  Код
+                  Code
                 </button>
-                <button onClick={() => setReloadKey((k) => k + 1)} title="Перезапустить блок">
+                <button onClick={() => setReloadKey((k) => k + 1)} title="Restart block">
                   ↻
                 </button>
               </>
             )}
-            <button onClick={() => deleteNode()} title="Delete блок" className="danger">
+            <button onClick={() => deleteNode()} title="Delete block" className="danger">
               ✕
             </button>
           </div>
@@ -338,7 +338,7 @@ export function HtmlBlockView({ node, editor, getPos, updateAttributes, deleteNo
           sides={sidesFor(sketch)}
         />
       )}
-      {drag && stretching && <span className="block-size no-print">{Math.round(drag.w / MM)} мм</span>}
+      {drag && stretching && <span className="block-size no-print">{Math.round(drag.w / MM)} mm</span>}
       {sketch ? (
         <>
           <SketchFigure
@@ -347,10 +347,10 @@ export function HtmlBlockView({ node, editor, getPos, updateAttributes, deleteNo
             width={box?.w}
             fontSize={onBlank ? noteFontSize(onBlank.blank.letters ?? BLANK_LETTERS) : undefined}
             sheetMap={box ? onBlank?.map : null}
-            placeholder="Пустой чертёж: напишите команды в окне слева или вставьте ответ нейронки. «? Справка» — все команды и готовый запрос." />
+            placeholder="Empty drawing: enter commands in the left panel or paste an AI response. ? Help includes all commands and a ready-to-copy prompt." />
           {sketchErrors > 0 && !panel && (
             <button className="sketch-badge no-print" contentEditable={false} onClick={() => setPanel('code')}>
-              ⚠ Строк с ошибками: {sketchErrors} — открыть команды
+              ⚠ Lines with errors: {sketchErrors} — open commands
             </button>
           )}
         </>
@@ -371,21 +371,21 @@ export function HtmlBlockView({ node, editor, getPos, updateAttributes, deleteNo
       </div>
       {panel && (
         <SideEditor
-          title={sketch ? `Команды — ${attrs.title}` : attrs.title}
+          title={sketch ? `Commands — ${attrs.title}` : attrs.title}
           onTitle={showBlock}
           onClose={() => setPanel(null)}
           tools={
             sketch ? (
-              <button onClick={() => setHelp(true)} title="Все команды, примеры и запрос для нейронки">
-                ? Справка
+              <button onClick={() => setHelp(true)} title="All commands, examples and AI prompt">
+                ? Help
               </button>
             ) : (
               <>
                 <button className={panel === 'code' ? 'on' : ''} onClick={() => setPanel('code')}>
-                  Код
+                  Code
                 </button>
                 <button className={panel === 'data' ? 'on' : ''} onClick={() => setPanel('data')}>
-                  Данные
+                  Data
                 </button>
               </>
             )
@@ -403,13 +403,13 @@ export function HtmlBlockView({ node, editor, getPos, updateAttributes, deleteNo
               <CodeEditor value={draftCode} language="html" onChange={setDraftCode} onSubmit={applyCode} />
               <div className="row">
                 <button className="btn small primary" onClick={applyCode} disabled={draftCode === attrs.code}>
-                  Применить <kbd>Ctrl+Enter</kbd>
+                  Apply <kbd>Ctrl+Enter</kbd>
                 </button>
                 <button className="btn small" onClick={() => setDraftCode(attrs.code)} disabled={draftCode === attrs.code}>
-                  Отменить правки
+                  Discard edits
                 </button>
                 <span className="muted small">
-                  Block работает в песочнице: без доступа к редактору и сети. API: block.data, block.setData(),
+                  The block runs in a sandbox without editor or network access. API: block.data, block.setData(),
                   block.onData(), block.onFont().
                 </span>
               </div>
@@ -421,7 +421,7 @@ export function HtmlBlockView({ node, editor, getPos, updateAttributes, deleteNo
                 {dataError ? (
                   <span className="error small">JSON: {dataError}</span>
                 ) : (
-                  <span className="muted small">Изменения применяются сразу. Ctrl+Z в документе откатывает их.</span>
+                  <span className="muted small">Changes apply immediately. Use Ctrl+Z in the document to undo them.</span>
                 )}
               </div>
             </>
@@ -462,17 +462,17 @@ function PenMenu({ pen, onChange }: { pen: Record<string, unknown> | null; onCha
   const textInk = (ref.current && getComputedStyle(ref.current).getPropertyValue('--ink-base').trim()) || '#1f2a6b';
   return (
     <div className="pen-menu-wrap" ref={ref}>
-      <button className={open ? 'on' : ''} onClick={() => setOpen(!open)} title="Чем нарисован этот чертёж: ручкой или карандашом, каким цветом">
-        {value.tool === 'pencil' ? '✎ Карандаш' : '✒ Ручка'} ▾
+      <button className={open ? 'on' : ''} onClick={() => setOpen(!open)} title="Choose pen or pencil and the color for this drawing">
+        {value.tool === 'pencil' ? '✎ Pencil' : '✒ Pen'} ▾
       </button>
       {open && (
         <div className="menu-items pen-menu">
           <label className="check inline small">
             <input type="checkbox" checked={pen === null} onChange={(e) => onChange(e.target.checked ? null : { ...value })} />
-            Как во всём документе
+            Use document settings
           </label>
           <DrawPenPicker value={value} textInk={textInk} onChange={(next) => onChange({ ...next })} />
-          <p className="muted small">Для всех чертежей документа — в меню «Page».</p>
+          <p className="muted small">Change all document drawings in the Page menu.</p>
         </div>
       )}
     </div>

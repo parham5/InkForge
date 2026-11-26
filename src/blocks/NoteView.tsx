@@ -150,24 +150,24 @@ export function NoteView({ node, editor, getPos, updateAttributes, deleteNode, s
         <BlockBar>
           <span className="note-title">Annotation</span>
           {onLines && (
-            <button className="note-warn" onClick={moveOff} title="Annotation лежит на линиях бланка или чертежа: отодвинуть к ближайшему чистому месту">
-              ⚠ Отодвинуть
+            <button className="note-warn" onClick={moveOff} title="This annotation overlaps form or drawing lines. Move it to the nearest clear area">
+              ⚠ Move aside
             </button>
           )}
           <div className="html-block-tools">
-            <button onClick={() => step(-0.5)} title="Буквы мельче">
+            <button onClick={() => step(-0.5)} title="Smaller letters">
               A−
             </button>
-            <span className="note-size" title="Высота заглавных букв">
-              {String(attrs.size || NOTE_SIZE).replace('.', ',')} мм
+            <span className="note-size" title="Uppercase letter height">
+              {String(attrs.size || NOTE_SIZE)} mm
             </span>
-            <button onClick={() => step(0.5)} title="Буквы крупнее">
+            <button onClick={() => step(0.5)} title="Larger letters">
               A+
             </button>
-            <button onClick={() => setEditing(true)} title="Изменить текст (или щелчок по тексту)">
+            <button onClick={() => setEditing(true)} title="Edit text (or click the text)">
               ✎ Text
             </button>
-            <button onClick={() => deleteNode()} title="Delete надпись" className="danger">
+            <button onClick={() => deleteNode()} title="Delete annotation" className="danger">
               ✕
             </button>
           </div>
@@ -184,7 +184,7 @@ export function NoteView({ node, editor, getPos, updateAttributes, deleteNode, s
           style={style}
           autoFocus
           value={draft}
-          placeholder="Text надписи"
+          placeholder="Annotation text"
           spellCheck={false}
           onChange={(e) => edit(e.target.value)}
           onBlur={() => finishRef.current()}
@@ -196,7 +196,7 @@ export function NoteView({ node, editor, getPos, updateAttributes, deleteNode, s
           }}
         />
       ) : (
-        <div ref={textBox} className="note-text" style={style} contentEditable={false} onClick={() => setEditing(true)} title="Щёлкните, чтобы изменить текст. $…$ — формула, A_1 — индекс">
+        <div ref={textBox} className="note-text" style={style} contentEditable={false} onClick={() => setEditing(true)} title="Click to edit. Use $…$ for formulas and A_1 for subscripts">
           {lines.map(({ line, at }, i) => (
             <div key={i}>
               {line
@@ -205,7 +205,7 @@ export function NoteView({ node, editor, getPos, updateAttributes, deleteNode, s
                       <span
                         key={j}
                         className={`roman-word ${p.word.roman ? 'on' : ''}`}
-                        title={p.word.roman ? 'Римское число (пишется палочками). Щелчок — это буквы' : 'Буквы. Щелчок — это римское число'}
+                        title={p.word.roman ? 'Roman numeral, drawn as strokes. Click to use letters' : 'Letters. Click to use a Roman numeral'}
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleRoman(p.word!.from);
@@ -227,7 +227,7 @@ export function NoteView({ node, editor, getPos, updateAttributes, deleteNode, s
         </div>
       )}
       </div>
-      {onLines && <span className="note-badge no-print" title="Annotation лежит на линиях: «⚠ Отодвинуть» в её шапке">⚠</span>}
+      {onLines && <span className="note-badge no-print" title="Annotation overlaps lines. Choose ⚠ Move aside in its header">⚠</span>}
     </NodeViewWrapper>
   );
 }

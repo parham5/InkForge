@@ -3,21 +3,21 @@ import { GRAPHITE } from './render';
 
 /** Colours for drawings; null is «auto»: the text's ink for a pen, graphite for a pencil. */
 const COLORS: { name: string; color: string }[] = [
-  { name: 'Графит', color: GRAPHITE },
-  { name: 'Тёмно-синий', color: '#1f2a6b' },
-  { name: 'Чёрный', color: '#1b1c20' },
-  { name: 'Красный', color: '#b3261e' },
-  { name: 'Зелёный', color: '#2e6b3a' },
+  { name: 'Graphite', color: GRAPHITE },
+  { name: 'Dark blue', color: '#1f2a6b' },
+  { name: 'Black', color: '#1b1c20' },
+  { name: 'Red', color: '#b3261e' },
+  { name: 'Green', color: '#2e6b3a' },
 ];
 
 /** The line sliders: what each does, at its two ends. */
 const SLIDERS: { key: keyof typeof DRAW_PEN_RANGES; label: string; hint: string; unit?: string }[] = [
-  { key: 'wobble', label: 'Кривизна линий', hint: '0 — как по линейке, 1 — твёрдая рука, больше — совсем от руки' },
-  { key: 'weight', label: 'Толщина', hint: 'относительно пера почерка', unit: '×' },
-  { key: 'pressure', label: 'Pressure', hint: 'насколько толщина «дышит» вдоль линии: 0 — ровная' },
-  { key: 'overshoot', label: 'Заход за концы', hint: '0 — линия ровно до точки, больше — дальше за неё' },
-  { key: 'points', label: 'Небрежность точек', hint: '0 — все точки одинаковые и ровные; больше — разный размер, чуть овальные, кружок не всегда замкнут и чуть мимо места. Свои варианты точек рисуются в «Почерке», кнопка ○ под алфавитом' },
-  { key: 'joins', label: 'Стыки с точками', hint: '0 — линии ровно до кружка точки; больше — то не доходят, то касаются, то заходят внутрь, у каждого конца по-своему' },
+  { key: 'wobble', label: 'Line wobble', hint: '0 ruler-straight, 1 steady hand, higher values more freehand' },
+  { key: 'weight', label: 'Width', hint: 'relative to the handwriting pen', unit: '×' },
+  { key: 'pressure', label: 'Pressure', hint: 'Stroke width variation along the line: 0 uniform' },
+  { key: 'overshoot', label: 'Endpoint overshoot', hint: '0 ends exactly at the point; higher values extend beyond it' },
+  { key: 'points', label: 'Marker variation', hint: '0 uses identical, regular markers. Higher values vary size, shape, closure and position. Add your own markers in Handwriting using ○ below the alphabet' },
+  { key: 'joins', label: 'Line-to-marker joins', hint: '0 ends lines at the marker boundary. Higher values vary gaps, contact and overlap independently at each endpoint' },
 ];
 
 interface Props {
@@ -33,20 +33,20 @@ export function DrawPenPicker({ value, onChange, textInk }: Props) {
   const known = value.color === null || COLORS.some((c) => c.color === value.color);
   return (
     <div className="draw-pen">
-      <div className="segmented" role="group" aria-label="Чем рисовать">
-        <button className={!pencil ? 'on' : ''} onClick={() => onChange({ ...value, tool: 'pen' })} title="Ровная линия чернилами">
-          ✒ Ручка
+      <div className="segmented" role="group" aria-label="Drawing tool">
+        <button className={!pencil ? 'on' : ''} onClick={() => onChange({ ...value, tool: 'pen' })} title="Smooth ink stroke">
+          ✒ Pen
         </button>
-        <button className={pencil ? 'on' : ''} onClick={() => onChange({ ...value, tool: 'pencil' })} title="Тонкая серая линия с зерном бумаги">
-          ✎ Карандаш
+        <button className={pencil ? 'on' : ''} onClick={() => onChange({ ...value, tool: 'pencil' })} title="Fine gray stroke with paper grain">
+          ✎ Pencil
         </button>
       </div>
-      <div className="swatches" role="group" aria-label="Цвет линий">
+      <div className="swatches" role="group" aria-label="Line color">
         <button
           className={`swatch auto ${value.color === null ? 'on' : ''}`}
           style={{ ['--sw' as string]: pencil ? GRAPHITE : textInk }}
-          title={pencil ? 'Как standard карандаш (графит)' : 'Как текст'}
-          aria-label={pencil ? 'Графит' : 'Как текст'}
+          title={pencil ? 'Standard graphite pencil' : 'Match text'}
+          aria-label={pencil ? 'Graphite' : 'Match text'}
           onClick={() => onChange({ ...value, color: null })}
         />
         {COLORS.filter((c) => !(pencil && c.color === GRAPHITE)).map((c) => (
@@ -66,13 +66,13 @@ export function DrawPenPicker({ value, onChange, textInk }: Props) {
       {pencil && (
         <label className="check inline small">
           <input type="checkbox" checked={value.labelsInPen} onChange={(e) => onChange({ ...value, labelsInPen: e.target.checked })} />
-          Подписи — ручкой, как текст
+          Draw labels in pen, matching the text
         </label>
       )}
       {pencil && (
-        <label className="check inline small" title="Окружности и дуги от 6 мм — ровный радиус и нажим, прокол иглы в центре. На бланке — всегда">
+        <label className="check inline small" title="Circles and arcs of at least 6 mm use an even radius and pressure with a center puncture; always enabled on forms">
           <input type="checkbox" checked={value.compass} onChange={(e) => onChange({ ...value, compass: e.target.checked })} />
-          Дуги циркулем
+          Compass-drawn arcs
         </label>
       )}
       <div className="draw-pen-sliders">
@@ -102,9 +102,9 @@ export function DrawPenPicker({ value, onChange, textInk }: Props) {
           <button
             className="link-btn small"
             onClick={() => onChange({ ...value, wobble: 1, weight: 1, pressure: 1, overshoot: 1, points: 1, joins: 1 })}
-            title="Кривизна, толщина, нажим, заход, точки и стыки — как обычно"
+            title="Restore default wobble, width, pressure, overshoot, markers and joins"
           >
-            Сбросить линии и точки
+            Reset lines and markers
           </button>
         )}
       </div>

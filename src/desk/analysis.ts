@@ -171,7 +171,7 @@ export class Analyzer {
     };
     // The worker itself failed (its script or the analysis did not load): nothing waits for ever.
     w.onerror = (e) => {
-      if (w === this.worker) this.failAll(e.message || 'Разбор фото не запустился');
+      if (w === this.worker) this.failAll(e.message || 'Photo analysis failed to start');
     };
     return w;
   }
@@ -185,12 +185,12 @@ export class Analyzer {
   private restart() {
     this.worker.terminate();
     this.holds = null;
-    this.failAll('Разбор фото прервался: попробуйте ещё раз');
+    this.failAll('Photo analysis was interrupted. Try again');
     if (!this.closed) this.worker = this.spawn();
   }
 
   private call<T>(req: AnalysisOp, transfer: Transferable[] = []): Promise<T> {
-    if (this.closed) return Promise.reject(new Error('закрыто'));
+    if (this.closed) return Promise.reject(new Error('closed'));
     const id = this.next++;
     return new Promise<T>((resolve, reject) => {
       this.pending.set(id, { resolve: resolve as (v: unknown) => void, reject });
@@ -233,6 +233,6 @@ export class Analyzer {
   dispose() {
     this.closed = true;
     this.worker.terminate();
-    this.failAll('закрыто');
+    this.failAll('closed');
   }
 }

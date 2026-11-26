@@ -97,13 +97,13 @@ export function SampleThumb({ sample, weightKey, onDelete, onAnchor }: Props) {
         }}
       >
         <title>
-          {side === 'entry' ? 'Вход' : 'Выход'}:{' '}
+          {side === 'entry' ? 'Entry' : 'Exit'}:{' '}
           {state === 'on'
-            ? 'соединяется с соседней буквой'
+            ? 'connects to the adjacent letter'
             : state === 'bad'
-              ? `точка не на ${side === 'entry' ? 'левом' : 'правом'} краю буквы — соединения не будет. Перепишите букву так, чтобы ${side === 'entry' ? 'первый штрих начинался слева' : 'последний штрих заканчивался справа'}`
-              : 'без соединения'}{' '}
-          (клик — переключить, перетащить — поставить на другой конец штриха)
+              ? `the point is not on the ${side === 'entry' ? 'left' : 'right'} edge of the letter, so it will not connect. Rewrite the letter so that ${side === 'entry' ? 'the first stroke starts on the left' : 'the last stroke ends on the right'}`
+              : 'no connection'}{' '}
+          (click to toggle; drag to another stroke endpoint)
         </title>
         <circle cx={shown.x} cy={-shown.y} r={80} />
       </g>
@@ -113,13 +113,13 @@ export function SampleThumb({ sample, weightKey, onDelete, onAnchor }: Props) {
   // Where this variant goes in a word (only letters join).
   const joinsIn = !!sample.entry?.connect && anchorOnEdge('entry', sample.entry, sample.strokes);
   const joinsOut = !!sample.exit?.connect && anchorOnEdge('exit', sample.exit, sample.strokes);
-  const place = !/^\p{L}/u.test(sample.char) ? null : joinsIn ? (joinsOut ? 'середина' : 'конец слова') : joinsOut ? 'начало слова' : 'отдельно';
+  const place = !/^\p{L}/u.test(sample.char) ? null : joinsIn ? (joinsOut ? 'middle' : 'end of word') : joinsOut ? 'start of word' : 'standalone';
   const tooTall = looksTooTall(sample.char, Math.max(...sample.strokes.flat().map((p) => p.y)), X_HEIGHT);
 
   return (
     <figure
       className={`sample-thumb ${tooTall ? 'warn' : ''}`}
-      title={tooTall ? 'Этот вариант заметно выше линии строчных — похоже на прописную. Движок выучит и такой размер.' : undefined}
+      title={tooTall ? 'This sample is well above the x-height and resembles an uppercase letter. The engine will learn this size too.' : undefined}
     >
       <svg ref={svgRef} viewBox={vb} preserveAspectRatio="xMidYMid meet">
         <line className="guide" x1={xMin} x2={xMax} y1={0} y2={0} />

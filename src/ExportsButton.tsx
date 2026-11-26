@@ -15,7 +15,7 @@ const size = (bytes: number) =>
   bytes < 1024 ? `${bytes} B` : bytes < 1024 * 1024 ? `${Math.round(bytes / 1024)} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 
 const when = (at: number) =>
-  new Date(at).toLocaleString('ru-RU', new Date(at).toDateString() === new Date().toDateString() ? { timeStyle: 'short' } : { dateStyle: 'short', timeStyle: 'short' });
+  new Date(at).toLocaleString('en-US', new Date(at).toDateString() === new Date().toDateString() ? { timeStyle: 'short' } : { dateStyle: 'short', timeStyle: 'short' });
 
 /**
  * Export history in the top corner, like a browser's downloads button: it shows

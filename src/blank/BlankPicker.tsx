@@ -22,11 +22,11 @@ interface Props {
 }
 
 const KIND_NAME: Record<SnapPoint['kind'], string> = {
-  circle: 'точка (кружок)',
-  dot: 'точка',
-  cross: 'пересечение линий',
-  end: 'конец линии',
-  free: 'где щёлкнули',
+  circle: 'point (circle)',
+  dot: 'point',
+  cross: 'line intersection',
+  end: 'line endpoint',
+  free: 'click position',
 };
 
 const LOUPE = 150;
@@ -130,7 +130,7 @@ export function BlankPicker({ on, sheet, mode, code, onCode, onClose }: Props) {
     const at = pointAt(sx, sy, e.altKey);
     if (stage === 'origin') {
       onCode(withOrigin(code, mm(at)));
-      setNote(`Начало координат — ${KIND_NAME[at.kind]}, ${mmText(at.x / MM)}; ${mmText(at.y / MM)} мм от угла листа.`);
+      setNote(`Origin: ${KIND_NAME[at.kind]}, ${mmText(at.x / MM)}; ${mmText(at.y / MM)} mm from the page corner.`);
       if (mode === 'origin') onClose();
       return;
     }
@@ -146,7 +146,7 @@ export function BlankPicker({ on, sheet, mode, code, onCode, onClose }: Props) {
         at,
         coords: [p.x, p.y, p.z],
         suggest: nextName(code),
-        note: p.gap > 1 ? `Проекции не на одной линии связи (разошлись на ${mmText(p.gap)} мм): x взят посередине.` : undefined,
+        note: p.gap > 1 ? `Projections are not aligned (offset: ${mmText(p.gap)} mm); x uses the midpoint.` : undefined,
       });
       return;
     }
@@ -158,19 +158,19 @@ export function BlankPicker({ on, sheet, mode, code, onCode, onClose }: Props) {
     if (!naming) return;
     const n = raw.trim() || naming.suggest;
     if (!validName(n)) {
-      setNote(`«${n}» не годится в имя: буква, потом буквы, цифры или _ (A_1, B, K_2).`);
+      setNote(`«${n}» is not a valid name. Start with a letter, then use letters, digits or _ (A_1, B, K_2).`);
       return;
     }
     onCode(withPoint(code, n, naming.coords));
-    setNote(naming.note ?? `Точка ${n} записана в команды (и не рисуется второй раз: она напечатана).`);
+    setNote(naming.note ?? `Point ${n} added to commands; it is already printed, so it will not be drawn again.`);
     setNaming(null);
   };
 
   const hint = {
-    origin: 'Щёлкните начало координат чертежа: обычно 0 на оси x₁₂ (пересечение осей).',
-    frontal: 'Точка в пространстве: сначала фронтальная проекция (A₂).',
-    horizontal: 'Теперь горизонтальная проекция той же точки (A₁).',
-    point: 'Щёлкните напечатанную точку.',
+    origin: 'Click the drawing origin, usually 0 on the x₁₂ axis at the axes intersection.',
+    frontal: '3D point: first click its front projection (A₂).',
+    horizontal: 'Now click the same point’s horizontal projection (A₁).',
+    point: 'Click a printed point.',
   }[stage];
 
   if (!host) return null;
@@ -179,7 +179,7 @@ export function BlankPicker({ on, sheet, mode, code, onCode, onClose }: Props) {
     <div ref={overlay} className="blank-picker no-print" onMouseMove={move} onMouseDown={click} onMouseLeave={() => setHover(null)} contentEditable={false}>
       <div className="blank-picker-bar" onMouseDown={(e) => e.stopPropagation()}>
         <span>{hint}</span>
-        <span className="muted">Прилипает к точкам, пересечениям и концам линий · Alt — точно где щёлкнули · Esc — выйти</span>
+        <span className="muted">Snaps to points, intersections and endpoints · Alt uses the exact click position · Esc exits</span>
         {note && <span className="blank-picker-note">{note}</span>}
         <button className="btn small" onClick={onClose}>
           Done
@@ -192,7 +192,7 @@ export function BlankPicker({ on, sheet, mode, code, onCode, onClose }: Props) {
         <div className="blank-picker-name" style={{ left: naming.at.x + 10, top: naming.at.y + 10 }} onMouseDown={(e) => e.stopPropagation()}>
           <span className="blank-picker-mark" style={{ left: -10, top: -10 }} />
           <label>
-            Имя
+            Name
             <input
               ref={nameInput}
               autoFocus

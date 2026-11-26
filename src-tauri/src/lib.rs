@@ -83,7 +83,7 @@ fn new_export_folder(app: tauri::AppHandle, date: String) -> Result<String, Stri
 fn exported_file(app: &tauri::AppHandle, path: &str) -> Result<PathBuf, String> {
   let path = PathBuf::from(path);
   if !path.exists() {
-    return Err("Файл не найден: возможно, его переместили или удалили.".into());
+    return Err("File not found. It may have been moved or deleted.".into());
   }
   let downloads = app.path().download_dir().map_err(|e| e.to_string())?;
   let inside = match (path.canonicalize(), downloads.canonicalize()) {
@@ -91,7 +91,7 @@ fn exported_file(app: &tauri::AppHandle, path: &str) -> Result<PathBuf, String> 
     _ => false,
   };
   if !inside || !has_export_type(&path) {
-    return Err("Этот файл открыть нельзя.".into());
+    return Err("This file cannot be opened.".into());
   }
   Ok(path)
 }
@@ -101,7 +101,7 @@ fn exported_file(app: &tauri::AppHandle, path: &str) -> Result<PathBuf, String> 
 #[tauri::command]
 fn save_download(app: tauri::AppHandle, request: tauri::ipc::Request<'_>) -> Result<String, String> {
   let tauri::ipc::InvokeBody::Raw(bytes) = request.body() else {
-    return Err("ожидались байты файла".into());
+    return Err("Expected file bytes".into());
   };
   let name = request
     .headers()
@@ -111,7 +111,7 @@ fn save_download(app: tauri::AppHandle, request: tauri::ipc::Request<'_>) -> Res
     .map(|n| clean_name(&n))
     .unwrap_or_else(|| "file".into());
   if !has_export_type(Path::new(&name)) {
-    return Err(format!("Такой файл сохранить нельзя: {name}"));
+    return Err(format!("This file type cannot be saved: {name}"));
   }
   let folder = request
     .headers()
@@ -178,7 +178,7 @@ async fn pick_json(window: tauri::WebviewWindow) -> Result<Option<(String, Strin
   #[cfg(not(windows))]
   {
     let _ = window;
-    Err("Открытие файлов из меню пока есть только в Windows.".into())
+    Err("Opening files from the menu is currently supported only on Windows.".into())
   }
 }
 

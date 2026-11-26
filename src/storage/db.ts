@@ -90,7 +90,7 @@ export async function forgetPageDefaults(keys: (keyof PageSetup)[]) {
 }
 
 export async function createDocument(
-  title = 'Без названия',
+  title = 'Untitled',
   content: DocContent = { type: 'doc', content: [{ type: 'paragraph' }] },
 ): Promise<HandDocument> {
   const now = Date.now();

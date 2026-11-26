@@ -9,14 +9,14 @@ import type { Ctx, Hatching, Shape, SpaceKind, Val, Vec, Vec3 } from './types';
 export type GroupId = 'points' | 'lines' | 'shapes' | 'graphs' | 'space' | 'text' | 'style' | 'view';
 
 export const GROUPS: { id: GroupId; name: string }[] = [
-  { id: 'points', name: 'Точки и преобразования' },
-  { id: 'lines', name: 'Прямые и отрезки' },
-  { id: 'shapes', name: 'Окружности, многоугольники, углы' },
-  { id: 'graphs', name: 'Графики' },
-  { id: 'space', name: 'Пространство и эпюр' },
-  { id: 'text', name: 'Подписи и текст' },
-  { id: 'style', name: 'Оформление' },
-  { id: 'view', name: 'Окно и оси' },
+  { id: 'points', name: 'Points and transformations' },
+  { id: 'lines', name: 'Lines and segments' },
+  { id: 'shapes', name: 'Circles, polygons and angles' },
+  { id: 'graphs', name: 'Graphs' },
+  { id: 'space', name: 'Space and projections' },
+  { id: 'text', name: 'Labels and text' },
+  { id: 'style', name: 'Appearance' },
+  { id: 'view', name: 'View and axes' },
 ];
 
 export interface Command {
@@ -72,8 +72,8 @@ const ORIGIN: Vec = { x: 0, y: 0 };
 
 function args(list: Expr[], ...counts: number[]) {
   if (counts.includes(list.length)) return;
-  const word = (n: number) => `${n} ${n % 10 === 1 && n !== 11 ? 'аргумент' : n >= 2 && n <= 4 ? 'аргумента' : 'аргументов'}`;
-  throw new Error(`нужно ${counts.map(word).join(' или ')}, а дано ${list.length}`);
+  const word = (n: number) => `${n} ${n % 10 === 1 && n !== 11 ? 'argument' : n >= 2 && n <= 4 ? 'arguments' : 'arguments'}`;
+  throw new Error(`expected ${counts.map(word).join(' or ')}, received ${list.length}`);
 }
 
 const is3 = (p: Vec | Vec3): p is Vec3 => 'z' in p;
@@ -87,26 +87,26 @@ function angleArg(c: Ctx, e: Expr): number {
 /** A length of the drawing that must be above zero. */
 function positive(c: Ctx, e: Expr, what: string): number {
   const v = c.num(e);
-  if (!(v > 0)) throw new Error(`${what} — больше нуля`);
+  if (!(v > 0)) throw new Error(`${what} must be positive`);
   return v;
 }
 
 /** Direction, spacing and crosswise hatching from the arguments after the figure. */
 function hatchingOf(c: Ctx, list: Expr[]): Hatching {
   const angle = list[0] ? angleArg(c, list[0]) : Math.PI / 4;
-  const gap = list[1] ? positive(c, list[1], 'шаг штриховки') : undefined;
+  const gap = list[1] ? positive(c, list[1], 'hatching spacing') : undefined;
   return { angle, gap, cross: list[2] ? Math.round(c.num(list[2])) === 2 : false };
 }
 
 /** The graph of f from x = a to x = b, as points (the area under or between graphs is cut by them). */
 function graphRun(f: (x: number) => number, a: number, b: number): Vec[] {
-  if (!(b > a)) throw new Error('нужно a < b: штрихуется от x = a до x = b');
+  if (!(b > a)) throw new Error('Expected a < b: hatching extends from x = a to x = b');
   const n = 160;
   const out: Vec[] = [];
   for (let i = 0; i <= n; i++) {
     const x = a + ((b - a) * i) / n;
     const y = f(x);
-    if (!Number.isFinite(y)) throw new Error(`функция не определена при x = ${Math.round(x * 100) / 100}: так область не заштриховать`);
+    if (!Number.isFinite(y)) throw new Error(`Function is undefined at x = ${Math.round(x * 100) / 100}: cannot hatch this region`);
     out.push({ x, y });
   }
   return out;
@@ -118,7 +118,7 @@ function pointsOf(c: Ctx, list: Expr[]): { flat: Vec[] } | { space: Vec3[] } {
   const n = pts.filter(is3).length;
   if (n === 0) return { flat: pts };
   if (n === pts.length) return { space: pts as Vec3[] };
-  throw new Error('нельзя смешивать точки листа (x, y) и точки пространства (x, y, z)');
+  throw new Error('Cannot mix 2D page points (x, y) and 3D spatial points (x, y, z)');
 }
 
 const space = (of: SpaceKind, pts: Vec3[]): Val => shape({ type: 'space', of, pts });
@@ -133,13 +133,13 @@ function twoPoints(of: 'segment' | 'line' | 'ray' | 'vector', c: Ctx, list: Expr
 
 function lineOf(c: Ctx, e: Expr): Shape {
   const s = c.shape(e);
-  if (!g.isLineLike(s)) throw new Error('нужна прямая, отрезок, луч или вектор');
+  if (!g.isLineLike(s)) throw new Error('Expected a line, segment, ray or vector');
   return s;
 }
 
 function circumcircle(a: Vec, b: Vec, p: Vec): Shape {
   const d = 2 * (a.x * (b.y - p.y) + b.x * (p.y - a.y) + p.x * (a.y - b.y));
-  if (Math.abs(d) < 1e-12) throw new Error('точки лежат на одной прямой — окружность через них не провести');
+  if (Math.abs(d) < 1e-12) throw new Error('The points are collinear; no circle can pass through them');
   const sa = a.x * a.x + a.y * a.y;
   const sb = b.x * b.x + b.y * b.y;
   const sp = p.x * p.x + p.y * p.y;
@@ -159,8 +159,8 @@ export const COMMANDS: Command[] = [
   {
     names: ['Середина', 'Midpoint'],
     group: 'points',
-    forms: ['@(A, B)', '@(отрезок)'],
-    doc: 'Середина отрезка AB.',
+    forms: ['@(A, B)', '@(segment)'],
+    doc: "Midpoint of segment AB.",
     example: 'A = (0, 0)\nB = (4, 2)\nSegment(A, B)\nM = Midpoint(A, B)',
     run(a, c) {
       args(a, 1, 2);
@@ -184,13 +184,13 @@ export const COMMANDS: Command[] = [
   {
     names: ['Пересечение', 'Intersect'],
     group: 'points',
-    forms: ['@(a, b)', '@(a, b, n)', '@(a, b, точка рядом)'],
-    doc: 'Точка пересечения прямых, отрезков, окружностей или графиков. Если точек несколько: n — номер (слева направо), или точка, рядом с которой искать. Графики пересекаются в пределах окна, а без него — при x от −10 до 10.',
+    forms: ['@(a, b)', '@(a, b, n)', '@(a, b, nearby point)'],
+    doc: "Intersection of lines, segments, circles or graphs. For multiple intersections, n selects one from left to right, or provide a nearby point. Graph intersections are searched within the view, or from x = −10 to 10 without a view.",
     example: 'f(x) = x^2 - 2\ng(x) = x\nA = Intersect(f, g, 1)\nB = Intersect(f, g, 2)',
     run(a, c) {
       args(a, 2, 3);
       const pts = g.intersect(c.shape(a[0]), c.shape(a[1]), c.range());
-      if (!pts.length) throw new Error('эти объекты не пересекаются');
+      if (!pts.length) throw new Error('These objects do not intersect');
       if (a.length === 2) return point(pts[0]);
       const third = c.val(a[2]);
       if (third.k === 'shape' && third.s.type === 'point') {
@@ -198,22 +198,22 @@ export const COMMANDS: Command[] = [
         return point(pts.reduce((best, p) => (g.dist(p, near) < g.dist(best, near) ? p : best)));
       }
       const n = Math.round(c.num(a[2]));
-      if (n < 1 || n > pts.length) throw new Error(`точек пересечения ${pts.length}, а нужна ${n}-я`);
+      if (n < 1 || n > pts.length) throw new Error(`Intersection count: ${pts.length}, requested index: ${n}`);
       return point(pts[n - 1]);
     },
   },
   {
     names: ['Расстояние', 'Distance'],
     group: 'points',
-    forms: ['@(A, B)', '@(A, прямая)'],
-    doc: 'Число: расстояние между точками или от точки до прямой. Для точек в пространстве — настоящее расстояние (натуральная величина).',
+    forms: ['@(A, B)', '@(A, line)'],
+    doc: "Distance between two points or from a point to a line. For 3D points this is the true spatial distance.",
     example: 'A = (0, 0)\nB = (3, 4)\nd = Distance(A, B)\nCircle(A, d)',
     run(a, c) {
       args(a, 2);
       const first = c.pointAny(a[0]);
       if (is3(first)) {
         const second = c.pointAny(a[1]);
-        if (!is3(second)) throw new Error('нельзя смешивать точки листа (x, y) и точки пространства (x, y, z)');
+        if (!is3(second)) throw new Error('Cannot mix 2D page points (x, y) and 3D spatial points (x, y, z)');
         return num(dist3(first, second));
       }
       return num(g.distanceTo(first, c.shape(a[1])));
@@ -222,14 +222,14 @@ export const COMMANDS: Command[] = [
   {
     names: ['Длина', 'Length'],
     group: 'points',
-    forms: ['@(отрезок)'],
-    doc: 'Число: длина отрезка или вектора, периметр многоугольника, длина окружности или дуги.',
+    forms: ['@(segment)'],
+    doc: "Length of a segment or vector, perimeter of a polygon, or length of a circle or arc.",
     example: 'A = (0, 0)\nB = (3, 4)\ns = Segment(A, B)\nCircle(B, Length(s) / 2)',
     run(a, c) {
       args(a, 1);
       const s = c.shape(a[0]);
       if (s.type === 'space') {
-        if (s.of === 'point' || s.of === 'line' || s.of === 'ray') throw new Error('длина есть у отрезка, вектора и многоугольника');
+        if (s.of === 'point' || s.of === 'line' || s.of === 'ray') throw new Error('Length is available for segments, vectors and polygons');
         const closed = s.of === 'polygon';
         let sum = 0;
         for (let i = 0; i + (closed ? 0 : 1) < s.pts.length; i++) sum += dist3(s.pts[i], s.pts[(i + 1) % s.pts.length]);
@@ -239,14 +239,14 @@ export const COMMANDS: Command[] = [
       if (s.type === 'polygon') return num(s.pts.reduce((sum, p, i) => sum + g.dist(p, s.pts[(i + 1) % s.pts.length]), 0));
       if (s.type === 'circle') return num(2 * Math.PI * s.r);
       if (s.type === 'arc') return num(s.r * Math.abs(s.sweep));
-      throw new Error('длина есть у отрезка, вектора, многоугольника, окружности и дуги');
+      throw new Error('Length is available for segments, vectors, polygons, circles and arcs');
     },
   },
   {
     names: ['Поворот', 'Rotate'],
     group: 'points',
-    forms: ['@(объект, угол)', '@(объект, угол, центр)'],
-    doc: 'Объект, повёрнутый против часовой стрелки вокруг центра (по умолчанию — начало координат). Угол в градусах пишется со знаком °: 60°.',
+    forms: ['@(object, angle)', '@(object, angle, center)'],
+    doc: "Rotate an object counterclockwise around a center, defaulting to the origin. Append ° for degrees, such as 60°.",
     example: 'O = (0, 0)\nA = (3, 0)\nB = Rotate(A, 60°, O)\nSegment(O, A)\nSegment(O, B)',
     run(a, c) {
       args(a, 2, 3);
@@ -258,8 +258,8 @@ export const COMMANDS: Command[] = [
   {
     names: ['Перенос', 'Translate'],
     group: 'points',
-    forms: ['@(объект, вектор)'],
-    doc: 'Объект, сдвинутый на вектор.',
+    forms: ['@(object, vector)'],
+    doc: "Translate an object by a vector.",
     example: 'A = (0, 0)\nB = (2, 1)\nC = (1, 3)\nt = Polygon(A, B, C)\nv = Vector((0, 0), (4, 0))\nTranslate(t, v)',
     run(a, c) {
       args(a, 2);
@@ -270,8 +270,8 @@ export const COMMANDS: Command[] = [
   {
     names: ['Отражение', 'Reflect'],
     group: 'points',
-    forms: ['@(объект, прямая)', '@(объект, точка)'],
-    doc: 'Объект, симметричный относительно прямой или точки.',
+    forms: ['@(object, line)', '@(object, point)'],
+    doc: "Reflect an object across a line or through a point.",
     example: 'A = (1, 1)\nB = (3, 2)\nm = Line((0, 0), (0, 1))\ns = Segment(A, B)\nReflect(s, m)',
     run(a, c) {
       args(a, 2);
@@ -293,8 +293,8 @@ export const COMMANDS: Command[] = [
   {
     names: ['Гомотетия', 'Dilate'],
     group: 'points',
-    forms: ['@(объект, k)', '@(объект, k, центр)'],
-    doc: 'Объект, растянутый в k раз от центра (по умолчанию — начало координат).',
+    forms: ['@(object, k)', '@(object, k, center)'],
+    doc: "Scale an object by factor k from a center, defaulting to the origin.",
     example: 'O = (0, 0)\nA = (1, 0)\nB = (0, 1)\nt = Polygon(O, A, B)\nDilate(t, 2, O)',
     run(a, c) {
       args(a, 2, 3);
@@ -309,7 +309,7 @@ export const COMMANDS: Command[] = [
     names: ['Отрезок', 'Segment'],
     group: 'lines',
     forms: ['@(A, B)'],
-    doc: 'Отрезок AB.',
+    doc: "Segment AB.",
     example: 'A = (0, 0)\nB = (4, 1)\nSegment(A, B)',
     run(a, c) {
       args(a, 2);
@@ -320,14 +320,14 @@ export const COMMANDS: Command[] = [
     names: ['Прямая', 'Line'],
     group: 'lines',
     forms: ['@(A, B)', '@(A, a)'],
-    doc: 'Прямая через точки A и B, или прямая через A параллельно прямой a. Прямая тянется до краёв чертежа.',
+    doc: "Line through A and B, or through A parallel to line a. The line extends to the drawing edges.",
     example: 'A = (0, 0)\nB = (3, 1)\na = Line(A, B)\nC = (0, 2)\nLine(C, a)',
     run(a, c) {
       args(a, 2);
       const second = c.val(a[1]);
       if (second.k === 'shape' && second.s.type === 'space' && second.s.of !== 'point' && second.s.of !== 'polygon') {
         const p = c.pointAny(a[0]);
-        if (!is3(p)) throw new Error('нельзя смешивать точки листа (x, y) и точки пространства (x, y, z)');
+        if (!is3(p)) throw new Error('Cannot mix 2D page points (x, y) and 3D spatial points (x, y, z)');
         const [u, v] = second.s.pts;
         return space('line', [p, { x: p.x + v.x - u.x, y: p.y + v.y - u.y, z: p.z + v.z - u.z }]);
       }
@@ -343,7 +343,7 @@ export const COMMANDS: Command[] = [
     names: ['Луч', 'Ray'],
     group: 'lines',
     forms: ['@(A, B)'],
-    doc: 'Луч из A через B.',
+    doc: "Ray starting at A and passing through B.",
     example: 'A = (0, 0)\nB = (2, 1)\nRay(A, B)',
     run(a, c) {
       args(a, 2);
@@ -354,7 +354,7 @@ export const COMMANDS: Command[] = [
     names: ['Вектор', 'Vector'],
     group: 'lines',
     forms: ['@(A, B)', '@(B)'],
-    doc: 'Вектор из A в B со стрелкой (или из начала координат в B).',
+    doc: "Vector from A to B with an arrow, or from the origin to B.",
     example: 'A = (0, 0)\nB = (3, 2)\nv = Vector(A, B)',
     run(a, c) {
       args(a, 1, 2);
@@ -369,7 +369,7 @@ export const COMMANDS: Command[] = [
     names: ['Перпендикуляр', 'PerpendicularLine', 'Perpendicular'],
     group: 'lines',
     forms: ['@(A, a)'],
-    doc: 'Прямая через A перпендикулярно прямой (отрезку) a.',
+    doc: "Line through A perpendicular to line or segment a.",
     example: 'A = (0, 0)\nB = (5, 1)\nC = (2, 3)\na = Line(A, B)\nPerpendicularLine(C, a)',
     run(a, c) {
       args(a, 2);
@@ -381,8 +381,8 @@ export const COMMANDS: Command[] = [
   {
     names: ['СерединныйПерпендикуляр', 'PerpendicularBisector'],
     group: 'lines',
-    forms: ['@(A, B)', '@(отрезок)'],
-    doc: 'Серединный перпендикуляр к отрезку AB.',
+    forms: ['@(A, B)', '@(segment)'],
+    doc: "Perpendicular bisector of segment AB.",
     example: 'A = (0, 0)\nB = (4, 2)\nSegment(A, B)\nPerpendicularBisector(A, B)',
     run(a, c) {
       args(a, 1, 2);
@@ -404,7 +404,7 @@ export const COMMANDS: Command[] = [
     names: ['Биссектриса', 'AngleBisector'],
     group: 'lines',
     forms: ['@(A, B, C)'],
-    doc: 'Биссектриса угла ABC (вершина — средняя точка).',
+    doc: "Bisector of angle ABC, with the middle point as its vertex.",
     example: 'A = (4, 0)\nB = (0, 0)\nC = (1, 3)\nSegment(B, A)\nSegment(B, C)\nAngleBisector(A, B, C)',
     run(a, c) {
       args(a, 3);
@@ -420,7 +420,7 @@ export const COMMANDS: Command[] = [
     names: ['Касательная', 'Tangent'],
     group: 'lines',
     forms: ['@(x₀, f)', '@(A, f)'],
-    doc: 'Касательная к графику f в точке x₀ (или в точке A графика).',
+    doc: "Tangent to graph f at x₀, or at point A on the graph.",
     example: 'f(x) = x^2 / 2\nA = (1, f(1))\nTangent(A, f)',
     run(a, c) {
       args(a, 2);
@@ -430,7 +430,7 @@ export const COMMANDS: Command[] = [
       const h = 1e-5 * (1 + Math.abs(x0));
       const y0 = f(x0);
       const k = (f(x0 + h) - f(x0 - h)) / (2 * h);
-      if (!Number.isFinite(y0) || !Number.isFinite(k)) throw new Error('в этой точке у графика нет касательной');
+      if (!Number.isFinite(y0) || !Number.isFinite(k)) throw new Error('The graph has no tangent at this point');
       return shape({ type: 'line', a: { x: x0, y: y0 }, b: { x: x0 + 1, y: y0 + k } });
     },
   },
@@ -438,15 +438,15 @@ export const COMMANDS: Command[] = [
   {
     names: ['ШтрихованнаяЛиния', 'HatchedLine', 'ЛинияСоШтриховкой'],
     group: 'lines',
-    forms: ['@(линия, P)', '@(линия, P, длина, шаг)'],
-    doc: 'Линия с короткими косыми штрихами с той стороны, где лежит точка P: граница полуплоскости, «земля», заделка. Если линия уже на чертеже (по имени), к ней добавляются только штрихи; иначе рисуется и она. Длина штриха и шаг — в единицах чертежа (без них — обычные: 1,5 и 2 мм на бланке).',
+    forms: ['@(line, P)', '@(line, P, length, spacing)'],
+    doc: "Line with short diagonal hatch marks on the side containing P, for half-plane boundaries, ground or fixed supports. If the named line already exists, only hatching is added. Otherwise the line is drawn too. Stroke length and spacing use drawing units; defaults correspond to 1.5 and 2 mm on a form.",
     example: 'A = (-3, 0)\nB = (3, 0)\nl = Segment(A, B)\nHatchedLine(l, (0, -1))',
     run(a, c) {
       args(a, 2, 3, 4);
       const l = lineOf(c, a[0]) as Extract<Shape, { type: 'segment' | 'ray' | 'line' | 'vector' }>;
       const of = l.type === 'vector' ? 'segment' : l.type;
-      const len = a[2] ? positive(c, a[2], 'длина штриха') : undefined;
-      const gap = a[3] ? positive(c, a[3], 'шаг штрихов') : undefined;
+      const len = a[2] ? positive(c, a[2], 'hatch stroke length') : undefined;
+      const gap = a[3] ? positive(c, a[3], 'hatch stroke spacing') : undefined;
       let drawn = false;
       if (a[0].t === 'name') {
         try {
@@ -464,7 +464,7 @@ export const COMMANDS: Command[] = [
     names: ['Окружность', 'Circle'],
     group: 'shapes',
     forms: ['@(O, r)', '@(O, A)', '@(A, B, C)'],
-    doc: 'Окружность с центром O и радиусом r, или с центром O через точку A, или через три точки.',
+    doc: "Circle with center O and radius r, with center O through A, or through three points.",
     example: 'O = (0, 0)\nCircle(O, 2)',
     run(a, c) {
       args(a, 2, 3);
@@ -472,7 +472,7 @@ export const COMMANDS: Command[] = [
       const o = c.point(a[0]);
       const second = c.val(a[1]);
       const r = second.k === 'shape' && second.s.type === 'point' ? g.dist(o, second.s.p) : c.num(a[1]);
-      if (!(r > 0)) throw new Error('радиус должен быть больше нуля');
+      if (!(r > 0)) throw new Error('Radius must be positive');
       return shape({ type: 'circle', c: o, r });
     },
   },
@@ -480,7 +480,7 @@ export const COMMANDS: Command[] = [
     names: ['Дуга', 'CircularArc', 'ДугаОкружности'],
     group: 'shapes',
     forms: ['@(O, A, B)'],
-    doc: 'Дуга окружности с центром O от точки A против часовой стрелки до луча OB.',
+    doc: "Counterclockwise circular arc centered at O, from A to ray OB.",
     example: 'O = (0, 0)\nA = (3, 0)\nB = (0, 3)\nCircularArc(O, A, B)',
     run(a, c) {
       args(a, 3);
@@ -497,7 +497,7 @@ export const COMMANDS: Command[] = [
     names: ['Полуокружность', 'Semicircle'],
     group: 'shapes',
     forms: ['@(A, B)'],
-    doc: 'Полуокружность на отрезке AB (слева, если идти от A к B).',
+    doc: "Semicircle on segment AB, on the left when traveling from A to B.",
     example: 'A = (-2, 0)\nB = (2, 0)\nSegment(A, B)\nSemicircle(A, B)',
     run(a, c) {
       args(a, 2);
@@ -510,24 +510,24 @@ export const COMMANDS: Command[] = [
   {
     names: ['Штриховка', 'Hatch', 'Заштриховать'],
     group: 'shapes',
-    forms: ['@(фигура)', '@(фигура, угол, шаг)', '@(фигура, угол, шаг, 2)', '@(f, a, b)', '@(f, g, a, b)', '@(f, g, a, b, угол, шаг)'],
-    doc: 'Штриховка от руки. Фигура — многоугольник или окружность: по имени — штрихуется внутри, сама фигура остаётся как была. @(f, a, b) — область между графиком f и осью x от x = a до x = b; @(f, g, a, b) — между графиками f и g. Угол — направление штрихов, со знаком °, по умолчанию 45°; шаг — расстояние между штрихами в единицах чертежа (на бланке 1 = 1 мм; без него — обычный, 2 мм на бланке); 2 в конце — ещё и поперёк, «в клетку». Сечения, грани, области неравенств и площади штрихуй только так, а не отрезками.',
+    forms: ['@(shape)', '@(shape, angle, spacing)', '@(shape, angle, spacing, 2)', '@(f, a, b)', '@(f, g, a, b)', '@(f, g, a, b, angle, spacing)'],
+    doc: "Hand-drawn hatching inside a named polygon or circle, preserving its outline. @(f, a, b) hatches between f and the x-axis; @(f, g, a, b) hatches between graphs over x = a to b. The default angle is 45°; append ° for degrees. Spacing uses drawing units (1 unit = 1 mm on forms), with a default corresponding to 2 mm. A final 2 adds crosshatching. Use this command for sections, faces, inequalities and areas instead of drawing individual segments.",
     example: 'f(x) = x^2\ng(x) = x + 2\nHatch(f, g, -1, 2)',
     run(a, c) {
-      if (a.length < 1 || a.length > 7) throw new Error('нужно от 1 до 7 аргументов');
+      if (a.length < 1 || a.length > 7) throw new Error('Expected 1 to 7 arguments');
       const first = c.shape(a[0]);
       if (first.type === 'graph') {
         const second = a[1] ? c.val(a[1]) : null;
         const between = second?.k === 'shape' && second.s.type === 'graph';
         const at = between ? 2 : 1;
-        if (a.length < at + 2) throw new Error(between ? 'нужно Hatch(f, g, a, b): между графиками от x = a до x = b' : 'нужно Hatch(f, a, b): от x = a до x = b');
+        if (a.length < at + 2) throw new Error(between ? 'Use Hatch(f, g, a, b) between graphs from x = a to x = b' : 'Use Hatch(f, a, b) from x = a to x = b');
         const x0 = Math.min(c.num(a[at]), c.num(a[at + 1]));
         const x1 = Math.max(c.num(a[at]), c.num(a[at + 1]));
         const top = graphRun(first.f, x0, x1);
         const bottom = between ? graphRun(c.fn(a[1]), x0, x1) : top.map((p) => ({ x: p.x, y: 0 }));
         return shape({ type: 'region', pts: [...top, ...bottom.reverse()], hatch: hatchingOf(c, a.slice(at + 2)) });
       }
-      if (a.length > 4) throw new Error('у фигуры — Hatch(фигура, угол, шаг, 2), не больше');
+      if (a.length > 4) throw new Error('For shapes, use at most Hatch(shape, angle, spacing, 2)');
       const hatch = hatchingOf(c, a.slice(1));
       const flatOf = (s: Shape): Vec[] | null =>
         s.type === 'polygon' || s.type === 'region'
@@ -535,13 +535,13 @@ export const COMMANDS: Command[] = [
           : s.type === 'circle'
             ? Array.from({ length: 64 }, (_, i) => g.add(s.c, g.mul(g.dir((i / 64) * Math.PI * 2), s.r)))
             : null;
-      if (first.type === 'space' ? first.of !== 'polygon' : !flatOf(first)) throw new Error('штрихуются многоугольник, окружность или область между графиками');
+      if (first.type === 'space' ? first.of !== 'polygon' : !flatOf(first)) throw new Error('Hatching requires a polygon, circle or region between graphs');
       if (a[0].t === 'name') {
         c.item(a[0]).hatch = hatch;
         return NONE;
       }
       // A figure written right here: only its hatching is drawn.
-      if (first.type === 'space') throw new Error('многоугольник в пространстве задай с именем: t = Polygon(…), потом Hatch(t)');
+      if (first.type === 'space') throw new Error('Name the spatial polygon first: t = Polygon(…), then Hatch(t)');
       return shape({ type: 'region', pts: flatOf(first)!, hatch });
     },
   },
@@ -549,13 +549,13 @@ export const COMMANDS: Command[] = [
     names: ['Многоугольник', 'Polygon'],
     group: 'shapes',
     forms: ['@(A, B, C, …)', '@(A, B, n)'],
-    doc: 'Многоугольник по вершинам, или правильный n-угольник на стороне AB.',
+    doc: "Polygon through the vertices, or a regular n-sided polygon on side AB.",
     example: 'A = (0, 0)\nB = (4, 0)\nC = (1, 3)\nPolygon(A, B, C)',
     run(a, c) {
-      if (a.length < 3) throw new Error('у многоугольника хотя бы три вершины');
+      if (a.length < 3) throw new Error('A polygon needs at least three vertices');
       if (a.length === 3 && c.val(a[2]).k === 'num') {
         const n = Math.round(c.num(a[2]));
-        if (n < 3 || n > 100) throw new Error('правильный многоугольник — от 3 до 100 сторон');
+        if (n < 3 || n > 100) throw new Error('A regular polygon needs 3 to 100 sides');
         const pts = [c.point(a[0]), c.point(a[1])];
         for (let i = 2; i < n; i++) {
           const prev = pts[i - 2];
@@ -572,14 +572,14 @@ export const COMMANDS: Command[] = [
     names: ['Угол', 'Angle'],
     group: 'shapes',
     forms: ['@(A, B, C)'],
-    doc: 'Дужка угла ABC с вершиной B и его величина в градусах. Прямой угол отмечается квадратиком.',
+    doc: "Angle ABC, with vertex B, shown as an arc and its value in degrees. Right angles use a square marker.",
     example: 'A = (4, 0)\nB = (0, 0)\nC = (2, 3)\nSegment(B, A)\nSegment(B, C)\nAngle(A, B, C)',
     run(a, c) {
       args(a, 3);
       const p = c.point(a[0]);
       const v = c.point(a[1]);
       const q = c.point(a[2]);
-      if (g.dist(p, v) < 1e-12 || g.dist(q, v) < 1e-12) throw new Error('стороны угла не могут начинаться в вершине');
+      if (g.dist(p, v) < 1e-12 || g.dist(q, v) < 1e-12) throw new Error('Angle endpoints must differ from the vertex');
       const from = g.angleOf(g.sub(p, v));
       return shape({ type: 'angle', v, from, sweep: g.turn(from, g.angleOf(g.sub(q, v))) });
     },
@@ -589,8 +589,8 @@ export const COMMANDS: Command[] = [
   {
     names: ['Функция', 'Function'],
     group: 'graphs',
-    forms: ['@(выражение, a, b)'],
-    doc: 'График выражения от x только при x от a до b. Сами графики пишутся как f(x) = … или y = …',
+    forms: ['@(expression, a, b)'],
+    doc: "Plot an expression in x only from a to b. General graphs can be entered as f(x) = … or y = …",
     example: 'f(x) = Function(x^2, -1, 2)',
     run(a, c) {
       args(a, 1, 3);
@@ -605,12 +605,12 @@ export const COMMANDS: Command[] = [
     names: ['Кривая', 'Curve'],
     group: 'graphs',
     forms: ['@(x(t), y(t), t, a, b)'],
-    doc: 'Кривая, заданная параметрически: x и y как выражения от t, при t от a до b.',
+    doc: "Parametric curve with x and y expressed in t, from t = a to b.",
     example: 'Curve(3cos(t), 2sin(t), t, 0, 2pi)',
     run(a, c) {
       args(a, 5);
       const t = a[2];
-      if (t.t !== 'name') throw new Error('третьим аргументом пишется имя параметра, например t');
+      if (t.t !== 'name') throw new Error('The third argument must be a parameter name, such as t');
       const fx = c.fn(a[0], t.name);
       const fy = c.fn(a[1], t.name);
       return shape({ type: 'curve', f: (v) => ({ x: fx(v), y: fy(v) }), t0: c.num(a[3]), t1: c.num(a[4]) });
@@ -619,8 +619,8 @@ export const COMMANDS: Command[] = [
   {
     names: ['Если', 'If'],
     group: 'graphs',
-    forms: ['@(условие, a)', '@(условие, a, b)'],
-    doc: 'Значение a, если условие верно, иначе b (или ничего). Для кусочных функций: f(x) = If(x < 0, -x, x^2).',
+    forms: ['@(condition, a)', '@(condition, a, b)'],
+    doc: "Return a when the condition is true, otherwise b or no value. For piecewise functions: f(x) = If(x < 0, -x, x^2).",
     example: 'f(x) = If(x < 0, -x, x^2)',
     run(a, c) {
       args(a, 2, 3);
@@ -634,7 +634,7 @@ export const COMMANDS: Command[] = [
     names: ['Точка', 'Point'],
     group: 'space',
     forms: ['@(x, y, z)', '@(x, y)'],
-    doc: 'Точка по координатам; то же, что A = (x, y, z). Точка с тремя координатами — в пространстве: чертёж тогда становится эпюром — приложение само рисует её проекции A₁, A₂, линию связи и ось x₁₂. Отрезки, прямые и многоугольники из таких точек тоже рисуются проекциями.',
+    doc: "Point from coordinates, equivalent to A = (x, y, z). Three coordinates create a 3D point and a Monge projection drawing with A₁, A₂, projection links and the x₁₂ axis. Segments, lines and polygons built from these points are projected too.",
     example: 'A = Point(4, 2, 3)',
     run(a, c) {
       args(a, 2, 3);
@@ -646,13 +646,13 @@ export const COMMANDS: Command[] = [
     names: ['Проекции', 'Projections'],
     group: 'space',
     forms: ['@(1, 2)', '@(1, 2, 3)'],
-    doc: 'Какие проекции рисовать на эпюре: 1 — горизонтальная (П₁), 2 — фронтальная (П₂), 3 — профильная (П₃). По умолчанию @(1, 2); с профильной появляются оси z и y и постоянная прямая под 45°.',
+    doc: "Select projection planes: 1 horizontal (Π₁), 2 front (Π₂), 3 profile (Π₃). Default: @(1, 2). Profile projection adds z and y axes and the 45° transfer line.",
     example: 'Projections(1, 2, 3)\nA = (4, 2, 3)',
     view: true,
     run(a, c) {
-      if (!a.length) throw new Error('укажите номера плоскостей: 1, 2 или 3');
+      if (!a.length) throw new Error('Specify projection planes: 1, 2 or 3');
       const planes = a.map((e) => Math.round(c.num(e)));
-      if (planes.some((k) => k < 1 || k > 3)) throw new Error('плоскости проекций — 1, 2 и 3');
+      if (planes.some((k) => k < 1 || k > 3)) throw new Error('Projection planes are 1, 2 and 3');
       c.scene.view.planes = planes;
       return NONE;
     },
@@ -661,7 +661,7 @@ export const COMMANDS: Command[] = [
     names: ['ПоПроекциям', 'FromProjections'],
     group: 'space',
     forms: ['@(A_1, A_2)'],
-    doc: 'Точка в пространстве по её горизонтальной (A₁) и фронтальной (A₂) проекциям — точкам листа на эпюре: x — вдоль оси x₁₂ (влево от O), y — насколько A₁ ниже оси, z — насколько A₂ выше. Удобно, когда проекции даны на бланке.',
+    doc: "Reconstruct a 3D point from its horizontal A₁ and front A₂ projections on the drawing. x follows the x₁₂ axis left from O; y is the distance of A₁ below the axis; z is the distance of A₂ above it. Useful for projections printed on a form.",
     example: 'A_1 = (-3, -2)\nA_2 = (-3, 4)\nA = FromProjections(A_1, A_2)\nHide(A_1)\nHide(A_2)\nB = (6, 1, 2)\nSegment(A, B)',
     run(a, c) {
       args(a, 2);
@@ -675,14 +675,14 @@ export const COMMANDS: Command[] = [
     names: ['Проекция', 'Projection'],
     group: 'space',
     forms: ['@(A, 1)', '@(A, 2)', '@(A, 3)'],
-    doc: 'Проекция точки пространства на П₁, П₂ или П₃ как точка листа — для построений на эпюре (прямоугольный треугольник, вращение): от неё можно вести перпендикуляры, окружности и т. п.',
+    doc: "Project a 3D point onto Π₁, Π₂ or Π₃ as a 2D drawing point for constructions such as right triangles and rotations. Perpendiculars and circles can be constructed from it.",
     example: 'A = (4, 2, 3)\nB = (1, 4, 1)\nSegment(A, B)\nK = Projection(B, 1)\nPerpendicularLine(K, Segment(Projection(A, 1), K))',
     run(a, c) {
       args(a, 2);
       const p = c.pointAny(a[0]);
-      if (!('z' in p)) throw new Error('проекция берётся у точки в пространстве (x, y, z)');
+      if (!('z' in p)) throw new Error('Projection requires a spatial point (x, y, z)');
       const plane = Math.round(c.num(a[1]));
-      if (plane < 1 || plane > 3) throw new Error('плоскость проекций — 1, 2 или 3');
+      if (plane < 1 || plane > 3) throw new Error('Projection plane must be 1, 2 or 3');
       return point(projection(p, plane, !!c.scene.view.xRight));
     },
   },
@@ -691,15 +691,15 @@ export const COMMANDS: Command[] = [
     names: ['НатуральнаяВеличина', 'TrueLength'],
     group: 'space',
     forms: ['@(A, B)', '@(A, B, 2)', '@(A, B, 1, "B_0")'],
-    doc: 'Натуральная величина отрезка AB (точки в пространстве) способом прямоугольного треугольника: на П₁ (1, по умолчанию) или на П₂ (2) строится катет — разность z (на П₁) или y (на П₂) — в сторону от оси, гипотенуза A₁B₀ (A₂B₀) — натуральная величина, угол при A — наклон к плоскости (α к П₁, β к П₂). Всё строится точно. Возвращает гипотенузу: Length(h) — её длина.',
+    doc: "Construct the true length of spatial segment AB using a right triangle on Π₁ (1, default) or Π₂ (2). The perpendicular leg is the z or y difference, drawn away from the axis. Hypotenuse A₁B₀ or A₂B₀ is the true length, and the angle at A gives inclination to the plane. Returns the hypotenuse; Length(h) gives its length.",
     example: 'A = (30, 10, 20)\nB = (10, 30, 45)\nSegment(A, B)\nh = TrueLength(A, B)',
     run(a, c) {
       args(a, 2, 3, 4);
       const pa = c.pointAny(a[0]);
       const pb = c.pointAny(a[1]);
-      if (!is3(pa) || !is3(pb)) throw new Error('натуральная величина — у отрезка в пространстве: точки (x, y, z)');
+      if (!is3(pa) || !is3(pb)) throw new Error('True length requires a spatial segment with (x, y, z) points');
       const n = a[2] ? Math.round(c.num(a[2])) : 1;
-      if (n !== 1 && n !== 2) throw new Error('плоскость — 1 (П₁) или 2 (П₂)');
+      if (n !== 1 && n !== 2) throw new Error('Plane must be 1 (Π₁) or 2 (Π₂)');
       const t = rightTriangle(pa, pb, n, !!c.scene.view.xRight);
       const base = a[1].t === 'name' ? a[1].name.replace(/_.*$/, '') : 'B';
       const name0 = a[3] ? c.str(a[3]) : `${base}_0`;
@@ -717,15 +717,15 @@ export const COMMANDS: Command[] = [
     names: ['УголНаклона', 'Inclination'],
     group: 'space',
     forms: ['@(A, B, 1)', '@(A, B, 2)'],
-    doc: 'Число: угол наклона отрезка AB (точки в пространстве) к П₁ (1) или П₂ (2), в градусах, точно. Для надписи: {Inclination(A, B, 1):0}°.',
+    doc: "Exact inclination of spatial segment AB to Π₁ (1) or Π₂ (2), in degrees. In annotations: {Inclination(A, B, 1):0}°.",
     example: 'A = (30, 10, 20)\nB = (10, 30, 45)\nSegment(A, B)\nText(Inclination(A, B, 1), (0, -20))',
     run(a, c) {
       args(a, 3);
       const pa = c.pointAny(a[0]);
       const pb = c.pointAny(a[1]);
-      if (!is3(pa) || !is3(pb)) throw new Error('угол наклона — у отрезка в пространстве: точки (x, y, z)');
+      if (!is3(pa) || !is3(pb)) throw new Error('Inclination requires a spatial segment with (x, y, z) points');
       const n = Math.round(c.num(a[2]));
-      if (n !== 1 && n !== 2) throw new Error('плоскость — 1 (П₁) или 2 (П₂)');
+      if (n !== 1 && n !== 2) throw new Error('Plane must be 1 (Π₁) or 2 (Π₂)');
       return num(inclination(pa, pb, n));
     },
   },
@@ -733,16 +733,16 @@ export const COMMANDS: Command[] = [
     names: ['Следы', 'Traces'],
     group: 'space',
     forms: ['@(A, B)'],
-    doc: 'Следы прямой AB (точки в пространстве), точно: горизонтальный H (где прямая пересекает П₁) и фронтальный F (П₂) — их проекции H₁, H₂, F₁, F₂, линии связи и продолжение проекций прямой до следов. Через какие четверти проходит прямая — {Quarters(A, B)}.',
+    doc: "Exact horizontal H and front F traces of spatial line AB, with projections H₁, H₂, F₁, F₂, projection links and extended line projections. Use {Quarters(A, B)} for the spatial quadrants crossed by the line.",
     example: 'A = (40, 10, 15)\nB = (10, 25, 5)\nSegment(A, B)\nTraces(A, B)',
     run(a, c) {
       args(a, 2);
       const pa = c.pointAny(a[0]);
       const pb = c.pointAny(a[1]);
-      if (!is3(pa) || !is3(pb)) throw new Error('следы — у прямой в пространстве: точки (x, y, z)');
+      if (!is3(pa) || !is3(pb)) throw new Error('Traces require a spatial line with (x, y, z) points');
       const xr = !!c.scene.view.xRight;
       const { h, f } = traces(pa, pb);
-      if (!h && !f) throw new Error('прямая параллельна обеим плоскостям: следов нет');
+      if (!h && !f) throw new Error('The line is parallel to both planes and has no traces');
       for (const [t, letter] of [[h, 'H'], [f, 'F']] as const) {
         if (!t) continue;
         const p1 = projection(t, 1, xr);
@@ -766,26 +766,26 @@ export const COMMANDS: Command[] = [
     names: ['Четверти', 'Quarters'],
     group: 'space',
     forms: ['@(A, B)'],
-    doc: 'Текст: через какие четверти пространства проходит прямая AB — «I, II, III». Для надписи: Пряма проходить через {Quarters(A, B)} чверті.',
+    doc: "Text listing the spatial quadrants crossed by line AB, such as I, II, III. Use {Quarters(A, B)} in an annotation.",
     example: 'A = (40, 10, 15)\nB = (10, 25, -5)\nSegment(A, B)\nText(Quarters(A, B), (0, 30))',
     run(a, c) {
       args(a, 2);
       const pa = c.pointAny(a[0]);
       const pb = c.pointAny(a[1]);
-      if (!is3(pa) || !is3(pb)) throw new Error('четверти — у прямой в пространстве: точки (x, y, z)');
+      if (!is3(pa) || !is3(pb)) throw new Error('Quadrants require a spatial line with (x, y, z) points');
       return { k: 'str', v: quarters(pa, pb).join(', ') };
     },
   },
   {
-    names: ['Развёртка', 'Развертка', 'Unfold'],
+    names: ['Развёртка', 'Unfold', 'Развертка'],
     group: 'space',
-    forms: ['@(S, A, B, C, P)', '@(S, A, B, C, P, угол)'],
-    doc: 'Развёртка пирамиды SABC (точки в пространстве), точно: вершина S′ — в точке листа P, ребро S′A′ — под углом (в градусах, по умолчанию −60°), грани одна за другой, каждое ребро — своей натуральной величины, основание ABC приложено к A′B′ снаружи. Подписи S, A′, B′, C′, A″, C₀.',
+    forms: ['@(S, A, B, C, P)', '@(S, A, B, C, P, angle)'],
+    doc: "Exact net of spatial pyramid SABC. Vertex S′ is at drawing point P; edge S′A′ uses the supplied angle in degrees, default −60°. Faces use true edge lengths, and base ABC is attached outside A′B′. Labels: S, A′, B′, C′, A″, C₀.",
     example: 'S = (20, 25, 50)\nA = (50, 5, 0)\nB = (0, 5, 0)\nC = (25, 40, 0)\nUnfold(S, A, B, C, (90, 40))',
     run(a, c) {
       args(a, 5, 6);
       const pts = a.slice(0, 4).map((e) => c.pointAny(e));
-      if (!pts.every(is3)) throw new Error('развёртка — у пирамиды в пространстве: точки (x, y, z)');
+      if (!pts.every(is3)) throw new Error('A net requires a spatial pyramid with (x, y, z) points');
       const [sp, ...base] = pts as Vec3[];
       const at = c.point(a[4]);
       const angle = a[5] ? c.num(a[5]) : -60;
@@ -806,16 +806,16 @@ export const COMMANDS: Command[] = [
   {
     names: ['ОсьX', 'XAxis'],
     group: 'space',
-    forms: ['@("влево")', '@("вправо")'],
-    doc: 'Куда смотрит ось x на эпюре. По умолчанию влево от точки O, как в учебниках начертательной геометрии.',
-    example: 'XAxis("вправо")\nA = (4, 2, 3)',
+    forms: ['@("left")', '@("right")'],
+    doc: "Direction of the x-axis in a Monge drawing. Defaults to left from O, following descriptive geometry convention.",
+    example: 'XAxis("right")\nA = (4, 2, 3)',
     view: true,
     run(a, c) {
       args(a, 1);
       const dir = c.str(a[0]).trim().toLowerCase();
       if (['вправо', 'right', 'направо'].includes(dir)) c.scene.view.xRight = true;
       else if (['влево', 'left', 'налево'].includes(dir)) c.scene.view.xRight = false;
-      else throw new Error('ось x направляется "влево" или "вправо"');
+      else throw new Error('The x-axis direction must be left or right');
       return NONE;
     },
   },
@@ -824,9 +824,9 @@ export const COMMANDS: Command[] = [
   {
     names: ['Текст', 'Text'],
     group: 'text',
-    forms: ['@("строка", A)', '@("строка", (x, y))'],
-    doc: 'Надпись почерком; её левый нижний угол — в точке. Индексы пишутся как A_1, степени — x^2.',
-    example: 'Text("Вершина", (1, 2))',
+    forms: ['@("text", A)', '@("text", (x, y))'],
+    doc: "Handwritten text with its bottom-left corner at the point. Use A_1 for subscripts and x^2 for superscripts.",
+    example: 'Text("Vertex", (1, 2))',
     run(a, c) {
       args(a, 1, 2);
       return shape({ type: 'text', text: c.str(a[0]), at: a[1] ? c.point(a[1]) : null });
@@ -835,9 +835,9 @@ export const COMMANDS: Command[] = [
   {
     names: ['Заголовок', 'Title'],
     group: 'text',
-    forms: ['@("строка")'],
-    doc: 'Заголовок над чертежом.',
-    example: 'Title("График функции")\nf(x) = x^2',
+    forms: ['@("text")'],
+    doc: "Title above the drawing.",
+    example: 'Title("Function graph")\nf(x) = x^2',
     view: true,
     run(a, c) {
       args(a, 1);
@@ -848,8 +848,8 @@ export const COMMANDS: Command[] = [
   {
     names: ['Подпись', 'SetCaption'],
     group: 'text',
-    forms: ['@(объект, "текст")'],
-    doc: 'Своя подпись у объекта вместо его имени. Точки подписаны своими именами и без этого.',
+    forms: ['@(object, "text")'],
+    doc: "Custom object caption instead of its name. Points display their names automatically.",
     example: 'f(x) = sin(x)\nSetCaption(f, "y = sin x")',
     run(a, c) {
       args(a, 2);
@@ -862,8 +862,8 @@ export const COMMANDS: Command[] = [
   {
     names: ['ПоказатьПодпись', 'ShowLabel'],
     group: 'text',
-    forms: ['@(объект, true)', '@(объект, false)'],
-    doc: 'Показать или спрятать подпись объекта. Без подписи по умолчанию всё, кроме точек и углов.',
+    forms: ['@(object, true)', '@(object, false)'],
+    doc: "Show or hide an object caption. Only points and angles have captions by default.",
     example: 'f(x) = x^2\nShowLabel(f, true)',
     run(a, c) {
       args(a, 1, 2);
@@ -876,8 +876,8 @@ export const COMMANDS: Command[] = [
   {
     names: ['Цвет', 'SetColor'],
     group: 'style',
-    forms: ['@(объект, "red")'],
-    doc: 'Цвет пера: red, blue, green, orange, purple, brown, gray, pink, cyan, yellow, black (или по-русски: «красный»…).',
+    forms: ['@(object, "red")'],
+    doc: "Pen color: red, blue, green, orange, purple, brown, gray, pink, cyan, yellow or black. Russian color aliases are also accepted.",
     example: 'f(x) = x^2\nSetColor(f, "red")',
     run(a, c) {
       args(a, 2, 4);
@@ -891,20 +891,20 @@ export const COMMANDS: Command[] = [
       const name = c.str(a[1]).trim().toLowerCase();
       if (/^#[0-9a-f]{6}$/.test(name)) it.color = name;
       else if (name in COLORS) it.color = COLORS[name] ?? undefined;
-      else throw new Error(`не знаю цвет «${name}»: есть red, blue, green, orange, purple, brown, gray, pink, cyan, yellow, black`);
+      else throw new Error(`Unknown color “${name}»: available colors: red, blue, green, orange, purple, brown, gray, pink, cyan, yellow, black`);
       return NONE;
     },
   },
   {
     names: ['СтильЛинии', 'SetLineStyle'],
     group: 'style',
-    forms: ['@(объект, n)'],
-    doc: 'Вид линии: 0 — сплошная, 1 — штриховая (невидимые линии), 2 — мелкий штрих, 3 — точки, 4 — штрихпунктир (оси).',
+    forms: ['@(object, n)'],
+    doc: "Line style: 0 solid, 1 dashed for hidden lines, 2 short dashes, 3 dotted, 4 dash-dot for axes.",
     example: 'A = (0, 0)\nB = (4, 2)\ns = Segment(A, B)\nSetLineStyle(s, 1)',
     run(a, c) {
       args(a, 2);
       const n = Math.round(c.num(a[1]));
-      if (n < 0 || n > 4) throw new Error('стиль линии — число от 0 до 4');
+      if (n < 0 || n > 4) throw new Error('Line style must be a number from 0 to 4');
       c.item(a[0]).lineStyle = n;
       return NONE;
     },
@@ -912,13 +912,13 @@ export const COMMANDS: Command[] = [
   {
     names: ['СтильТочки', 'SetPointStyle'],
     group: 'style',
-    forms: ['@(точка, n)'],
-    doc: 'Вид точки: 0 — закрашенная, 1 — крестик ×, 2 — незакрашенный кружок (выколотая точка: разрыв графика, конец промежутка, который в него не входит), 3 — плюс +. Линии через незакрашенный кружок не проходят.',
+    forms: ['@(point, n)'],
+    doc: "Point style: 0 filled, 1 cross ×, 2 open circle for excluded points or discontinuities, 3 plus +. Lines do not pass through an open circle.",
     example: 'f(x) = x + 1\nA = (1, 2)\nSetPointStyle(A, 2)',
     run(a, c) {
       args(a, 2);
       const n = Math.round(c.num(a[1]));
-      if (n < 0) throw new Error('стиль точки — 0, 1, 2 или 3');
+      if (n < 0) throw new Error('Point style must be 0, 1, 2 or 3');
       // GeoGebra's other styles to the nearest: 5 ◇ open, 4 ◆ and the triangles filled.
       c.item(a[0]).pointStyle = n <= 3 ? n : n === 5 ? 2 : 0;
       return NONE;
@@ -927,8 +927,8 @@ export const COMMANDS: Command[] = [
   {
     names: ['Толщина', 'SetLineThickness'],
     group: 'style',
-    forms: ['@(объект, n)'],
-    doc: 'Толщина линии от 1 до 13; обычная — 5, тонкая (линии связи, построения) — 2.',
+    forms: ['@(object, n)'],
+    doc: "Line thickness from 1 to 13. Default: 5. Thin projection and construction lines: 2.",
     example: 'A = (0, 0)\nB = (4, 2)\ns = Segment(A, B)\nSetLineThickness(s, 2)',
     run(a, c) {
       args(a, 2);
@@ -939,8 +939,8 @@ export const COMMANDS: Command[] = [
   {
     names: ['Заливка', 'SetFilling'],
     group: 'style',
-    forms: ['@(объект, доля)'],
-    doc: 'Штриховка внутри многоугольника или окружности: 0 — нет, 1 — самая густая.',
+    forms: ['@(object, fraction)'],
+    doc: "Hatching density inside a polygon or circle: 0 none, 1 maximum.",
     example: 'A = (0, 0)\nB = (4, 0)\nC = (1, 3)\nt = Polygon(A, B, C)\nSetFilling(t, 0.3)',
     run(a, c) {
       args(a, 2);
@@ -951,8 +951,8 @@ export const COMMANDS: Command[] = [
   {
     names: ['Скрыть', 'Hide', 'SetVisibleInView'],
     group: 'style',
-    forms: ['@(объект)'],
-    doc: 'Не рисовать объект, но пользоваться им в построениях (вспомогательные точки и прямые). Понимается и SetVisibleInView(объект, 1, false).',
+    forms: ['@(object)'],
+    doc: "Hide an object while keeping it available for constructions. SetVisibleInView(object, 1, false) is also accepted.",
     example: 'A = (0, 0)\nB = (4, 0)\na = Line(A, B)\nHide(a)\nC = (2, 3)\nH = Intersect(PerpendicularLine(C, a), a)\nSegment(C, H)',
     run(a, c) {
       args(a, 1, 3);
@@ -966,19 +966,19 @@ export const COMMANDS: Command[] = [
     names: ['Окно', 'ZoomIn'],
     group: 'view',
     forms: ['@(xmin, ymin, xmax, ymax)', '@(xmin, xmax)'],
-    doc: 'Какую часть плоскости показать. Без этой команды окно подбирается само, чтобы всё было видно.',
+    doc: "Set the visible plane region. Without this command, the view automatically fits all content.",
     example: 'ZoomIn(-2pi, -1.5, 2pi, 1.5)\nf(x) = sin(x)',
     view: true,
     run(a, c) {
       args(a, 2, 4);
       const [x0, x1] = a.length === 4 ? [a[0], a[2]] : [a[0], a[1]];
       const xr: [number, number] = [c.num(x0), c.num(x1)];
-      if (!(xr[0] < xr[1])) throw new Error('xmin должен быть меньше xmax');
+      if (!(xr[0] < xr[1])) throw new Error('xmin must be less than xmax');
       c.scene.view.x = xr;
       c.scene.view.xPi = c.usesPi(x0) || c.usesPi(x1);
       if (a.length === 4) {
         const yr: [number, number] = [c.num(a[1]), c.num(a[3])];
-        if (!(yr[0] < yr[1])) throw new Error('ymin должен быть меньше ymax');
+        if (!(yr[0] < yr[1])) throw new Error('ymin must be less than ymax');
         c.scene.view.y = yr;
         c.scene.view.yPi = c.usesPi(a[1]) || c.usesPi(a[3]);
       }
@@ -989,7 +989,7 @@ export const COMMANDS: Command[] = [
     names: ['Оси', 'ShowAxes'],
     group: 'view',
     forms: ['@(true)', '@(false)'],
-    doc: 'Показать или убрать оси координат. По умолчанию оси есть, только когда на чертеже есть графики.',
+    doc: "Show or hide coordinate axes. Axes appear by default only when the drawing includes graphs.",
     example: 'ShowAxes(true)\nA = (2, 1)',
     view: true,
     run(a, c) {
@@ -1001,7 +1001,7 @@ export const COMMANDS: Command[] = [
     names: ['Сетка', 'ShowGrid'],
     group: 'view',
     forms: ['@(true)', '@(false)'],
-    doc: 'Показать или убрать сетку.',
+    doc: "Show or hide the grid.",
     example: 'ShowGrid(true)\nf(x) = x / 2',
     view: true,
     run(a, c) {
@@ -1012,8 +1012,8 @@ export const COMMANDS: Command[] = [
   {
     names: ['НаБланке', 'OnBlank'],
     group: 'view',
-    forms: ['@(x, y)', '@(x, y, мм)'],
-    doc: 'Чертёж на бланке: начало координат — в точке листа (x, y), в миллиметрах от левого верхнего угла (y вниз); одна единица — 1 мм (или столько мм, сколько задано третьим числом). Окно не подбирается, оси и ось x₁₂ не рисуются: они уже напечатаны. Точки бланка удобно брать пипеткой «⌖».',
+    forms: ['@(x, y)', '@(x, y, mm)'],
+    doc: "Place a drawing on a form. The origin is (x, y) in millimeters from the top-left page corner, with y downward. One drawing unit is 1 mm unless the third argument specifies otherwise. Automatic view fitting and axes are disabled because they are already printed. Use the ⌖ eyedropper to pick form points.",
     example: 'OnBlank(120, 95)\nA = (0, 0)\nB = (30, 20)\nSegment(A, B)',
     view: true,
     run(a, c) {
@@ -1021,7 +1021,7 @@ export const COMMANDS: Command[] = [
       const x = c.num(a[0]);
       const y = c.num(a[1]);
       const unit = a[2] ? c.num(a[2]) : 1;
-      if (![x, y].every(Number.isFinite) || !(unit > 0)) throw new Error('нужны два числа (мм от левого верхнего угла листа) и, если надо, мм на единицу > 0');
+      if (![x, y].every(Number.isFinite) || !(unit > 0)) throw new Error('Expected two coordinates in mm from the top-left page corner and an optional positive mm-per-unit value');
       c.scene.view.blank = { x, y, unit };
       return NONE;
     },
@@ -1030,14 +1030,14 @@ export const COMMANDS: Command[] = [
     names: ['Пропорции', 'SetAxesRatio'],
     group: 'view',
     forms: ['@(1, 1)', '@(a, b)'],
-    doc: 'Масштаб осей: a единиц по x той же длины, что b единиц по y. @(1, 1) — одинаковый масштаб (так уже есть, если на чертеже нет графиков или есть окружности).',
+    doc: "Axis scale: a x-units have the same length as b y-units. @(1, 1) uses equal scales, already the default when there are no graphs or when circles are present.",
     example: 'SetAxesRatio(1, 1)\nf(x) = x^2 / 4',
     view: true,
     run(a, c) {
       args(a, 2);
       const p = c.num(a[0]);
       const q = c.num(a[1]);
-      if (!(p > 0 && q > 0)) throw new Error('пропорции — два положительных числа');
+      if (!(p > 0 && q > 0)) throw new Error('Scale requires two positive numbers');
       c.scene.view.ratio = p / q;
       return NONE;
     },
@@ -1046,17 +1046,17 @@ export const COMMANDS: Command[] = [
 
 /** Numbers and formulas: shown in the help and in the instructions. */
 export const FORMULA_HELP: { code: string; doc: string }[] = [
-  { code: '+ − * / ^ ( )', doc: 'действия; умножение можно не писать: 2x, 3sin(x), 2(x + 1)' },
-  { code: 'pi, e', doc: 'числа π и e; π можно писать и значком' },
-  { code: '30°', doc: 'градусы; без знака ° углы в радианах' },
-  { code: 'sqrt(x), abs(x), |x|', doc: 'корень и модуль' },
-  { code: 'sin cos tan cot', doc: 'тригонометрия (можно tg, ctg), аргумент в радианах' },
-  { code: 'asin acos atan', doc: 'обратные (можно arcsin, arccos, arctg)' },
-  { code: 'ln(x), lg(x), log(b, x), exp(x)', doc: 'логарифмы: натуральный, десятичный, по основанию b; log(x) — натуральный, как в GeoGebra' },
-  { code: 'floor ceil round sgn min max', doc: 'округления, знак, минимум и максимум' },
-  { code: 'x(A), y(A)', doc: 'координаты точки A' },
-  { code: 'f(2)', doc: 'значение заданной функции' },
-  { code: 'A + (1, 0), 2v', doc: 'точки и векторы можно складывать и умножать на число' },
+  { code: '+ − * / ^ ( )', doc: "Arithmetic; multiplication signs are optional: 2x, 3sin(x), 2(x + 1)" },
+  { code: 'pi, e', doc: "Constants π and e; π can also be entered as a symbol" },
+  { code: '30°', doc: "Degrees; without °, angles use radians" },
+  { code: 'sqrt(x), abs(x), |x|', doc: "Square root and absolute value" },
+  { code: 'sin cos tan cot', doc: "Trigonometry, also accepting tg and ctg; arguments use radians" },
+  { code: 'asin acos atan', doc: "Inverse trigonometry, also accepting arcsin, arccos and arctg" },
+  { code: 'ln(x), lg(x), log(b, x), exp(x)', doc: "Natural, base-10 and base-b logarithms; log(x) is natural, as in GeoGebra" },
+  { code: 'floor ceil round sgn min max', doc: "Rounding, sign, minimum and maximum" },
+  { code: 'x(A), y(A)', doc: "Coordinates of point A" },
+  { code: 'f(2)', doc: "Value of a defined function" },
+  { code: 'A + (1, 0), 2v', doc: "Points and vectors can be added and multiplied by a number" },
 ];
 
 /** GeoGebra commands that only matter on a screen: skipped without complaint. */

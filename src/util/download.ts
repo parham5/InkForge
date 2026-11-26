@@ -64,7 +64,7 @@ export async function saveFile(blob: Blob, filename: string, folder?: string | n
         headers: { 'x-file-name': encodeURIComponent(filename), ...(dir ? { 'x-folder': encodeURIComponent(dir) } : {}) },
       });
     } catch (err) {
-      alert(`Не удалось сохранить «${filename}»: ${String(err)}`);
+      alert(`Could not save “${filename}»: ${String(err)}`);
       throw err;
     }
   } else {

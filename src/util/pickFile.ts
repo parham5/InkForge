@@ -17,7 +17,7 @@ export async function pickJsonFile(): Promise<PickedFile | null> {
       const picked = await invoke<[string, string] | null>('pick_json');
       return picked && { name: picked[0], text: picked[1] };
     } catch (err) {
-      alert(`Не удалось открыть файл: ${String(err)}`);
+      alert(`Could not open file: ${String(err)}`);
       return null;
     }
   }

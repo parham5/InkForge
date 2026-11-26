@@ -1226,6 +1226,43 @@ mod tests {
         assert!(ids[1] >= first + n && ids[2] >= first + n, "middle letters use joining variants: {ids:?}");
     }
 
+    #[test]
+    fn english_cursive_joins_connected_letters_and_keeps_isolated_letters_standalone() {
+        let mut e = EngineCore::new();
+        let connected_a = wave_sample("a", "a", 300.0, true);
+        let connected_b = wave_sample("b", "b", 300.0, true);
+        let standalone = wave_sample("c", "c", 300.0, false);
+        e.set_samples(vec![connected_a, connected_b, standalone]);
+        e.set_style(Style { derive: false, ..Style::default() });
+
+        let connected = e.render_paragraph("ab", 1600.0, 800.0, 1, &HashMap::new(), &CharStyles::default());
+        let standalone = e.render_paragraph("c", 1600.0, 800.0, 1, &HashMap::new(), &CharStyles::default());
+        assert_eq!(connected.missing, Vec::<String>::new());
+        assert_eq!(standalone.missing, Vec::<String>::new());
+        assert!(!connected.d.is_empty(), "connected sample strokes render to document paths");
+        assert!(!standalone.d.is_empty(), "standalone sample strokes render to document paths");
+        e.set_style(Style { derive: false, connect: false, bridge: false, ..Style::default() });
+        let unconnected = e.render_paragraph("ab", 1600.0, 800.0, 1, &HashMap::new(), &CharStyles::default());
+        assert_ne!(connected.d, unconnected.d, "English cursive joins change the rendered word paths");
+
+        let font = e.build_font().unwrap();
+        assert_eq!(shape(&font, "ab").len(), 2, "connected Latin letters shape independently with their joining forms");
+        assert_eq!(shape(&font, "c").len(), 1, "a standalone Latin letter remains available");
+    }
+
+    #[test]
+    fn latin_samples_shape_with_their_cursive_gsub_forms() {
+        let mut e = EngineCore::new();
+        e.set_samples(vec![wave_sample("1", "a", 300.0, true), wave_sample("2", "b", 300.0, true)]);
+        e.set_style(Style { derive: false, ..Style::default() });
+        let font = e.build_font().unwrap();
+        let single = shape(&font, "a");
+        let joined = shape(&font, "ab");
+        assert_eq!(single.len(), 1);
+        assert_eq!(joined.len(), 2);
+        assert!(single[0] != 0 && joined.iter().all(|&id| id != 0));
+    }
+
     /// A pair as wide as its two letters written apart.
     fn pair_sample(id: &str, ch: &str, h: f64, width: f64) -> Sample {
         let mut s = wave_sample(id, ch, h, true);

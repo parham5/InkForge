@@ -349,7 +349,7 @@ export function Documents() {
   };
 
   const removeDoc = async (d: HandDocument) => {
-    if (!confirm(`Delete «${d.title}»? Это нельзя отменить.`)) return;
+    if (!confirm(`Delete «${d.title}»? This cannot be undone.`)) return;
     await db.documents.delete(d.id);
     const own = pageSetup(d.page).blank;
     if (own) await db.blanks.delete(own);
@@ -435,7 +435,7 @@ export function Documents() {
               ) : (
                 <button className="doc-link" onClick={() => setCurrentId(d.id)} onDoubleClick={() => setRenaming(d.id)}>
                   <span className="doc-title">{d.title || 'Untitled'}</span>
-                  <span className="muted small">{new Date(d.updatedAt).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                  <span className="muted small">{new Date(d.updatedAt).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' })}</span>
                 </button>
               )}
               <button className="doc-action" onClick={() => setRenaming(d.id)} aria-label="Rename document" title="Rename">
@@ -601,7 +601,7 @@ export function Documents() {
                 className="rail-btn"
                 disabled={ink}
                 onClick={() => setAsking(true)}
-                title="Заполнить бланк с нейронкой: картинка с разметкой и запрос для чата; ответ — Ctrl+V в документе"
+                title="Fill a form with AI: copy the annotated image and prompt into a chat, then paste the response into the document with Ctrl+V"
                 aria-label="Ask AI"
               >
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden>
@@ -614,7 +614,7 @@ export function Documents() {
             <button
               className={`rail-btn ${ink ? 'on' : ''}`}
               onClick={() => setInk(!ink)}
-              title={ink ? 'Edit' : 'Render: каждая буква уникальна, строки неровные, как на бумаге'}
+              title={ink ? 'Edit' : 'Render: unique letters and natural line variation, just like handwriting on paper'}
               aria-label={ink ? 'Edit' : 'Render'}
               aria-pressed={ink}
             >
@@ -625,13 +625,13 @@ export function Documents() {
         </>
       )}
       {zoom !== 1 && (
-        <button className="zoom-pill float no-print" onClick={() => zoomTo(1)} title="Масштаб листа: Ctrl + колесо, Ctrl + «+» / «−»; щелчок — 100 % (Ctrl + 0)">
+        <button className="zoom-pill float no-print" onClick={() => zoomTo(1)} title="Page zoom: Ctrl + wheel or Ctrl + +/−; click for 100% (Ctrl + 0)">
           {Math.round(zoom * 100)} % · ⟲
         </button>
       )}
       {asking && blank && <AskDialog blank={blank} onClose={() => setAsking(false)} />}
       {report && <AnswerCard report={report} onClose={() => setReport(null)} />}
-      {answerBusy && <div className="answer-busy float no-print">Раскладываю ответ нейронки по бланку…</div>}
+      {answerBusy && <div className="answer-busy float no-print">Placing the AI response on the form…</div>}
       {desk && doc && content && <DeskDialog base={pageExport()} setup={page} onClose={() => setDesk(false)} />}
     </div>
   );

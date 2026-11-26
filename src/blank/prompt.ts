@@ -19,24 +19,24 @@ export interface AskChoice {
 
 export const DEFAULT_ASK: AskChoice = { variant: '', name: '', tasks: '', wishes: '' };
 
-const KIND: Record<BlankMark['kind'], string> = { circle: 'точка (кружок)', dot: 'точка', cross: 'пересечение линий', end: 'конец линии', free: 'точка' };
+const KIND: Record<BlankMark['kind'], string> = { circle: "point (circle)", dot: "point", cross: "line intersection", end: "line endpoint", free: "point" };
 
 /** A short example of an answer (another blank). */
-export const ANSWER_EXAMPLE = `задание 3
-начало @2
+export const ANSWER_EXAMPLE = `task 3
+origin @2
 A = FromProjections(@7, @6)
 B = FromProjections(@9, @8)
 h = TrueLength(A, B, 1)
 g = TrueLength(A, B, 2)
-надпись у @9 справа: $\\alpha$ = {Inclination(A, B, 1):0}°, $\\beta$ = {Inclination(A, B, 2):0}°
-надпись в R1: |AB| = {Length(h):0} мм
+note at @9 right: $\\alpha$ = {Inclination(A, B, 1):0}°, $\\beta$ = {Inclination(A, B, 2):0}°
+note in R1: |AB| = {Length(h):0} mm
 
-задание 2
-начало @12
+task 2
+origin @12
 L = FromProjections(@14, @13)
 M = FromProjections(@16, @15)
 Traces(L, M)
-надпись в R2: Пряма l проходить через {Quarters(L, M)} чверті`;
+note in R2: Line l crosses quadrants {Quarters(L, M)}`;
 
 /** The whole request; the marked picture goes with it. */
 export function blankPrompt(b: Blank, marks: BlankMark[], areas: Area[], ask: AskChoice): string {
@@ -44,65 +44,65 @@ export function blankPrompt(b: Blank, marks: BlankMark[], areas: Area[], ask: As
   const out: string[] = [];
   const rule = (i: number) => RULES[i];
   out.push(
-    'Ты заполняешь бланк практической работы за студента. Приложение InkForge напишет всё от руки его почерком прямо на распечатке бланка. От тебя нужен только ответ в строгом формате ниже: что построить, что написать и где.',
+    "Complete the practical worksheet. InkForge writes the result in the user’s handwriting directly on the printed form. Return only the strict format below, specifying what to construct, what to write and where.",
     '',
-    'КАРТИНКА',
-    'Вместе с этим текстом — картинка бланка с разметкой. На бумаге разметки не будет, она только для тебя:',
-    '- голубая сетка через 10 мм; числа по краям — миллиметры от левого верхнего угла листа (x вправо, y вниз);',
-    '- красные метки @1, @2, … — точки бланка; их точные места знает приложение;',
-    '- зелёные рамки R1, R2, … — свободные места листа.',
+    "IMAGE",
+    "An annotated form image accompanies this text. These annotations are reference aids and will not appear on the paper:",
+    "- blue grid at 10 mm intervals; edge numbers are millimeters from the top-left page corner, x rightward and y downward;",
+    "- red markers @1, @2, … identify form points whose exact positions are known to the application;",
+    "- green areas R1, R2, … identify free space on the page.",
     '',
-    'ДАННЫЕ',
-    `Лист: ${BLANK_FORMATS[b.format].name} ${b.landscape ? 'альбомный' : 'книжный'}, ${w} × ${h} мм.`,
-    `Вариант: ${ask.variant.trim() || 'не указан (если на бланке есть таблица вариантов — спроси номер, прежде чем отвечать)'}.`,
-    `Студент (подпись): ${ask.name.trim().replace(/\.$/, '') || 'не указан — подпись не пиши'}.`,
-    `Сделать: ${ask.tasks.trim() ? `только задание ${ask.tasks.trim()}` : 'весь бланк, все задания'}.`,
-    ...(ask.wishes.trim() ? [`Пожелания: ${ask.wishes.trim()}`] : []),
+    "DATA",
+    `Paper: ${BLANK_FORMATS[b.format].name} ${b.landscape ? "landscape" : "portrait"}, ${w} × ${h} mm.`,
+    `Variant: ${ask.variant.trim() || "not specified; if the form has a variant table, ask for the number before answering"}.`,
+    `Student signature: ${ask.name.trim().replace(/\.$/, '') || "not specified; do not add a signature"}.`,
+    `Complete: ${ask.tasks.trim() ? `only task ${ask.tasks.trim()}` : "the entire form, all tasks"}.`,
+    ...(ask.wishes.trim() ? [`Additional instructions: ${ask.wishes.trim()}`] : []),
     '',
-    'Точки бланка (мм от левого верхнего угла — только чтобы ориентироваться; в ответе пиши @номер):',
+    "Form points in mm from the top-left corner, for reference only; use @number in the response:",
     ...marks.map((m, i) => `@${i + 1} ${markText(markMm(b, m))} — ${KIND[m.kind]}`),
     '',
-    'Свободные места (мм):',
-    ...(areas.length ? areas.map((a, i) => `R${i + 1}: x ${Math.round(a.x)}…${Math.round(a.x + a.w)}, y ${Math.round(a.y)}…${Math.round(a.y + a.h)}`) : ['(не нашлись)']),
+    "Free areas (mm):",
+    ...(areas.length ? areas.map((a, i) => `R${i + 1}: x ${Math.round(a.x)}…${Math.round(a.x + a.w)}, y ${Math.round(a.y)}…${Math.round(a.y + a.h)}`) : ["(none detected)"]),
     '',
-    'КАК РЕШАТЬ',
-    '1. Прочитай условие каждого задания на картинке и реши его так, как решают на бумаге: построением по методу из учебника (прямоугольный треугольник, вращение, замена плоскостей…), а не одними числами.',
-    '2. Строй от напечатанного: найди метки @ у нужных точек (подписи A₁, B₂, 0 стоят рядом с ними) и бери точки по меткам. Не угадывай координаты напечатанного по сетке. Если нужной точки нет среди меток — так и напиши комментарием (# нет метки у C₂), и возьми её по сетке.',
-    '3. Числа, которые зависят от напечатанного (длины, углы, координаты следов), не измеряй и не считай сам: пиши выражение в фигурных скобках, приложение посчитает его по точным координатам: {Distance(A_1, B_0):0}, {Angle(B_1, A_1, B_0):0}. После двоеточия — сколько знаков после запятой.',
-    '4. Ответы и надписи — на языке бланка, коротко, как пишет студент. Подпись студента — у строки для подписи исполнителя.',
+    "SOLUTION METHOD",
+    "1. Read each task in the image and solve it using textbook geometric constructions, such as right triangles, rotation or changes of projection planes, rather than numerical answers alone.",
+    "2. Start from the printed geometry. Use @ markers beside labels A₁, B₂ and 0; do not estimate printed point coordinates from the grid. If a required point lacks a marker, say so in a # comment and use the grid for that point.",
+    "3. Do not measure or calculate values that depend on printed geometry yourself. Put expressions in braces so the application uses exact coordinates: {Distance(A_1, B_0):0}, {Angle(B_1, A_1, B_0):0}. The number after the colon specifies decimal places.",
+    "4. Write concise answers and annotations in the form’s language. Place the student signature on the designated signature line.",
     '',
-    'ФОРМАТ ОТВЕТА',
-    'Один блок кода с меткой бланк. Никаких пояснений ни до, ни после. Строки:',
-    '  задание N            начало задания; N — как на бланке: 1, 2, 3, 4а…',
-    '  начало @5            начало координат задания — напечатанная точка (обычно 0 на оси x₁₂),',
-    '  начало (x, y)        или место листа в мм — для чертежа на свободном месте',
-    '  команды чертежа      по одной на строке, только из списка КОМАНДЫ',
-    '  надпись ГДЕ: ТЕКСТ   надпись почерком; ГДЕ — «у @9 справа» (слева, сверху, снизу), «в R2» или «(x, y)» в мм листа;',
-    '                       длинную надпись продолжай на следующих строках с отступом в два пробела',
-    '  # …                  комментарий',
+    "RESPONSE FORMAT",
+    "Use one code block labeled blank, with no surrounding explanations. Lines:",
+    "  task N              start a task; use its printed number, such as 1, 2, 3 or 4a",
+    "  origin @5           task origin at a printed point, usually 0 on the x₁₂ axis",
+    "  origin (x, y)       or a position in page millimeters for a drawing in free space",
+    "  drawing commands    one per line, from the COMMANDS list only",
+    "  note WHERE: TEXT    handwritten annotation; WHERE is at @9 right (left, above, below), in R2, or (x, y) in page millimeters",
+    "                      continue long annotations on following lines indented by two spaces",
+    "  # …                 comment",
     '',
-    'КООРДИНАТЫ ЧЕРТЕЖА',
-    'От начала задания, 1 = 1 мм. Точка листа (x, y): x вправо, y вверх. Точка пространства (x, y, z) — как в учебнике и на бланке: x влево вдоль оси x₁₂, y — вниз на П₁, z — вверх на П₂. Ось x₁₂ и начало не рисуй — они напечатаны.',
-    '  A_1 = @7                       точка бланка (точка листа)',
-    '  A = FromProjections(@7, @6)    точка пространства по горизонтальной (A₁) и фронтальной (A₂) проекции',
-    '  K = Projection(A, 1)           проекция точки пространства на П₁ (2, 3) как точка листа',
+    "DRAWING COORDINATES",
+    "Relative to the task origin, 1 unit = 1 mm. Page points (x, y): x rightward, y upward. Spatial points (x, y, z): x leftward along x₁₂, y downward on Π₁, z upward on Π₂. Do not redraw the printed x₁₂ axis or origin.",
+    "  A_1 = @7                     printed form point, represented as a page point",
+    "  A = FromProjections(@7, @6)  spatial point from horizontal A₁ and front A₂ projections",
+    "  K = Projection(A, 1)         spatial point projected onto Π₁ (or 2, 3) as a page point",
     '',
-    'ПРАВИЛА ЧЕРТЕЖА',
-    '- Не рисуй заново то, что напечатано. Точки, заданные через @, приложение само не рисует. Напечатанный отрезок или прямую, нужные для построения, задай и спрячь: h = Segment(A_1, B_1), Hide(h).',
-    '- Новые точки называй как в учебнике: A_0, B_0, K, M_1… Метки @ — не имена: свои точки так не называй.',
-    '- Линии построения и связи — SetLineThickness(…, 2), невидимое — SetLineStyle(…, 1), результат — без настроек.',
-    '- Стандартные построения — только готовыми командами, они строят точно: натуральная величина и углы наклона отрезка — TrueLength и Inclination; следы прямой и четверти — Traces и Quarters; развёртка пирамиды — Unfold. Не строй их вручную пересечениями и окружностями.',
-    '- Углы и длины, заданные условием (30°, 45°, 60°, отрезки 15 и 20 мм), строй точно — Rotate(…, 45°), Circle(A, 20) — и в надписях пиши число из условия, а не {…}. {…} — только для того, что получается из построения (натуральная величина, угол наклона).',
-    '- Обозначения — только те, что в условии задания, и учебные: индексы 0, 1, 2, 3, штрих (A_0, B_1, A′). Новых букв не придумывай.',
-    '- Чертёж на свободном месте (развёртка и т. п.) — с «начало (x, y)» внутри своей рамки R и такого размера, чтобы в неё поместиться.',
+    "DRAWING RULES",
+    "- Do not redraw printed content. Points defined with @ are automatically hidden. Define and hide printed segments or lines needed for construction: h = Segment(A_1, B_1), Hide(h).",
+    "- Name new points using textbook notation: A_0, B_0, K, M_1… Do not use @ markers as names for new points.",
+    "- Use SetLineThickness(…, 2) for construction and projection links, SetLineStyle(…, 1) for hidden geometry, and default settings for results.",
+    "- Use exact built-in constructions: TrueLength and Inclination for spatial segment length and inclination; Traces and Quarters for spatial lines; Unfold for pyramid nets. Do not reconstruct these manually with intersections and circles.",
+    "- Construct specified angles and lengths exactly, such as Rotate(…, 45°) or Circle(A, 20), and write the supplied number in annotations. Use {…} only for derived construction values.",
+    "- Use only the task’s notation and standard subscripts 0, 1, 2, 3 and primes, such as A_0, B_1 and A′. Do not invent new labels.",
+    "- Place free-space drawings, such as nets, with origin (x, y) inside their R area and scale them to fit.",
     `- ${rule(2)}`,
     `- ${rule(3)}`,
     `- ${rule(4)}`,
     `- ${rule(7)}`,
     ...MARK_RULES.map((r) => `- ${r}`),
-    '- Комментарии — после #.',
+    "- Start comments with #.",
     '',
-    'КОМАНДЫ',
+    "COMMANDS",
   );
   for (const group of GROUPS) {
     out.push(`# ${group.name}`);
@@ -111,17 +111,17 @@ export function blankPrompt(b: Blank, marks: BlankMark[], areas: Area[], ask: As
       out.push(`${cmd.forms.map((f) => f.replace('@', name)).join(' | ')} — ${cmd.doc.replace(/@/g, name)}`);
     }
   }
-  out.push('', 'ЧИСЛА И ФОРМУЛЫ');
+  out.push('', "NUMBERS AND FORMULAS");
   for (const f of FORMULA_HELP) out.push(`${f.code} — ${f.doc}`);
-  out.push('В надписях формулы — как $…$: $\\alpha$ = {…:0}°. Индексы — A_1, степени — x^2.', '', 'ПРИМЕР (другой бланк)', '```бланк', ANSWER_EXAMPLE, '```');
+  out.push("Use $…$ for annotation formulas, such as $\\alpha$ = {…:0}°. Use A_1 for subscripts and x^2 for superscripts.", '', "EXAMPLE (a different form)", "```blank", ANSWER_EXAMPLE, '```');
   return out.join('\n');
 }
 
 /** A short request to mend what went wrong, for the same chat. */
 export function fixPrompt(problems: { task: string; text: string }[]): string {
   return [
-    'В твоём ответе приложение нашло ошибки. Исправь только эти задания и пришли их заново в том же формате, одним блоком кода с меткой бланк (каждое задание целиком, с «задание N»):',
+    "The application found errors in your response. Correct only these tasks and resend each complete task, starting with task N, in one code block labeled blank:",
     '',
-    ...problems.map((p) => `- задание ${p.task}: ${p.text}`),
+    ...problems.map((p) => `- task ${p.task}: ${p.text}`),
   ].join('\n');
 }

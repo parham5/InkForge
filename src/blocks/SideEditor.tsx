@@ -101,7 +101,7 @@ export function SideEditor({ title, onTitle, onClose, tools, children }: Props) 
       }}
     >
       <header className="side-editor-head">
-        <button className="side-editor-title" onClick={onTitle} title="Показать на листе">
+        <button className="side-editor-title" onClick={onTitle} title="Show on page">
           {title}
         </button>
         <div className="side-editor-tools">
@@ -112,7 +112,7 @@ export function SideEditor({ title, onTitle, onClose, tools, children }: Props) 
         </div>
       </header>
       <div className="side-editor-body">{children}</div>
-      <span className="side-editor-resize" onPointerDown={resize} title="Ширина окна" />
+      <span className="side-editor-resize" onPointerDown={resize} title="Panel width" />
     </aside>,
     host,
   );

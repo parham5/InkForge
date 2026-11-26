@@ -12,7 +12,7 @@ const ready: Promise<string | null> = init().then(
     engine.setFamily(FONT_FAMILY);
     return null;
   },
-  (err) => `Движок почерка не загрузился: ${String(err)}`,
+  (err) => `Handwriting engine failed to load: ${String(err)}`,
 );
 
 /**

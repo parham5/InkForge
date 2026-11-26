@@ -20,14 +20,14 @@ function runNodes(schema: Schema, runs: MathRun[], marks: readonly PMMark[]): PM
   );
 }
 
-/** A formula with a table (a determinant, a matrix): a «Формула» block, drawn by hand like a drawing. */
+/** A formula with a table (a determinant, a matrix): a «Formula» block, drawn by hand like a drawing. */
 function formulaBlock(schema: Schema, tex: string): PMNode {
-  return schema.nodes.htmlBlock.create({ kind: 'sketch', title: 'Формула', code: `$$${tex}$$` });
+  return schema.nodes.htmlBlock.create({ kind: 'sketch', title: 'Formula', code: `$$${tex}$$` });
 }
 
 /**
  * A paragraph with formulas holding tables, cut into paragraphs (their other
- * formulas converted, indices already written kept) and «Формула» blocks;
+ * formulas converted, indices already written kept) and «Formula» blocks;
  * null when it has none. A paragraph holds only text, so its text's offsets
  * are its positions.
  */
@@ -102,7 +102,7 @@ export const MathText = Extension.create({
           const $from = state.doc.resolve(from);
           const tex = source.startsWith('$') ? source.slice(1, -1) : source.slice(3, -3);
           if (hasTable(tex)) {
-            // A table does not fit on a line: its paragraph is cut around it into a «Формула» block.
+            // A table does not fit on a line: its paragraph is cut around it into a «Formula» block.
             if ($from.depth !== 1) return null;
             // The typed character is already in the line.
             const { tr } = state;
@@ -134,7 +134,7 @@ export const MathText = Extension.create({
         ({ state, tr, dispatch }) => {
           const edits: { from: number; to: number; nodes: PMNode[] }[] = [];
           state.doc.descendants((node, pos, parent) => {
-            // A paragraph with a determinant or a matrix: cut into paragraphs and «Формула» blocks.
+            // A paragraph with a determinant or a matrix: cut into paragraphs and «Formula» blocks.
             if (node.type.name === 'paragraph' && parent === state.doc) {
               const split = splitParagraph(state.schema, node);
               if (split) {
@@ -167,7 +167,7 @@ export const MathText = Extension.create({
               if (split) return new Slice(Fragment.fromArray(split), 0, 0);
             }
             const content = convertFragment(schema, slice.content);
-            // A line cut into «Формула» blocks cannot stay open to join the line pasted into: it goes in whole.
+            // A line cut into «Formula» blocks cannot stay open to join the line pasted into: it goes in whole.
             const cut = content.childCount !== slice.content.childCount || content.content.some((n, i) => n.type !== slice.content.child(i).type);
             return cut ? new Slice(content, 0, 0) : new Slice(content, slice.openStart, slice.openEnd);
           },

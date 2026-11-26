@@ -33,7 +33,7 @@ function solve(A: number[][], b: number[]): number[] {
   for (let col = 0; col < n; col++) {
     let pivot = col;
     for (let r = col + 1; r < n; r++) if (Math.abs(M[r][col]) > Math.abs(M[pivot][col])) pivot = r;
-    if (Math.abs(M[pivot][col]) < 1e-12) throw new Error('Вырожденные уголки: три из них лежат на одной прямой');
+    if (Math.abs(M[pivot][col]) < 1e-12) throw new Error('Invalid corners: three corners lie on one line');
     [M[col], M[pivot]] = [M[pivot], M[col]];
     for (let r = col + 1; r < n; r++) {
       const k = M[r][col] / M[col][col];

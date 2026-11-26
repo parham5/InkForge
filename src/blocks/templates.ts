@@ -11,7 +11,7 @@ export interface BlockTemplate {
 }
 
 const barChart = String.raw`<div id="chart"></div>
-<p class="hint">Потяните столбик вверх или вниз. Подписи и цвета — в панели «Данные».</p>
+<p class="hint">Drag a bar up or down. Edit labels and colors in the Data panel.</p>
 <style>
   #chart svg { width: 100%; height: auto; display: block; touch-action: none; }
   #chart text { font-family: var(--hand); fill: var(--ink); }
@@ -91,7 +91,7 @@ function startDrag(e, i, max, svg) {
 </script>`;
 
 const lineChart = String.raw`<div class="wrap"><canvas id="c"></canvas></div>
-<p class="hint">Перетаскивайте точки мышью. Ряды и подписи — в панели «Данные».</p>
+<p class="hint">Drag points with the mouse. Edit series and labels in the Data panel.</p>
 <style>
   .wrap { position: relative; width: 100%; height: 280px; }
   .hint { margin: 2px 0 0; font: 13px system-ui, sans-serif; opacity: .55; }
@@ -149,12 +149,12 @@ canvas.addEventListener('pointerup', () => {
 </script>`;
 
 const shapes = String.raw`<div class="bar">
-  <button data-add="rect">▭ Прямоугольник</button>
-  <button data-add="ellipse">◯ Овал</button>
-  <button data-add="diamond">◇ Ромб</button>
-  <button id="arrow">→ Стрелка</button>
-  <button id="del">Удалить</button>
-  <span class="hint" id="hint">Перетаскивайте фигуры · двойной клик — текст</span>
+  <button data-add="rect">▭ Rectangle</button>
+  <button data-add="ellipse">◯ Ellipse</button>
+  <button data-add="diamond">◇ Diamond</button>
+  <button id="arrow">→ Arrow</button>
+  <button id="del">Delete</button>
+  <span class="hint" id="hint">Drag shapes · double-click to edit text</span>
 </div>
 <svg id="board" viewBox="0 0 640 320"></svg>
 <style>
@@ -241,7 +241,7 @@ function toSvg(e) {
 function setArrowMode(on) {
   arrowMode = on; arrowFrom = null;
   document.getElementById('arrow').classList.toggle('on', on);
-  document.getElementById('hint').textContent = on ? 'Кликните первую фигуру, затем вторую' : 'Перетаскивайте фигуры · двойной клик — текст';
+  document.getElementById('hint').textContent = on ? 'Click the first shape, then the second' : 'Drag shapes · double-click to edit text';
   render();
 }
 
@@ -307,7 +307,7 @@ document.querySelectorAll('[data-add]').forEach((b) => {
   b.addEventListener('click', () => {
     const id = Math.random().toString(36).slice(2, 8);
     d.shapes.push({ id, type: b.dataset.add, x: Math.round(60 + Math.random() * 380), y: Math.round(40 + Math.random() * 160),
-      w: 150, h: 80, text: 'Текст', color: COLORS[d.shapes.length % COLORS.length] });
+      w: 150, h: 80, text: 'Text', color: COLORS[d.shapes.length % COLORS.length] });
     selected = id;
     commit();
   });
@@ -327,10 +327,10 @@ window.addEventListener('keydown', (e) => {
 </script>`;
 
 const custom = String.raw`<div class="card">
-  <h2>Свой блок</h2>
-  <p>Обычный HTML, CSS и JS. Данные блока — <code>block.data</code>, сохранить — <code>block.setData(...)</code>.
-     Шрифт с вашим почерком — <code>var(--hand)</code>.</p>
-  <button id="inc">Нажато: <span id="n">0</span></button>
+  <h2>Custom block</h2>
+  <p>Standard HTML, CSS and JavaScript. Block data: <code>block.data</code>, save with <code>block.setData(...)</code>.
+     Your handwriting font: <code>var(--hand)</code>.</p>
+  <button id="inc">Clicks: <span id="n">0</span></button>
 </div>
 <style>
   .card { padding: 12px 16px; border: 2px dashed #9aa3c7; border-radius: 12px; }
@@ -346,38 +346,38 @@ document.getElementById('inc').onclick = () => block.update((d) => ({ ...d, coun
 export const TEMPLATES: BlockTemplate[] = [
   {
     id: 'bars',
-    name: 'Рукописная диаграмма',
-    description: 'Столбики rough.js, тянутся мышью',
-    title: 'Диаграмма',
+    name: 'Handwritten bar chart',
+    description: 'Draggable rough.js bars',
+    title: 'Bar chart',
     code: barChart,
-    data: { title: 'Прочитано книг', labels: ['Янв', 'Фев', 'Мар', 'Апр', 'Май'], values: [3, 5, 2, 6, 4], color: '#e8a33d' },
+    data: { title: 'Books read', labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'], values: [3, 5, 2, 6, 4], color: '#e8a33d' },
   },
   {
     id: 'line',
-    name: 'График',
-    description: 'Chart.js с перетаскиваемыми точками',
-    title: 'График',
+    name: 'Graph',
+    description: 'Chart.js with draggable points',
+    title: 'Graph',
     code: lineChart,
     data: {
-      title: 'Неделя',
-      labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+      title: 'Week',
+      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
       series: [
-        { name: 'энергия', values: [5, 6, 4, 7, 8, 9, 6], color: '#2f6fd6' },
-        { name: 'сон', values: [7, 6, 7, 5, 6, 9, 8], color: '#d65a8a' },
+        { name: 'energy', values: [5, 6, 4, 7, 8, 9, 6], color: '#2f6fd6' },
+        { name: 'sleep', values: [7, 6, 7, 5, 6, 9, 8], color: '#d65a8a' },
       ],
     },
   },
   {
     id: 'shapes',
-    name: 'Фигуры и стрелки',
-    description: 'Мини-схема: двигать, подписывать, соединять',
-    title: 'Схема',
+    name: 'Shapes and arrows',
+    description: 'Small diagram: move, label and connect',
+    title: 'Diagram',
     code: shapes,
     data: {
       shapes: [
-        { id: 'a', type: 'rect', x: 40, y: 40, w: 160, h: 80, text: 'Идея', color: '#ffd27a' },
-        { id: 'b', type: 'ellipse', x: 330, y: 30, w: 170, h: 95, text: 'План', color: '#a8d8ff' },
-        { id: 'c', type: 'diamond', x: 200, y: 185, w: 190, h: 110, text: 'Готово?', color: '#c8f0b0' },
+        { id: 'a', type: 'rect', x: 40, y: 40, w: 160, h: 80, text: 'Idea', color: '#ffd27a' },
+        { id: 'b', type: 'ellipse', x: 330, y: 30, w: 170, h: 95, text: 'Plan', color: '#a8d8ff' },
+        { id: 'c', type: 'diamond', x: 200, y: 185, w: 190, h: 110, text: 'Ready?', color: '#c8f0b0' },
       ],
       arrows: [
         { from: 'a', to: 'b' },
@@ -387,9 +387,9 @@ export const TEMPLATES: BlockTemplate[] = [
   },
   {
     id: 'custom',
-    name: 'Свой HTML',
-    description: 'Пустой блок с примером SDK',
-    title: 'Блок',
+    name: 'Custom HTML',
+    description: 'Empty block with an SDK example',
+    title: 'Block',
     code: custom,
     data: { count: 0 },
   },

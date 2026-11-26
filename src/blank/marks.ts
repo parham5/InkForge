@@ -411,7 +411,7 @@ export async function markedPicture(b: Blank, marks: BlankMark[], areas: Area[])
   });
 
   const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/png'));
-  if (!blob) throw new Error('не удалось нарисовать разметку');
+  if (!blob) throw new Error('Could not render annotations');
   return blob;
 }
 

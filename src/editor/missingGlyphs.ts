@@ -14,7 +14,7 @@ export interface MissingGlyphsOptions {
 const attrsOf = (ch: string) => ({
   class: 'missing-glyph',
   'data-char': ch,
-  title: `«${ch}» ещё не написана — кликните, чтобы дорисовать`,
+  title: `«${ch}» has no handwriting sample yet; click to add one`,
 });
 
 /**

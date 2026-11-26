@@ -293,7 +293,7 @@ export function MaskEditor({ photo, warp, paperMm, ruling, margins, mask, tool, 
     <div className="desk-corners" ref={wrapRef}>
       <canvas
         ref={canvasRef}
-        aria-label={brushing ? 'Предметы на листе: кисть отмечает, где писать нельзя' : 'Поля: линии можно перетащить'}
+        aria-label={brushing ? 'Objects on paper: brush over areas to exclude handwriting' : 'Margins: drag the lines to adjust'}
         style={{ width: box.w, height: box.h, cursor: pan.active ? 'grabbing' : space.current ? 'grab' : brushing ? (mask ? 'none' : 'default') : resize }}
         onPointerDown={(e) => {
           // The middle button or Space: the picture moves (the brush and the lines keep the left one).

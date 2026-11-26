@@ -23,27 +23,27 @@ const range = (from: string, to: string) =>
 const cyrLower = [...range('а', 'е'), 'ё', ...range('ж', 'я')];
 const cyrUpper = [...range('А', 'Е'), 'Ё', ...range('Ж', 'Я')];
 
-/** The most frequent Russian letter pairs: writing them in one go captures natural joins. */
+/** Common English letter pairs for capturing natural cursive joins. */
 export const SUGGESTED_PAIRS = [
-  'ст', 'но', 'то', 'на', 'ен', 'ов', 'ни', 'ра', 'во', 'ко', 'пр', 'ро',
-  'ос', 'ал', 'ли', 'ер', 'от', 'по', 'ет', 'ол', 'ре', 'ка', 'ле', 'ом',
+  'th', 'he', 'in', 'er', 'an', 're', 'on', 'at', 'en', 'nd', 'ti', 'es',
+  'or', 'te', 'of', 'ed', 'is', 'it', 'al', 'ar', 'st', 'to', 'nt', 'ng',
 ];
 
 export const CHAR_GROUPS: CharGroup[] = [
-  { id: 'cyr-lower', title: 'Русские', chars: cyrLower, shelf: 'cyr-lower' },
-  { id: 'ukr-lower', title: 'Українські', chars: ['і', 'ї', 'є'], shelf: 'cyr-lower' },
-  { id: 'pairs', title: 'Пары букв', chars: SUGGESTED_PAIRS, shelf: 'cyr-lower' },
-  { id: 'cyr-upper', title: 'Русские', chars: cyrUpper, shelf: 'cyr-upper' },
-  { id: 'ukr-upper', title: 'Українські', chars: ['І', 'Ї', 'Є'], shelf: 'cyr-upper' },
+  { id: 'cyr-lower', title: 'Russian', chars: cyrLower, shelf: 'cyr-lower' },
+  { id: 'ukr-lower', title: 'Ukrainian', chars: ['і', 'ї', 'є'], shelf: 'cyr-lower' },
+  { id: 'pairs', title: 'Letter pairs', chars: SUGGESTED_PAIRS, shelf: 'lat-lower' },
+  { id: 'cyr-upper', title: 'Russian', chars: cyrUpper, shelf: 'cyr-upper' },
+  { id: 'ukr-upper', title: 'Ukrainian', chars: ['І', 'Ї', 'Є'], shelf: 'cyr-upper' },
   { id: 'lat-lower', title: 'Latin', chars: range('a', 'z'), shelf: 'lat-lower' },
   { id: 'lat-upper', title: 'Latin', chars: range('A', 'Z'), shelf: 'lat-upper' },
-  { id: 'digits', title: 'Цифры', chars: range('0', '9'), shelf: 'sym' },
-  { id: 'punct', title: 'Знаки', chars: [...'.,!?:;-—«»"()№%+=/'], shelf: 'sym' },
+  { id: 'digits', title: 'Digits', chars: range('0', '9'), shelf: 'sym' },
+  { id: 'punct', title: 'Symbols', chars: [...'.,!?:;-—«»"()№%+=/'], shelf: 'sym' },
   // Roman numerals as written by hand (sticks with serifs): used for I, II, IV чверті… instead of drawn sticks.
-  { id: 'roman', title: 'Римские цифры', chars: ['Ⅰ', 'Ⅴ', 'Ⅹ', 'Ⅼ', 'Ⅽ', 'Ⅾ', 'Ⅿ'], shelf: 'sym' },
-  { id: 'math', title: 'Формулы', chars: [...'αβγδεθλμπρσφωΔΣΩ×·−±≠≈≤≥<>°′⊥∥∠△√∞∈→'], shelf: 'sym' },
+  { id: 'roman', title: 'Roman numerals', chars: ['Ⅰ', 'Ⅴ', 'Ⅹ', 'Ⅼ', 'Ⅽ', 'Ⅾ', 'Ⅿ'], shelf: 'sym' },
+  { id: 'math', title: 'Formulas', chars: [...'αβγδεθλμπρσφωΔΣΩ×·−±≠≈≤≥<>°′⊥∥∠△√∞∈→'], shelf: 'sym' },
   // Drawn, not written: a drawing's points take these variants (the open circle comes first, it is the usual one on an epure).
-  { id: 'points', title: 'Точки чертежа', chars: [POINT_SIGNS[2], POINT_SIGNS[0], POINT_SIGNS[1], POINT_SIGNS[3]], shelf: 'points' },
+  { id: 'points', title: 'Drawing markers', chars: [POINT_SIGNS[2], POINT_SIGNS[0], POINT_SIGNS[1], POINT_SIGNS[3]], shelf: 'points' },
 ];
 
 const isLatin = (key: string) => /\p{Script=Latin}/u.test(key);
@@ -80,7 +80,7 @@ export function isPair(key: string): boolean {
   return [...key].length > 1;
 }
 
-export const PANGRAM = 'Съешь же ещё этих мягких французских булок, да выпей чаю';
+export const PANGRAM = 'The quick brown fox jumps over the lazy dog';
 
 /** Change a phrase's case: Аа = capital first letter, АА = all capitals, аа = all small. */
 export function changeCase(text: string, mode: 'capital' | 'upper' | 'lower'): string {

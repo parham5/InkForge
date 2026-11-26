@@ -25,10 +25,10 @@ export function lintDrawing(code: string): string[] {
     const p2 = byName.get(`${m[1]}_2`);
     if (!p2) continue;
     const gap = Math.abs(p1.x - p2.x) * unit;
-    if (gap > LINK) out.push(`${m[1]}₁ и ${m[1]}₂ не на одной линии связи: разошлись на ${gap.toFixed(1).replace('.', ',')} мм — задай точку в пространстве (FromProjections) или выровняй x`);
+    if (gap > LINK) out.push(`${m[1]}₁ and ${m[1]}₂ are not on the same projection link: offset ${gap.toFixed(1)} mm. Use FromProjections or align x`);
   }
   const hatched = manualHatching(scene.items, unit, !!scene.view.epure);
-  if (hatched) out.push(`штриховка нарисована отрезками (${hatched} шт.) — замени их одной командой Hatch(…)`);
+  if (hatched) out.push(`Hatching uses ${hatched} individual segments. Replace them with one Hatch(…) command`);
   return out;
 }
 

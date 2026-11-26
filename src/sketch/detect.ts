@@ -70,7 +70,7 @@ export function sketchOf(label: string, lines: string[]): { code: string; title:
     const broken = new Set(scene.errors.map((e) => e.line)).size;
     if (!drawn || broken * 3 > statements) return null;
   }
-  return { code, title: scene.title?.trim() || 'Чертёж' };
+  return { code, title: scene.title?.trim() || 'Drawing' };
 }
 
 /**

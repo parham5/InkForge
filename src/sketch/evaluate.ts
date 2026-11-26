@@ -9,7 +9,7 @@ import type { Ctx, Item, Scene, Shape, SpaceKind, Val, Vec, Vec3 } from './types
 /** x (or t) used where it has no value: such a definition is a function. */
 class FreeVariable extends Error {
   constructor(readonly variable: string) {
-    super(`«${variable}» здесь не задано`);
+    super(`«${variable}» is not defined here`);
   }
 }
 
@@ -100,37 +100,37 @@ const SOLIDS = new Set(
 );
 
 function describe(v: Val): string {
-  if (v.k === 'num') return 'число';
-  if (v.k === 'str') return 'текст';
-  if (v.k === 'bool') return 'да/нет';
-  if (v.k === 'none') return 'команда без значения';
+  if (v.k === 'num') return 'number';
+  if (v.k === 'str') return 'text';
+  if (v.k === 'bool') return 'boolean';
+  if (v.k === 'none') return 'command without a return value';
   if (v.s.type === 'space') {
     const space: Record<SpaceKind, string> = {
-      point: 'точка в пространстве',
-      segment: 'отрезок в пространстве',
-      ray: 'луч в пространстве',
-      line: 'прямая в пространстве',
-      vector: 'вектор в пространстве',
-      polygon: 'многоугольник в пространстве',
+      point: '3D point',
+      segment: '3D segment',
+      ray: '3D ray',
+      line: '3D line',
+      vector: '3D vector',
+      polygon: '3D polygon',
     };
     return space[v.s.of];
   }
   const names: Record<Shape['type'], string> = {
-    point: 'точка',
-    segment: 'отрезок',
-    ray: 'луч',
-    line: 'прямая',
-    vector: 'вектор',
-    circle: 'окружность',
-    arc: 'дуга',
-    polygon: 'многоугольник',
-    angle: 'угол',
-    graph: 'график',
-    curve: 'кривая',
-    text: 'надпись',
-    region: 'заштрихованная область',
-    hatched: 'линия со штриховкой',
-    space: 'фигура в пространстве',
+    point: 'point',
+    segment: 'segment',
+    ray: 'ray',
+    line: 'line',
+    vector: 'vector',
+    circle: 'circle',
+    arc: 'arc',
+    polygon: 'polygon',
+    angle: 'angle',
+    graph: 'graph',
+    curve: 'curve',
+    text: 'annotation',
+    region: 'hatched region',
+    hatched: 'hatched line',
+    space: '3D shape',
   };
   return names[v.s.type];
 }
@@ -145,7 +145,7 @@ function toNum(v: Val): number {
     // The true length of a segment in space.
     if (v.s.type === 'space' && (v.s.of === 'segment' || v.s.of === 'vector')) return len3(v.s.pts[0], v.s.pts[1]);
   }
-  throw new Error(`здесь нужно число, а не ${describe(v)}`);
+  throw new Error(`Expected a number, received ${describe(v)}`);
 }
 
 /** Points and vectors as coordinates; anything else is not one. */
@@ -172,10 +172,10 @@ const like3 = (v: Val, p: Vec3): Val =>
 function arithmetic3(op: BinOp, a: Val, b: Val): Val {
   const pa = vec3Of(a);
   const pb = vec3Of(b);
-  if ((pa && vecOf(b)) || (pb && vecOf(a))) throw new Error('точку пространства (x, y, z) нельзя смешивать с точкой листа (x, y)');
+  if ((pa && vecOf(b)) || (pb && vecOf(a))) throw new Error('Cannot mix a 3D spatial point (x, y, z) with a 2D page point (x, y)');
   const scale = (p: Vec3, k: number): Vec3 => ({ x: p.x * k, y: p.y * k, z: p.z * k });
   if (op === '+' || op === '-') {
-    if (!pa || !pb) throw new Error('к точке можно прибавить только точку или вектор');
+    if (!pa || !pb) throw new Error('Only a point or vector can be added to a point');
     const k = op === '+' ? 1 : -1;
     const r = { x: pa.x + k * pb.x, y: pa.y + k * pb.y, z: pa.z + k * pb.z };
     return isVector3(a) && isVector3(b) ? like3(a, r) : point3(r);
@@ -186,7 +186,7 @@ function arithmetic3(op: BinOp, a: Val, b: Val): Val {
     return like3(b, scale(pb!, toNum(a)));
   }
   if (op === '/' && pa && !pb) return like3(a, scale(pa, 1 / toNum(b)));
-  throw new Error('так точки и векторы не считаются');
+  throw new Error('Invalid operation on points or vectors');
 }
 
 /** The result keeps the kind of its operand: a point stays a point, a vector a vector. */
@@ -215,7 +215,7 @@ function arithmetic(op: BinOp, a: Val, b: Val): Val {
     }
   }
   if (op === '+' || op === '-') {
-    if (!pa || !pb) throw new Error('к точке можно прибавить только точку или вектор');
+    if (!pa || !pb) throw new Error('Only a point or vector can be added to a point');
     const r = op === '+' ? g.add(pa, pb) : g.sub(pa, pb);
     return vecOf(a) && a.k === 'shape' && a.s.type === 'vector' && b.k === 'shape' && b.s.type === 'vector' ? like(a, r) : point(r);
   }
@@ -225,7 +225,7 @@ function arithmetic(op: BinOp, a: Val, b: Val): Val {
     return like(b, g.mul(pb!, toNum(a)));
   }
   if (op === '/' && pa && !pb) return like(a, g.mul(pa, 1 / toNum(b)));
-  throw new Error('так точки и векторы не считаются');
+  throw new Error('Invalid operation on points or vectors');
 }
 
 function compare(op: CmpOp, a: number, b: number): boolean {
@@ -254,8 +254,8 @@ function lookup(name: string, env: Env): Val {
   const c = CONSTANTS[key] ?? (key.length > 1 ? CONSTANTS[key.toLowerCase()] : undefined);
   if (c) return c;
   if (key === 'x' || key === 'y' || key === 't') throw new FreeVariable(key);
-  if (findCommand(name)) throw new Error(`«${name}» — это команда, после неё нужны скобки: ${name}(…)`);
-  throw new Error(`«${name}» ещё не задано (имена задаются выше, чем используются)`);
+  if (findCommand(name)) throw new Error(`«${name}» — is a command and requires parentheses: ${name}(…)`);
+  throw new Error(`«${name}» is not defined yet; define names before using them`);
 }
 
 function call(e: Extract<Expr, { t: 'call' }>, env: Env): Val {
@@ -264,7 +264,7 @@ function call(e: Extract<Expr, { t: 'call' }>, env: Env): Val {
     // A function of the drawing: f(2)
     const entry = env.scope.get(key);
     if (entry?.val.k === 'shape' && entry.val.s.type === 'graph') {
-      if (e.args.length !== 1) throw new Error(`${e.name}(…) берёт одно число`);
+      if (e.args.length !== 1) throw new Error(`${e.name}(…) takes one number`);
       return num(entry.val.s.f(toNum(evalExpr(e.args[0], env))));
     }
   }
@@ -272,7 +272,7 @@ function call(e: Extract<Expr, { t: 'call' }>, env: Env): Val {
     const a = evalExpr(e.args[0], env);
     const s3 = vec3Of(a);
     if (s3) return num(s3[key]);
-    if (key === 'z') throw new Error('z есть только у точки в пространстве (x, y, z)');
+    if (key === 'z') throw new Error('Only a spatial point (x, y, z) has a z coordinate');
     const p = vecOf(a);
     if (p) return num(key === 'x' ? p.x : p.y);
     // x(x + 1) is x·(x + 1)
@@ -281,17 +281,17 @@ function call(e: Extract<Expr, { t: 'call' }>, env: Env): Val {
   const lower = e.name.toLowerCase();
   const m = MATH[lower];
   if (m) {
-    if (e.args.length === 0 || (e.args.length > 1 && !MANY_ARGS.has(lower))) throw new Error(`${e.name} берёт одно число`);
+    if (e.args.length === 0 || (e.args.length > 1 && !MANY_ARGS.has(lower))) throw new Error(`${e.name} takes one number`);
     return num(m(...e.args.map((a) => toNum(evalExpr(a, env)))));
   }
   const cmd = findCommand(e.name);
   if (cmd) return cmd.run(e.args, ctxOf(env));
   if (isIgnored(e.name)) return { k: 'none' };
   if (SOLIDS.has(lower)) {
-    throw new Error(`«${e.name}» — команда GeoGebra 3D: плоскости и тела на эпюре пока не рисуются. Плоскость задайте треугольником: Polygon(A, B, C)`);
+    throw new Error(`«${e.name}» — is a GeoGebra 3D command. Planes and solids are not supported; represent a plane with Polygon(A, B, C)`);
   }
   const near = suggestCommand(e.name);
-  throw new Error(`не знаю команду «${e.name}»${near ? `. Может быть, ${near}?` : ''}`);
+  throw new Error(`Unknown command “${e.name}»${near ? `. Did you mean ${near}?` : ''}`);
 }
 
 function evalExpr(e: Expr, env: Env): Val {
@@ -306,7 +306,7 @@ function evalExpr(e: Expr, env: Env): Val {
       const c = e.items.map((it) => toNum(evalExpr(it, env)));
       if (c.length === 2) return point({ x: c[0], y: c[1] });
       if (c.length === 3) return point3({ x: c[0], y: c[1], z: c[2] });
-      throw new Error('у точки две координаты (x, y) на листе или три (x, y, z) в пространстве');
+      throw new Error('A point needs two page coordinates (x, y) or three spatial coordinates (x, y, z)');
     }
     case 'neg': {
       const a = evalExpr(e.a, env);
@@ -396,43 +396,43 @@ function ctxOf(env: Env): Ctx {
     point: (e) => {
       const v = val(e);
       if (v.k === 'shape' && v.s.type === 'point') return v.s.p;
-      if (vec3Of(v)) throw new Error('эта команда работает с точками на листе (x, y), а не в пространстве');
-      throw new Error(`здесь нужна точка, а не ${describe(v)}`);
+      if (vec3Of(v)) throw new Error('This command requires 2D page points (x, y), not spatial points');
+      throw new Error(`Expected a point, received ${describe(v)}`);
     },
     pointAny: (e) => {
       const v = val(e);
       if (v.k === 'shape' && v.s.type === 'point') return v.s.p;
       if (v.k === 'shape' && v.s.type === 'space' && v.s.of === 'point') return v.s.pts[0];
-      throw new Error(`здесь нужна точка, а не ${describe(v)}`);
+      throw new Error(`Expected a point, received ${describe(v)}`);
     },
     vec: (e) => {
       const p = vecOf(val(e));
-      if (!p) throw new Error('здесь нужен вектор или точка');
+      if (!p) throw new Error('Expected a vector or point');
       return p;
     },
     shape: (e) => {
       const v = val(e);
       if (v.k === 'shape') return v.s;
-      throw new Error(`здесь нужна фигура, а не ${describe(v)}`);
+      throw new Error(`Expected a shape, received ${describe(v)}`);
     },
     fn: (e, param = 'x') => compileFn(e, param, env),
     str: (e) => {
       const v = val(e);
       if (v.k === 'str') return v.v;
       if (v.k === 'num') return formatNumber(v.v);
-      throw new Error('здесь нужен текст в кавычках');
+      throw new Error('Expected quoted text');
     },
     bool: (e) => {
       const v = val(e);
       if (v.k === 'bool') return v.v;
       if (v.k === 'num') return v.v !== 0 && !Number.isNaN(v.v);
-      throw new Error('здесь нужно true или false');
+      throw new Error('Expected true or false');
     },
     item: (e) => {
-      if (e.t !== 'name') throw new Error('здесь нужно имя объекта');
+      if (e.t !== 'name') throw new Error('Expected an object name');
       const entry = env.scope.get(canon(e.name));
-      if (!entry) throw new Error(`«${e.name}» ещё не задано`);
-      if (!entry.item) throw new Error(`«${e.name}» — ${describe(entry.val)}, его не видно на чертеже`);
+      if (!entry) throw new Error(`«${e.name}» is not defined yet`);
+      if (!entry.item) throw new Error(`«${e.name}» — ${describe(entry.val)}, it is not visible in the drawing`);
       return entry.item;
     },
     usesPi,
@@ -462,7 +462,7 @@ type AddItem = (shape: Shape, name?: string) => Item;
 
 function define(name: string, val: Val, env: Env, add: AddItem) {
   const key = canon(name);
-  if (key === 'x' || key === 'y') throw new Error('имена x и y заняты под оси');
+  if (key === 'x' || key === 'y') throw new Error('Names x and y are reserved for axes');
   const item = val.k === 'shape' ? add(val.s, name) : undefined;
   env.scope.set(key, { val, item });
 }
@@ -550,7 +550,7 @@ function runEnv(code: string): { scene: Scene; env: Env } {
     } catch (err) {
       // «Here is the drawing:» — a neural net's words around the commands.
       const prose = !/[=(]/.test(text) && /\p{L}{2,}\s+\p{L}{2,}/u.test(text);
-      scene.errors.push({ line: i + 1, message: prose ? 'это не команда, а пояснение — строку можно удалить' : (err as Error).message });
+      scene.errors.push({ line: i + 1, message: prose ? 'This is explanatory text, not a command; you can remove the line' : (err as Error).message });
     }
   });
   // The window comes first: it decides where graphs are intersected.

@@ -75,12 +75,12 @@ const RUB = 4;
 /** What the result shows, up to which stage of the render (each includes those before it). */
 export type Stage = 'photo' | 'folds' | 'print' | 'drawings' | 'text' | 'all';
 export const STAGES: { id: Stage; name: string; hint: string }[] = [
-  { id: 'photo', name: 'Фото', hint: 'исходный снимок, ничего не нарисовано' },
-  { id: 'folds', name: 'Складки', hint: 'снимок со складками бумаги' },
-  { id: 'print', name: 'Печать', hint: 'со складками и печатью бланка' },
-  { id: 'drawings', name: 'Чертежи', hint: 'и чертежи, без текста' },
-  { id: 'text', name: 'Текст', hint: 'и текст, без следов работы' },
-  { id: 'all', name: 'Всё', hint: 'со следами работы — готовый снимок' },
+  { id: 'photo', name: 'Photo', hint: 'original photo, without added content' },
+  { id: 'folds', name: 'Folds', hint: 'photo with paper folds' },
+  { id: 'print', name: 'Print', hint: 'with folds and the printed form' },
+  { id: 'drawings', name: 'Drawings', hint: 'with drawings, without text' },
+  { id: 'text', name: 'Text', hint: 'with text, without wear' },
+  { id: 'all', name: 'All', hint: 'finished photo with wear' },
 ];
 const stageAt = (s: Stage) => STAGES.findIndex((x) => x.id === s);
 
@@ -449,7 +449,7 @@ export class DeskRenderer {
 
   constructor(readonly canvas: HTMLCanvasElement) {
     const gl = canvas.getContext('webgl2', { antialias: false, premultipliedAlpha: false, preserveDrawingBuffer: true, alpha: false });
-    if (!gl) throw new Error('Видеокарта недоступна: этому окну не дали WebGL2.');
+    if (!gl) throw new Error('Graphics unavailable: WebGL2 is not available in this window.');
     this.gl = gl;
     this.maxTexture = gl.getParameter(gl.MAX_TEXTURE_SIZE) as number;
     this.floatTargets = !!gl.getExtension('EXT_color_buffer_float');
@@ -485,7 +485,7 @@ export class DeskRenderer {
       const s = gl.createShader(type)!;
       gl.shaderSource(s, src);
       gl.compileShader(s);
-      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(`Шейдер: ${gl.getShaderInfoLog(s)}`);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(`Shader: ${gl.getShaderInfoLog(s)}`);
       return s;
     };
     const prog = gl.createProgram()!;
@@ -494,7 +494,7 @@ export class DeskRenderer {
     gl.bindAttribLocation(prog, 0, 'aPos');
     gl.bindAttribLocation(prog, 1, 'aUv');
     gl.linkProgram(prog);
-    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(`Шейдер: ${gl.getProgramInfoLog(prog)}`);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(`Shader: ${gl.getProgramInfoLog(prog)}`);
     const cache = new Map<string, WebGLUniformLocation | null>();
     const loc = (name: string) => {
       if (!cache.has(name)) cache.set(name, gl.getUniformLocation(prog, name));
@@ -869,7 +869,7 @@ export class DeskRenderer {
       return c.convertToBlob({ type: 'image/jpeg', quality });
     }
     const blob = await new Promise<Blob | null>((res) => this.canvas.toBlob(res, 'image/jpeg', quality));
-    if (!blob) throw new Error('Не удалось сохранить картинку');
+    if (!blob) throw new Error('Could not save image');
     return blob;
   }
 

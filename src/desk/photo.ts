@@ -24,13 +24,13 @@ const HEIC = /\.(heic|heif)$/i;
  */
 export async function loadPhoto(file: File, maxSide = WORK_SIDE): Promise<Photo> {
   if (HEIC.test(file.name) || /hei[cf]/i.test(file.type)) {
-    throw new Error('Фото в формате HEIC открыть нельзя. Сохраните его как JPEG (на iPhone: «Настройки → Камера → Форматы → Наиболее совместимый») и откройте снова.');
+    throw new Error('HEIC photos are not supported. Save as JPEG and reopen. On iPhone, choose Settings → Camera → Formats → Most Compatible.');
   }
   let full: ImageBitmap;
   try {
     full = await createImageBitmap(file, { imageOrientation: 'from-image' });
   } catch {
-    throw new Error(`Не удалось открыть «${file.name}» как картинку. Подойдут JPG, PNG и WebP.`);
+    throw new Error(`Could not open “${file.name}» as an image. Supported formats: JPG, PNG and WebP.`);
   }
   const k = Math.min(1, maxSide / Math.max(full.width, full.height));
   const name = file.name.replace(/\.[^.]+$/, '');

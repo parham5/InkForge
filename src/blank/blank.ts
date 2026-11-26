@@ -148,7 +148,7 @@ export async function openBlankFile(file: File): Promise<Blank> {
   const { data, full } = await pixels(file);
   const blank: Blank = {
     id: uid(),
-    name: file.name.replace(/\.[^.]+$/, '') || 'Бланк',
+    name: file.name.replace(/\.[^.]+$/, '') || 'Form',
     image: file,
     px: full,
     format: 'a4',
@@ -230,7 +230,7 @@ export async function importBlanks(list: unknown[]): Promise<number> {
     if (!b || typeof b.id !== 'string' || typeof b.image !== 'string' || !Array.isArray(b.px)) continue;
     rows.push({
       id: b.id,
-      name: String(b.name ?? 'Бланк'),
+      name: String(b.name ?? 'Form'),
       image: await (await fetch(b.image)).blob(),
       px: [Number(b.px[0]) || 1, Number(b.px[1]) || 1],
       format: b.format === 'a5' ? 'a5' : 'a4',

@@ -46,35 +46,35 @@ export function SketchPanel({ code, onChange, onHelp, onPick }: Props) {
       {errors.length > 0 ? (
         <ul className="sketch-errors">
           {errors.slice(0, 8).map((e) => (
-            <li key={`${e.line}:${e.message}`} onClick={() => setGoTo({ line: e.line })} title="Показать строку">
-              <b>Строка {e.line}:</b> {e.message}
+            <li key={`${e.line}:${e.message}`} onClick={() => setGoTo({ line: e.line })} title="Show line">
+              <b>Line {e.line}:</b> {e.message}
             </li>
           ))}
-          {errors.length > 8 && <li>…и ещё {errors.length - 8}</li>}
+          {errors.length > 8 && <li>…and {errors.length - 8}</li>}
         </ul>
       ) : null}
       {onPick && (
         <div className="row sketch-pick">
-          <span className="muted small">С бланка:</span>
-          <button className="btn small" onClick={() => onPick('point')} title="Щелчок по напечатанной точке записывает её в команды (A_1 = (…), Скрыть(A_1))">
-            ⌖ Точка
+          <span className="muted small">From form:</span>
+          <button className="btn small" onClick={() => onPick('point')} title="Click a printed point to add its coordinates and a Hide command">
+            ⌖ Point
           </button>
-          <button className="btn small" onClick={() => onPick('space')} title="Точка в пространстве: щелчок по фронтальной проекции, потом по горизонтальной — A = (x, y, z)">
-            ⌖ По проекциям
+          <button className="btn small" onClick={() => onPick('space')} title="3D point: click the front projection, then the horizontal projection — A = (x, y, z)">
+            ⌖ From projections
           </button>
-          <button className="btn small" onClick={() => onPick('origin')} title="Начало координат чертежа — точка бланка (обычно 0 на оси x₁₂): НаБланке(x, y)">
-            ⌖ Начало
+          <button className="btn small" onClick={() => onPick('origin')} title="Drawing origin on the form, usually 0 on the x₁₂ axis: OnBlank(x, y)">
+            ⌖ Origin
           </button>
         </div>
       )}
       <div className="row">
         <button className="btn small primary" onClick={onHelp}>
-          Все команды и запрос для нейронки
+          All commands and AI prompt
         </button>
         <span className="muted small">
           {errors.length
-            ? 'Lines с ошибками пропущены, остальное нарисовано.'
-            : 'Drawing обновляется сразу. Ответ нейронки вставляйте целиком, строки ``` не мешают.'}
+            ? 'Lines with errors were skipped; the rest was drawn.'
+            : 'The drawing updates immediately. Paste the entire AI response; code fences are accepted.'}
         </span>
       </div>
     </>

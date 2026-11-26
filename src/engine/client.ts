@@ -82,10 +82,10 @@ function spawn(): Worker {
   // The worker itself failed (its script or the engine did not load): nothing waits for ever.
   w.onerror = (e) => {
     console.error('engine worker', e.message);
-    if (w === worker) failAll(new Error(e.message || 'Движок почерка не запустился'));
+    if (w === worker) failAll(new Error(e.message || 'Handwriting engine failed to start'));
   };
   w.onmessageerror = () => {
-    if (w === worker) failAll(new Error('Движок почерка ответил непонятно'));
+    if (w === worker) failAll(new Error('Invalid response from handwriting engine'));
   };
   return w;
 }

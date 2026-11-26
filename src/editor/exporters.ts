@@ -158,7 +158,7 @@ function blankSvg(blank: PageExport['blank']): string {
 function blockFrame(x: number, y: number, w: number, h: number, title: string): string {
   return (
     `<rect x="${x}" y="${y + 4}" width="${w}" height="${Math.max(h - 8, 40)}" rx="10" fill="none" stroke="#9aa3c7" stroke-dasharray="8 6"/>` +
-    `<text x="${x + w / 2}" y="${y + Math.max(h, 48) / 2 + 5}" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#6b7390">Блок «${xml(title)}» — интерактивный, есть в PDF/печати</text>`
+    `<text x="${x + w / 2}" y="${y + Math.max(h, 48) / 2 + 5}" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#6b7390">Block «${xml(title)}» is interactive; available in PDF and print</text>`
   );
 }
 
@@ -442,7 +442,7 @@ export async function documentPages(
       } else {
         const a = nodes[it.node].attrs ?? {};
         if (isSketch(a)) bodyDraw.push(await sketchIn(a, y));
-        else if (!inkOnly) body.push(blockFrame(0, y, geo.contentW, blockSpan(Number(a.height) || 260, lh), String(a.title ?? 'Блок')));
+        else if (!inkOnly) body.push(blockFrame(0, y, geo.contentW, blockSpan(Number(a.height) || 260, lh), String(a.title ?? 'Block')));
       }
     }
     const floating: string[] = [];
@@ -454,7 +454,7 @@ export async function documentPages(
       const left = f.onSheet ? f.left : Math.max(0, Math.min(f.left - editorGeo.margin.left + geo.margin.left, sheetW - f.width));
       if (f.attrs.kind === 'note') floating.push(await noteAt(f.attrs, f.i, left, top, f.width));
       else if (isSketch(f.attrs)) floatDraw.push(await sketchAt(f.attrs, left, top, f.width));
-      else if (!inkOnly) floating.push(blockFrame(left, top, f.width, Number(f.attrs.height) || 260, String(f.attrs.title ?? 'Блок')));
+      else if (!inkOnly) floating.push(blockFrame(left, top, f.width, Number(f.attrs.height) || 260, String(f.attrs.title ?? 'Block')));
     }
     const number =
       o.firstNumber === null || inkOnly
@@ -503,9 +503,9 @@ export async function documentPages(
 /** The seed of a sheet's traces: the document's, then the sheet's number. */
 export const mix32 = (seed: number, page: number) => Math.imul(seed ^ (page + 1) * 0x9e3779b1, 16777619) >>> 0;
 
-/** File name of sheet n: «Конспект.png» for one sheet, «Конспект — лист 2.png» for several. */
+/** File name of sheet n: «Конспект.png» for one sheet, «Конспект — page 2.png» for several. */
 const sheetName = (title: string, page: number, pages: number, ext: string) =>
-  `${safeFilename(title)}${pages > 1 ? ` — лист ${page + 1}` : ''}.${ext}`;
+  `${safeFilename(title)}${pages > 1 ? ` — page ${page + 1}` : ''}.${ext}`;
 
 /** Every sheet as its own SVG file. */
 export async function exportSvg(o: PageExport) {
