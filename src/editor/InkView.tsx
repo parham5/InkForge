@@ -193,7 +193,7 @@ export function InkView({ docId, title, firstNumber, drawPen, content, fontSize,
   const [busy, setBusy] = useState(!(kept?.key === key && kept.renders));
   const [stale, setStale] = useState(false);
   const [blockHeights, setBlockHeights] = useState<Record<number, number>>(() => (kept?.key === key && places.get(docId)?.blockHeights) || {});
-  /** The handwriting an older render may stay in: the one there was when the view opened, until «Перерисовать». */
+  /** The handwriting an older render may stay in: the one there was when the view opened, until «Render again». */
   const acceptHand = useRef(fontVersion);
   const [redo, setRedo] = useState(0);
   const stackRef = useRef<HTMLDivElement>(null);
@@ -326,15 +326,15 @@ export function InkView({ docId, title, firstNumber, drawPen, content, fontSize,
         {printShrink < 1 && <style>{`@media print { .ink-stack .sheet { transform: scale(${printShrink}); transform-origin: 50% 50%; } }`}</style>}
         {stale && !busy && (
           <div className="ink-progress ink-stale no-print" role="status">
-            <span>Почерк изменился после этого рендера.</span>
+            <span>Your handwriting has changed since this render.</span>
             <button className="btn primary" onClick={rewrite}>
-              Перерисовать
+              Render again
             </button>
           </div>
         )}
         {busy && (
           <div className="ink-progress no-print" role="progressbar" aria-valuenow={Math.round(progress * 100)}>
-            <span>Пишу от руки… {Math.round(progress * 100)}%</span>
+            <span>Rendering handwriting… {Math.round(progress * 100)}%</span>
             <div className="progress-track">
               <div className="progress-fill" style={{ width: `${progress * 100}%` }} />
             </div>
@@ -375,7 +375,7 @@ export function InkView({ docId, title, firstNumber, drawPen, content, fontSize,
                       <BlockFrame
                         code={String(a.code ?? '')}
                         data={a.data}
-                        title={String(a.title ?? 'Блок')}
+                        title={String(a.title ?? 'Block')}
                         onHeight={(h) => setBlockHeights((m) => (m[it.node] === h ? m : { ...m, [it.node]: h }))}
                       />
                     </div>
@@ -442,14 +442,14 @@ export function InkView({ docId, title, firstNumber, drawPen, content, fontSize,
                   ) : f.attrs.kind === 'sketch' ? (
                     <SketchFigure code={String(f.attrs.code ?? '')} pen={f.attrs.pen} width={f.width} fontSize={sketchFs} deal={deals[f.i] ?? null} sheetMap={blank?.map} />
                   ) : (
-                    <BlockFrame code={String(f.attrs.code ?? '')} data={f.attrs.data} title={String(f.attrs.title ?? 'Блок')} />
+                    <BlockFrame code={String(f.attrs.code ?? '')} data={f.attrs.data} title={String(f.attrs.title ?? 'Block')} />
                   )}
                 </div>
               ))}
           </Sheet>
         ))}
         {missing.length > 0 && (
-          <p className="ink-missing no-print">Ещё не написаны (показаны обычным шрифтом): {missing.join(' ')}</p>
+          <p className="ink-missing no-print">Missing handwriting samples (shown in a standard font): {missing.join(' ')}</p>
         )}
       </div>
       </DrawPenContext.Provider>

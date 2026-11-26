@@ -88,16 +88,16 @@ export function SelectionBar({ editor }: { editor: Editor | null }) {
 
   return (
     <div className="selection-bar no-print" style={box} onMouseDown={(e) => e.preventDefault()}>
-      <button onClick={() => step(-1)} title="Мельче">
+      <button onClick={() => step(-1)} title="Smaller">
         A−
       </button>
-      <span className="selection-size" title="Размер букв">
+      <span className="selection-size" title="Letter size">
         {Math.round(scale * 100)}%
       </span>
-      <button onClick={() => step(1)} title="Крупнее">
+      <button onClick={() => step(1)} title="Larger">
         A+
       </button>
-      <button onClick={() => editor.chain().focus().unsetTextSize().run()} title="Обычный размер" disabled={scale === 1}>
+      <button onClick={() => editor.chain().focus().unsetTextSize().run()} title="Default size" disabled={scale === 1}>
         1×
       </button>
       <span className="selection-sep" />
@@ -110,7 +110,7 @@ export function SelectionBar({ editor }: { editor: Editor | null }) {
           onClick={() => editor.chain().focus().setInkColor(c.color).run()}
         />
       ))}
-      <button onClick={() => editor.chain().focus().unsetInkColor().run()} title="Цвет документа" disabled={!color}>
+      <button onClick={() => editor.chain().focus().unsetInkColor().run()} title="Document color" disabled={!color}>
         ✕
       </button>
     </div>

@@ -45,7 +45,7 @@ let initialDoc: Promise<string | null> | null = null;
 function openInitialDocument(): Promise<string | null> {
   initialDoc ??= (async () => {
     if ((await db.documents.count()) === 0) {
-      return (await createDocument('Добро пожаловать', welcomeContent())).id;
+      return (await createDocument('Welcome', welcomeContent())).id;
     }
     const remembered = await getSetting<string | null>('editor.doc', null);
     return remembered && (await db.documents.get(remembered)) ? remembered : null;
@@ -64,11 +64,11 @@ export function Documents() {
   const [printAsked, setPrintAsked] = useState(docState.print);
   const [editor, setEditor] = useState<Editor | null>(null);
   const [desk, setDesk] = useState(false);
-  /** «Спросить нейронку» open; what the last pasted answer did; an answer being laid out. */
+  /** «Ask AI» open; what the last pasted answer did; an answer being laid out. */
   const [asking, setAsking] = useState(false);
   const [report, setReport] = useState<AnswerReport | null>(null);
   const [answerBusy, setAnswerBusy] = useState(false);
-  /** The document whose name is being edited in «Недавние». */
+  /** The document whose name is being edited in «Recent». */
   const [renaming, setRenaming] = useState<string | null>(null);
   // Content of the open document, tagged with its id so a stale one is never shown.
   const [loaded, setLoaded] = useState<{ id: string; content: DocContent } | null>(null);
@@ -302,7 +302,7 @@ export function Documents() {
       const layout: DocLayout = { key: layoutKey(measured, m.fontSize, m.geo, m.showTitle), nodes };
       setLiveLayout({ id, layout });
       window.clearTimeout(layoutTimer.current);
-      // Kept with the document (not a change of it: «Недавние» keep their order).
+      // Kept with the document (not a change of it: «Recent» keep their order).
       layoutTimer.current = window.setTimeout(() => void db.documents.update(id, { layout }), 800);
     },
     [currentId],
@@ -345,11 +345,11 @@ export function Documents() {
     const w = 260;
     const x = Math.round(Math.min(Math.max(geo.contentW / 2 - w / 2, -geo.margin.left), geo.contentW - w));
     const y = Math.round(Math.max(-geo.margin.top, (midY - col.top) / zoom));
-    editor.commands.insertContentAt(editor.state.doc.content.size, { type: 'htmlBlock', attrs: { kind: 'note', title: 'Надпись', code: '', float: true, x, y, w, size: blank?.letters ?? 4 } });
+    editor.commands.insertContentAt(editor.state.doc.content.size, { type: 'htmlBlock', attrs: { kind: 'note', title: 'Annotation', code: '', float: true, x, y, w, size: blank?.letters ?? 4 } });
   };
 
   const removeDoc = async (d: HandDocument) => {
-    if (!confirm(`Удалить «${d.title}»? Это нельзя отменить.`)) return;
+    if (!confirm(`Delete «${d.title}»? Это нельзя отменить.`)) return;
     await db.documents.delete(d.id);
     const own = pageSetup(d.page).blank;
     if (own) await db.blanks.delete(own);
@@ -400,12 +400,12 @@ export function Documents() {
     print();
   }, [printAsked, doc, content]);
 
-  if (!docs) return <div className="loading">Открываю тетрадь…</div>;
+  if (!docs) return <div className="loading">Opening notebook…</div>;
 
   return (
     <div className="documents">
       <aside className="recents float no-print">
-        <h4 className="recents-head">Недавние</h4>
+        <h4 className="recents-head">Recent</h4>
         <ul className="fade-scroll">
           {docs.map((d) => (
             <li key={d.id} className={d.id === currentId ? 'active' : ''}>
@@ -415,8 +415,8 @@ export function Documents() {
                     className="doc-rename"
                     autoFocus
                     defaultValue={d.title}
-                    placeholder="Без названия"
-                    aria-label="Новое название"
+                    placeholder="Untitled"
+                    aria-label="New title"
                     onFocus={(e) => e.currentTarget.select()}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') e.currentTarget.blur();
@@ -434,20 +434,20 @@ export function Documents() {
                 </div>
               ) : (
                 <button className="doc-link" onClick={() => setCurrentId(d.id)} onDoubleClick={() => setRenaming(d.id)}>
-                  <span className="doc-title">{d.title || 'Без названия'}</span>
+                  <span className="doc-title">{d.title || 'Untitled'}</span>
                   <span className="muted small">{new Date(d.updatedAt).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' })}</span>
                 </button>
               )}
-              <button className="doc-action" onClick={() => setRenaming(d.id)} aria-label="Переименовать документ" title="Переименовать">
+              <button className="doc-action" onClick={() => setRenaming(d.id)} aria-label="Rename document" title="Rename">
                 ✎
               </button>
-              <button className="doc-action doc-delete" onClick={() => void removeDoc(d)} aria-label="Удалить документ" title="Удалить">
+              <button className="doc-action doc-delete" onClick={() => void removeDoc(d)} aria-label="Delete document" title="Delete">
                 ✕
               </button>
             </li>
           ))}
         </ul>
-        {samples.length === 0 && <p className="recents-note muted small">Почерк пуст — напишите буквы во вкладке «Почерк».</p>}
+        {samples.length === 0 && <p className="recents-note muted small">Your handwriting collection is empty. Add letters in the Handwriting tab.</p>}
       </aside>
 
       <main className="doc-main" ref={pageRef}>
@@ -495,10 +495,10 @@ export function Documents() {
                 <input
                   className="page-title"
                   value={doc.title}
-                  placeholder="Название"
+                  placeholder="Title"
                   onChange={(e) => void db.documents.update(doc.id, { title: e.target.value, updatedAt: Date.now() })}
                   style={{ fontFamily: HAND_FONT_STACK }}
-                  aria-label="Название документа"
+                  aria-label="Document title"
                 />
               )}
               <HandEditor
@@ -521,44 +521,44 @@ export function Documents() {
         <>
           <TopCorner>
             <details className="menu right">
-              <summary className="corner-btn float" title="Экспорт" aria-label="Экспорт">
+              <summary className="corner-btn float" title="Export" aria-label="Export">
                 <ExportIcon />
               </summary>
               <div className="menu-items">
                 <button onClick={(e) => (closeMenus(e.currentTarget), print())}>
-                  <strong>Печать / PDF</strong>
-                  <span className="muted small">вместе с блоками</span>
+                  <strong>Print / PDF</strong>
+                  <span className="muted small">including blocks</span>
                 </button>
                 <button onClick={(e) => (closeMenus(e.currentTarget), void exportPng(pageExport()))}>
-                  <strong>Картинка PNG</strong>
+                  <strong>PNG image</strong>
                 </button>
                 <button onClick={(e) => (closeMenus(e.currentTarget), void exportSvg(pageExport()))}>
-                  <strong>Вектор SVG</strong>
+                  <strong>SVG vector</strong>
                 </button>
                 <button onClick={(e) => (closeMenus(e.currentTarget), setDesk(true))}>
-                  <strong>На столе (фото)…</strong>
-                  <span className="muted small">текст на снимке настоящего листа, JPG</span>
+                  <strong>On a desk (photo)…</strong>
+                  <span className="muted small">handwriting on a photo of real paper, JPG</span>
                 </button>
                 <button disabled={!fontBytes} onClick={(e) => (closeMenus(e.currentTarget), void exportFont())}>
-                  <strong>Мой шрифт .ttf</strong>
-                  <span className="muted small">для Word, Figma и т. п.</span>
+                  <strong>My font .ttf</strong>
+                  <span className="muted small">for Word, Figma and other apps</span>
                 </button>
                 <button onClick={(e) => (closeMenus(e.currentTarget), void exportDocumentJson(doc.title, content))}>
-                  <strong>Документ .json</strong>
+                  <strong>Document .json</strong>
                 </button>
               </div>
             </details>
           </TopCorner>
 
-          <div className="tool-rail float no-print" role="toolbar" aria-orientation="vertical" aria-label="Инструменты">
+          <div className="tool-rail float no-print" role="toolbar" aria-orientation="vertical" aria-label="Tools">
             <details className="menu">
-              <summary className="rail-btn" title="Вставить блок" aria-label="Вставить блок">
+              <summary className="rail-btn" title="Insert block" aria-label="Insert block">
                 <BlockIcon />
               </summary>
               <div className="menu-items">
                 <button disabled={ink || !editor} onClick={(e) => (closeMenus(e.currentTarget), insertNote())}>
-                  <strong>Надпись</strong>
-                  <span className="muted small">почерком в любом месте листа: ответ, подпись, формула</span>
+                  <strong>Annotation</strong>
+                  <span className="muted small">handwriting anywhere on the page: an answer, label or formula</span>
                 </button>
                 {TEMPLATES.map((t) => (
                   <button
@@ -602,7 +602,7 @@ export function Documents() {
                 disabled={ink}
                 onClick={() => setAsking(true)}
                 title="Заполнить бланк с нейронкой: картинка с разметкой и запрос для чата; ответ — Ctrl+V в документе"
-                aria-label="Спросить нейронку"
+                aria-label="Ask AI"
               >
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden>
                   <path d="M12 3.5 13.9 9.1 19.5 11 13.9 12.9 12 18.5 10.1 12.9 4.5 11 10.1 9.1Z" />
@@ -614,8 +614,8 @@ export function Documents() {
             <button
               className={`rail-btn ${ink ? 'on' : ''}`}
               onClick={() => setInk(!ink)}
-              title={ink ? 'Редактировать' : 'Отрендерить: каждая буква уникальна, строки неровные, как на бумаге'}
-              aria-label={ink ? 'Редактировать' : 'Отрендерить'}
+              title={ink ? 'Edit' : 'Render: каждая буква уникальна, строки неровные, как на бумаге'}
+              aria-label={ink ? 'Edit' : 'Render'}
               aria-pressed={ink}
             >
               {ink ? <PencilIcon /> : <NibIcon />}

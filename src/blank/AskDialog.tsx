@@ -1,4 +1,4 @@
-// «Спросить нейронку»: the blank marked up for a chat, and the request to go
+// «Ask AI»: the blank marked up for a chat, and the request to go
 // with it. The marks can be put right first: a click on the picture adds a
 // point there (sticking to the printing) or takes away the one clicked.
 import { useEffect, useRef, useState } from 'react';
@@ -121,10 +121,10 @@ export function AskDialog({ blank, onClose }: { blank: Blank; onClose: () => voi
 
   return (
     <div className="sketch-help-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="sketch-help ask-dialog" role="dialog" aria-modal="true" aria-label="Спросить нейронку">
+      <div className="sketch-help ask-dialog" role="dialog" aria-modal="true" aria-label="Ask AI">
         <header className="ask-head">
           <h3>Заполнить бланк с нейронкой</h3>
-          <button className="rail-btn" onClick={onClose} aria-label="Закрыть" title="Закрыть (Esc)">
+          <button className="rail-btn" onClick={onClose} aria-label="Close" title="Close (Esc)">
             ✕
           </button>
         </header>

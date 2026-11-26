@@ -28,7 +28,7 @@ export function SketchMenu({ editor, ink, setup, onChange }: Props) {
         if ((e.currentTarget as HTMLDetailsElement).open && editor) setFences(countSketchFences(editor.state.doc));
       }}
     >
-      <summary className="rail-btn" title="Чертежи" aria-label="Чертежи">
+      <summary className="rail-btn" title="Drawings" aria-label="Drawings">
         <DrawingIcon />
       </summary>
       <div className="menu-items sketch-menu">
@@ -36,11 +36,11 @@ export function SketchMenu({ editor, ink, setup, onChange }: Props) {
           disabled={ink || !editor}
           onClick={(e) => {
             close(e.currentTarget);
-            editor?.chain().focus().insertHtmlBlock({ kind: 'sketch', title: 'Чертёж', code: '' }).run();
+            editor?.chain().focus().insertHtmlBlock({ kind: 'sketch', title: 'Drawing', code: '' }).run();
           }}
         >
-          <strong>Вставить чертёж</strong>
-          <span className="muted small">командами GeoGebra, вашим почерком</span>
+          <strong>Insert drawing</strong>
+          <span className="muted small">GeoGebra commands in your handwriting</span>
         </button>
         <button
           disabled={ink || !editor || fences === 0}

@@ -138,9 +138,9 @@ export function SampleThumb({ sample, weightKey, onDelete, onAnchor }: Props) {
         {anchor('entry', sample.entry)}
         {anchor('exit', sample.exit)}
       </svg>
-      {tooTall && <span className="thumb-warn">выше строчных</span>}
+      {tooTall && <span className="thumb-warn">above x-height</span>}
       {place && <span className="thumb-place">{place}</span>}
-      <button className="thumb-delete" onClick={onDelete} title="Удалить вариант" aria-label="Удалить вариант">
+      <button className="thumb-delete" onClick={onDelete} title="Delete sample" aria-label="Delete sample">
         ×
       </button>
     </figure>

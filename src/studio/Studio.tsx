@@ -91,8 +91,8 @@ export function Studio() {
     const ownPairs = [...byChar.keys()].filter((k) => isPair(k) && !SUGGESTED_PAIRS.includes(k));
     const latinPairs = ownPairs.filter((p) => pairShelf(p) === 'lat-lower');
     const list = CHAR_GROUPS.map((g) => (g.id === 'pairs' ? { ...g, chars: [...g.chars, ...ownPairs.filter((p) => !latinPairs.includes(p))] } : g));
-    if (latinPairs.length) list.splice(list.findIndex((g) => g.id === 'lat-lower') + 1, 0, { id: 'lat-pairs', title: 'Пары букв', chars: latinPairs, shelf: 'lat-lower' });
-    list.push({ id: 'extra', title: 'Ещё символы', chars: extraSigns(byChar.keys()), shelf: 'sym' });
+    if (latinPairs.length) list.splice(list.findIndex((g) => g.id === 'lat-lower') + 1, 0, { id: 'lat-pairs', title: 'Letter pairs', chars: latinPairs, shelf: 'lat-lower' });
+    list.push({ id: 'extra', title: 'More symbols', chars: extraSigns(byChar.keys()), shelf: 'sym' });
     return list;
   }, [byChar]);
   const shown = groups.filter((g) => g.shelf === shelf);
@@ -192,9 +192,9 @@ export function Studio() {
                       value={newPair}
                       onChange={(e) => setNewPair(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && addPair()}
-                      placeholder="своя пара"
+                      placeholder="custom pair"
                       maxLength={3}
-                      aria-label="Своя пара букв"
+                      aria-label="Custom letter pair"
                     />
                     <button className="btn small" onClick={addPair}>
                       +
@@ -206,25 +206,25 @@ export function Studio() {
           </div>
         </div>
         <div className="alphabet-pills">
-          <div className="pill float" role="group" aria-label="Регистр">
-            <button className={!upper ? 'on' : ''} disabled={caseless} onClick={() => pickShelf(`${script}-lower` as Shelf)} title="Строчные">
+          <div className="pill float" role="group" aria-label="Letter case">
+            <button className={!upper ? 'on' : ''} disabled={caseless} onClick={() => pickShelf(`${script}-lower` as Shelf)} title="Lowercase">
               {lower}
             </button>
-            <button className={upper ? 'on' : ''} disabled={caseless} onClick={() => pickShelf(`${script}-upper` as Shelf)} title="Прописные">
+            <button className={upper ? 'on' : ''} disabled={caseless} onClick={() => pickShelf(`${script}-upper` as Shelf)} title="Uppercase">
               {lower.toUpperCase()}
             </button>
           </div>
           <div className="pill float" role="group" aria-label="Алфавит">
-            <button className={script === 'cyr' ? 'on' : ''} onClick={() => pickShelf(upper ? 'cyr-upper' : 'cyr-lower')} title="Кириллица">
+            <button className={script === 'cyr' ? 'on' : ''} onClick={() => pickShelf(upper ? 'cyr-upper' : 'cyr-lower')} title="Cyrillic">
               Кир
             </button>
-            <button className={script === 'lat' ? 'on' : ''} onClick={() => pickShelf(upper ? 'lat-upper' : 'lat-lower')} title="Латиница">
+            <button className={script === 'lat' ? 'on' : ''} onClick={() => pickShelf(upper ? 'lat-upper' : 'lat-lower')} title="Latin">
               Lat
             </button>
-            <button className={script === 'sym' ? 'on' : ''} onClick={() => pickShelf('sym')} title="Цифры, знаки и формулы">
+            <button className={script === 'sym' ? 'on' : ''} onClick={() => pickShelf('sym')} title="Numbers, symbols and formulas">
               ∑
             </button>
-            <button className={script === 'points' ? 'on' : ''} onClick={() => pickShelf('points')} title="Точки чертежа: свои варианты кружков, крестиков и точек">
+            <button className={script === 'points' ? 'on' : ''} onClick={() => pickShelf('points')} title="Drawing markers: your own circles, crosses and dots">
               ○
             </button>
           </div>
@@ -234,10 +234,10 @@ export function Studio() {
       <section className="workbench">
         <div className="pill mode-switch" role="tablist">
           <button role="tab" aria-selected={mode === 'letters'} className={mode === 'letters' ? 'on' : ''} onClick={() => setMode('letters')}>
-            Буквы и пары
+            Letters and pairs
           </button>
           <button role="tab" aria-selected={mode === 'phrase'} className={mode === 'phrase' ? 'on' : ''} onClick={() => setMode('phrase')}>
-            Напиши фразу
+            Write a phrase
           </button>
         </div>
 
@@ -248,7 +248,7 @@ export function Studio() {
             <header className="workbench-head">
               <div className="current-char">
                 <span className="big">{current}</span>
-                <span className="muted" title="Записанных вариантов">
+                <span className="muted" title="Recorded samples">
                   · {variants.length}
                 </span>
                 {(learned[current] ?? 0) > 0 && (
@@ -266,10 +266,10 @@ export function Studio() {
               pointSign={point}
               extra={
                 <span className="letter-arrows">
-                  <button className="btn ghost" onClick={() => move(-1)} aria-label="Предыдущая буква" title="Предыдущая буква (←)">
+                  <button className="btn ghost" onClick={() => move(-1)} aria-label="Previous letter" title="Previous letter (←)">
                     ←
                   </button>
-                  <button className="btn ghost" onClick={() => move(1)} aria-label="Следующая буква" title="Следующая буква (→)">
+                  <button className="btn ghost" onClick={() => move(1)} aria-label="Next letter" title="Next letter (→)">
                     →
                   </button>
                 </span>
@@ -297,9 +297,9 @@ export function Studio() {
 
             {point ? (
               <section className="variants">
-                <h3>Так выйдет на чертеже</h3>
+                <h3>Drawing preview</h3>
                 <p className="muted small">
-                  Рисуйте вокруг перекрестия — это само место точки. Размер как на бумаге рядом с буквами, пунктир — обычный размер. Каждая точка чертежа берёт один из вариантов, пока их нет — рисует
+                  Рисуйте вокруг перекрестия — это само место точки. Размер как на бумаге рядом с буквами, пунктир — standard размер. Каждая точка чертежа берёт один из вариантов, пока их нет — рисует
                   программа.
                 </p>
                 <div className="point-demo">
@@ -318,7 +318,7 @@ export function Studio() {
 
       <aside className="side fade-scroll">
         <section className="panel float">
-          <h3>Проба пера</h3>
+          <h3>Try your handwriting</h3>
           <textarea value={phrase} onChange={(e) => setPhrase(e.target.value)} rows={2} />
           <p className="phrase" style={{ fontFamily: HAND_FONT_STACK }}>
             {phrase}

@@ -10,7 +10,7 @@ import { dragBlock, sidesFor, type Side } from './drag';
 import type { HtmlBlockAttrs } from './HtmlBlock';
 
 /**
- * «Надпись» in the editor: words in the handwriting font, lying anywhere over
+ * «Annotation» in the editor: words in the handwriting font, lying anywhere over
  * the sheet like a floating drawing. A click edits the text; the blue square
  * moves it, its left and right edges set its width (longer text wraps); the
  * pill below sets its letters' size and removes it.
@@ -148,9 +148,9 @@ export function NoteView({ node, editor, getPos, updateAttributes, deleteNode, s
     >
       {selected ? (
         <BlockBar>
-          <span className="note-title">Надпись</span>
+          <span className="note-title">Annotation</span>
           {onLines && (
-            <button className="note-warn" onClick={moveOff} title="Надпись лежит на линиях бланка или чертежа: отодвинуть к ближайшему чистому месту">
+            <button className="note-warn" onClick={moveOff} title="Annotation лежит на линиях бланка или чертежа: отодвинуть к ближайшему чистому месту">
               ⚠ Отодвинуть
             </button>
           )}
@@ -165,9 +165,9 @@ export function NoteView({ node, editor, getPos, updateAttributes, deleteNode, s
               A+
             </button>
             <button onClick={() => setEditing(true)} title="Изменить текст (или щелчок по тексту)">
-              ✎ Текст
+              ✎ Text
             </button>
-            <button onClick={() => deleteNode()} title="Удалить надпись" className="danger">
+            <button onClick={() => deleteNode()} title="Delete надпись" className="danger">
               ✕
             </button>
           </div>
@@ -184,7 +184,7 @@ export function NoteView({ node, editor, getPos, updateAttributes, deleteNode, s
           style={style}
           autoFocus
           value={draft}
-          placeholder="Текст надписи"
+          placeholder="Text надписи"
           spellCheck={false}
           onChange={(e) => edit(e.target.value)}
           onBlur={() => finishRef.current()}
@@ -227,7 +227,7 @@ export function NoteView({ node, editor, getPos, updateAttributes, deleteNode, s
         </div>
       )}
       </div>
-      {onLines && <span className="note-badge no-print" title="Надпись лежит на линиях: «⚠ Отодвинуть» в её шапке">⚠</span>}
+      {onLines && <span className="note-badge no-print" title="Annotation лежит на линиях: «⚠ Отодвинуть» в её шапке">⚠</span>}
     </NodeViewWrapper>
   );
 }

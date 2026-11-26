@@ -14,7 +14,7 @@ const COLORS: { name: string; color: string }[] = [
 const SLIDERS: { key: keyof typeof DRAW_PEN_RANGES; label: string; hint: string; unit?: string }[] = [
   { key: 'wobble', label: 'Кривизна линий', hint: '0 — как по линейке, 1 — твёрдая рука, больше — совсем от руки' },
   { key: 'weight', label: 'Толщина', hint: 'относительно пера почерка', unit: '×' },
-  { key: 'pressure', label: 'Нажим', hint: 'насколько толщина «дышит» вдоль линии: 0 — ровная' },
+  { key: 'pressure', label: 'Pressure', hint: 'насколько толщина «дышит» вдоль линии: 0 — ровная' },
   { key: 'overshoot', label: 'Заход за концы', hint: '0 — линия ровно до точки, больше — дальше за неё' },
   { key: 'points', label: 'Небрежность точек', hint: '0 — все точки одинаковые и ровные; больше — разный размер, чуть овальные, кружок не всегда замкнут и чуть мимо места. Свои варианты точек рисуются в «Почерке», кнопка ○ под алфавитом' },
   { key: 'joins', label: 'Стыки с точками', hint: '0 — линии ровно до кружка точки; больше — то не доходят, то касаются, то заходят внутрь, у каждого конца по-своему' },
@@ -45,7 +45,7 @@ export function DrawPenPicker({ value, onChange, textInk }: Props) {
         <button
           className={`swatch auto ${value.color === null ? 'on' : ''}`}
           style={{ ['--sw' as string]: pencil ? GRAPHITE : textInk }}
-          title={pencil ? 'Как обычный карандаш (графит)' : 'Как текст'}
+          title={pencil ? 'Как standard карандаш (графит)' : 'Как текст'}
           aria-label={pencil ? 'Графит' : 'Как текст'}
           onClick={() => onChange({ ...value, color: null })}
         />
@@ -59,7 +59,7 @@ export function DrawPenPicker({ value, onChange, textInk }: Props) {
             onClick={() => onChange({ ...value, color: c.color })}
           />
         ))}
-        <label className={`swatch custom ${known ? '' : 'on'}`} title="Свой цвет">
+        <label className={`swatch custom ${known ? '' : 'on'}`} title="Custom color">
           <input type="color" value={value.color ?? (pencil ? GRAPHITE : textInk)} onChange={(e) => onChange({ ...value, color: e.target.value })} />
         </label>
       </div>

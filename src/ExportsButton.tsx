@@ -12,7 +12,7 @@ import {
 } from './util/download';
 
 const size = (bytes: number) =>
-  bytes < 1024 ? `${bytes} Б` : bytes < 1024 * 1024 ? `${Math.round(bytes / 1024)} КБ` : `${(bytes / 1024 / 1024).toFixed(1)} МБ`;
+  bytes < 1024 ? `${bytes} B` : bytes < 1024 * 1024 ? `${Math.round(bytes / 1024)} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 
 const when = (at: number) =>
   new Date(at).toLocaleString('ru-RU', new Date(at).toDateString() === new Date().toDateString() ? { timeStyle: 'short' } : { dateStyle: 'short', timeStyle: 'short' });
@@ -62,18 +62,18 @@ export function ExportsButton() {
           setOpen(!open);
           if (open) setFresh(null);
         }}
-        title="История экспорта"
-        aria-label="История экспорта"
+        title="Export history"
+        aria-label="Export history"
         aria-expanded={open}
       >
         <DownloadIcon />
       </button>
       {open && (
-        <div className="exports-panel" role="dialog" aria-label="История экспорта">
+        <div className="exports-panel" role="dialog" aria-label="Export history">
           <div className="exports-head">
-            <strong>Экспорт</strong>
+            <strong>Export</strong>
             <button className="link-btn" onClick={() => void clearExportHistory().then(() => setOpen(false))}>
-              Очистить
+              Clear
             </button>
           </div>
           <ul>
@@ -91,10 +91,10 @@ export function ExportsButton() {
                 {e.path && (
                   <div className="exports-actions">
                     <button className="btn small" onClick={() => void openFile(e.path!)}>
-                      Открыть
+                      Open
                     </button>
-                    <button className="btn small" onClick={() => void revealFile(e.path!)} title="Показать файл в папке">
-                      В папке
+                    <button className="btn small" onClick={() => void revealFile(e.path!)} title="Show file in folder">
+                      Show in folder
                     </button>
                   </div>
                 )}
@@ -103,8 +103,8 @@ export function ExportsButton() {
           </ul>
           <p className="muted small exports-foot">
             {desktop
-              ? 'Файлы сохраняются в папку «Загрузки».'
-              : 'Файлы сохранены в папку загрузок браузера. Открыть папку можно в настольном приложении.'}
+              ? 'Files are saved to your Downloads folder.'
+              : 'Files are saved to your browser’s download folder. Open the folder from the desktop app.'}
           </p>
         </div>
       )}

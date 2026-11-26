@@ -127,7 +127,7 @@ export function SketchHelp({ onClose, onInsert }: { onClose: () => void; onInser
     <div className="sketch-help-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className="sketch-help" role="dialog" aria-modal="true" aria-label="Команды чертежа">
         <header className="sketch-help-top">
-          <h2>Чертёж: все команды</h2>
+          <h2>Drawing: все команды</h2>
           <div className="seg" role="group" aria-label="Имена команд">
             <button className={lang === 'ru' ? 'on' : ''} onClick={() => pickLang('ru')}>
               По-русски
@@ -136,7 +136,7 @@ export function SketchHelp({ onClose, onInsert }: { onClose: () => void; onInser
               Как в GeoGebra
             </button>
           </div>
-          <button className="sketch-help-close" onClick={onClose} aria-label="Закрыть">
+          <button className="sketch-help-close" onClick={onClose} aria-label="Close">
             ✕
           </button>
         </header>
@@ -177,14 +177,14 @@ export function SketchHelp({ onClose, onInsert }: { onClose: () => void; onInser
                 Одна команда — одна строка. Имя можно использовать только ниже строки, где оно задано.
               </li>
               <li>
-                Начертательная геометрия: точка в пространстве — <code>A = (2, 1, 3)</code>. Чертёж тогда становится эпюром:
+                Начертательная геометрия: точка в пространстве — <code>A = (2, 1, 3)</code>. Drawing тогда становится эпюром:
                 приложение само рисует проекции A₁ и A₂, линии связи и ось x₁₂ (ось x — влево от O, как в учебниках). Отрезки,
                 прямые и многоугольники из таких точек рисуются проекциями. Профильная проекция —{' '}
                 <code>{lang === 'ru' ? 'Проекции' : 'Projections'}(1, 2, 3)</code>, плоскость — треугольником{' '}
                 <code>{lang === 'ru' ? 'Многоугольник' : 'Polygon'}(A, B, C)</code>.
               </li>
               <li>
-                Чертёж можно написать прямо в тексте: строка <code>```</code>, ниже команды, и снова строка <code>```</code>{' '}
+                Drawing можно написать прямо в тексте: строка <code>```</code>, ниже команды, и снова строка <code>```</code>{' '}
                 (в русской раскладке та же клавиша даёт <code>ёёё</code> — так тоже можно). Как только закрыта последняя
                 строка, на этом месте появится чертёж; Backspace сразу после вернёт текст. Для старого текста — «Вставить
                 блок» → «Найти чертежи в тексте».

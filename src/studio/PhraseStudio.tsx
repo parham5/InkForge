@@ -313,7 +313,7 @@ export function PhraseStudio({ onDone }: { onDone?: (saved: string[]) => void })
     }
     await db.samples.bulkAdd(rows);
     const savedKeys = rows.map((r) => r.char);
-    setMessage(`Сохранено: ${savedKeys.join(' ')}`);
+    setMessage(`Saved: ${savedKeys.join(' ')}`);
     onDone?.(savedKeys);
     clear();
     nextWord(savedKeys);
@@ -337,7 +337,7 @@ export function PhraseStudio({ onDone }: { onDone?: (saved: string[]) => void })
 
   return (
     <div className="phrase-studio">
-      <div className="phrase-sets" role="tablist" aria-label="Язык">
+      <div className="phrase-sets" role="tablist" aria-label="Language">
         {(Object.keys(LANG_TITLES) as PhraseLang[]).map((l) => (
           <button key={l} role="tab" aria-selected={l === lang} className={l === lang ? 'active' : ''} onClick={() => chooseLang(l)}>
             {LANG_TITLES[l]}
@@ -346,7 +346,7 @@ export function PhraseStudio({ onDone }: { onDone?: (saved: string[]) => void })
       </div>
       <div className="phrase-head">
         <label>
-          Слово или фраза:{' '}
+          Word or phrase:{' '}
           <input
             value={phrase}
             onChange={(e) => {
@@ -356,20 +356,20 @@ export function PhraseStudio({ onDone }: { onDone?: (saved: string[]) => void })
           />
         </label>
         {lang !== 'math' && (
-          <div className="case-buttons" role="group" aria-label="Регистр">
-            <button className="btn small" onClick={() => recase('capital')} title="С заглавной буквы">
+          <div className="case-buttons" role="group" aria-label="Letter case">
+            <button className="btn small" onClick={() => recase('capital')} title="Capitalize">
               Аа
             </button>
-            <button className="btn small" onClick={() => recase('upper')} title="Только заглавными">
+            <button className="btn small" onClick={() => recase('upper')} title="Uppercase">
               АА
             </button>
-            <button className="btn small" onClick={() => recase('lower')} title="Только строчными">
+            <button className="btn small" onClick={() => recase('lower')} title="Lowercase">
               аа
             </button>
           </div>
         )}
         <button className="btn small" onClick={() => nextWord()}>
-          {lang === 'math' ? 'Другая формула' : 'Другое слово'}
+          {lang === 'math' ? 'Another formula' : 'Another word'}
         </button>
       </div>
       <div className="phrase-canvas" ref={wrapRef}>
@@ -380,11 +380,11 @@ export function PhraseStudio({ onDone }: { onDone?: (saved: string[]) => void })
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
-          aria-label="Лист для слова"
+          aria-label="Word canvas"
         />
         {(stage === 'mark' || strokeCount === 0) && (
           <span className="canvas-hint">
-            {stage === 'write' ? 'Напишите слово целиком, слитно' : 'Нижний кружок двигает границу, верхний наклоняет'}
+            {stage === 'write' ? 'Write the whole word in connected handwriting' : 'Drag the lower handle to move a boundary; the upper handle adjusts its slant'}
           </span>
         )}
       </div>
@@ -392,7 +392,7 @@ export function PhraseStudio({ onDone }: { onDone?: (saved: string[]) => void })
         {stage === 'write' ? (
           <>
             <button className="btn primary" onClick={toMark} disabled={strokeCount === 0 || letters.length === 0}>
-              Разметить буквы →
+              Mark letter boundaries →
             </button>
             <button
               className="btn"
@@ -403,10 +403,10 @@ export function PhraseStudio({ onDone }: { onDone?: (saved: string[]) => void })
               }}
               disabled={strokeCount === 0}
             >
-              Отменить штрих
+              Undo stroke
             </button>
             <button className="btn ghost" onClick={clear} disabled={strokeCount === 0}>
-              Очистить
+              Clear
             </button>
           </>
         ) : (
@@ -415,13 +415,13 @@ export function PhraseStudio({ onDone }: { onDone?: (saved: string[]) => void })
               Сохранить {letters.length} {letters.length === 1 ? 'букву' : letters.length < 5 ? 'буквы' : 'букв'}
             </button>
             <label className="check inline">
-              <input type="checkbox" checked={savePairs} onChange={(e) => setSavePairs(e.target.checked)} />и пары букв
+              <input type="checkbox" checked={savePairs} onChange={(e) => setSavePairs(e.target.checked)} />and letter pairs
             </label>
             <button className="btn" onClick={() => setStage('write')}>
-              ← Назад к письму
+              ← Back to writing
             </button>
             <button className="btn ghost" onClick={clear}>
-              Заново
+              Start over
             </button>
           </>
         )}

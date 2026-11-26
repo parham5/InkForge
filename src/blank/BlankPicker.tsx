@@ -182,7 +182,7 @@ export function BlankPicker({ on, sheet, mode, code, onCode, onClose }: Props) {
         <span className="muted">Прилипает к точкам, пересечениям и концам линий · Alt — точно где щёлкнули · Esc — выйти</span>
         {note && <span className="blank-picker-note">{note}</span>}
         <button className="btn small" onClick={onClose}>
-          Готово
+          Done
         </button>
       </div>
       {frontal && <span className="blank-picker-mark first" style={{ left: frontal.x, top: frontal.y }} />}

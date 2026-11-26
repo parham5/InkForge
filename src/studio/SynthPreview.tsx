@@ -17,7 +17,7 @@ export function SynthPreview({ char, count = 9 }: { char: string; count?: number
     };
   }, [char, count, seed, fontVersion]);
 
-  if (glyphs.length === 0) return <p className="muted small">Появится после первого варианта.</p>;
+  if (glyphs.length === 0) return <p className="muted small">Available after your first sample.</p>;
 
   let x = 0;
   const placed = glyphs.map((g) => {
@@ -38,7 +38,7 @@ export function SynthPreview({ char, count = 9 }: { char: string; count?: number
         ))}
       </svg>
       <button className="btn small" onClick={() => setSeed((s) => s + 1)}>
-        Ещё варианты
+        More variants
       </button>
     </div>
   );

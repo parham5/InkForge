@@ -11,7 +11,7 @@ const listeners = new Set<() => void>();
 
 function setOwner(id: string | null) {
   owner = id;
-  // The sheets make room for the window, «Недавние» give it their place.
+  // The sheets make room for the window, «Recent» give it their place.
   document.body.classList.toggle('side-editor-open', id !== null);
   listeners.forEach((f) => f());
 }
@@ -86,7 +86,7 @@ export function SideEditor({ title, onTitle, onClose, tools, children }: Props) 
     window.addEventListener('pointerup', up);
   };
 
-  // In the documents' room (beside «Недавние», under the tabs); the whole window when there is none.
+  // In the documents' room (beside «Recent», under the tabs); the whole window when there is none.
   const host = document.querySelector('.documents') ?? document.body;
   return createPortal(
     <aside
@@ -106,7 +106,7 @@ export function SideEditor({ title, onTitle, onClose, tools, children }: Props) 
         </button>
         <div className="side-editor-tools">
           {tools}
-          <button onClick={onClose} title="Закрыть (Esc)" aria-label="Закрыть">
+          <button onClick={onClose} title="Close (Esc)" aria-label="Close">
             ✕
           </button>
         </div>

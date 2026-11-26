@@ -38,16 +38,16 @@ export function SymbolsMenu({ editor, disabled }: { editor: Editor | null; disab
         if ((e.currentTarget as HTMLDetailsElement).open && editor) setRaw(countRawMath(editor.state.doc));
       }}
     >
-      <summary className="rail-btn" title="Формулы" aria-label="Формулы">
+      <summary className="rail-btn" title="Formulas" aria-label="Formulas">
         <SigmaIcon />
       </summary>
       <div className="menu-items symbols-menu">
         <div className="symbols-row">
-          <span className="symbols-label">Индекс</span>
+          <span className="symbols-label">Script</span>
           <button
             className={`symbol-btn wide ${active.sub ? 'on' : ''}`}
             disabled={disabled}
-            title="Нижний индекс (Ctrl+,)"
+            title="Subscript (Ctrl+,)"
             onClick={() => editor?.chain().focus().toggleScript('sub').run()}
           >
             x<sub>2</sub>
@@ -55,7 +55,7 @@ export function SymbolsMenu({ editor, disabled }: { editor: Editor | null; disab
           <button
             className={`symbol-btn wide ${active.sup ? 'on' : ''}`}
             disabled={disabled}
-            title="Верхний индекс (Ctrl+.)"
+            title="Superscript (Ctrl+.)"
             onClick={() => editor?.chain().focus().toggleScript('sup').run()}
           >
             x<sup>2</sup>
@@ -89,7 +89,7 @@ export function SymbolsMenu({ editor, disabled }: { editor: Editor | null; disab
               setRaw(0);
             }}
           >
-            Распознать формулы $…$ {raw > 0 ? `(${raw})` : ''}
+            Convert formulas $…$ {raw > 0 ? `(${raw})` : ''}
           </button>
         </div>
       </div>

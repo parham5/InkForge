@@ -19,7 +19,7 @@ function PageIcon({ children }: { children?: ReactNode }) {
 const PAPERS: { id: PaperStyle; name: string; icon: ReactNode }[] = [
   {
     id: 'ruled',
-    name: 'Линейка',
+    name: 'Ruled',
     icon: (
       <PageIcon>
         {[6, 10, 14, 18].map((y) => (
@@ -30,7 +30,7 @@ const PAPERS: { id: PaperStyle; name: string; icon: ReactNode }[] = [
   },
   {
     id: 'grid',
-    name: 'Клетка',
+    name: 'Grid',
     icon: (
       <PageIcon>
         {[5, 9, 13, 17].map((y) => (
@@ -42,7 +42,7 @@ const PAPERS: { id: PaperStyle; name: string; icon: ReactNode }[] = [
       </PageIcon>
     ),
   },
-  { id: 'plain', name: 'Чистый лист', icon: <PageIcon /> },
+  { id: 'plain', name: 'Plain paper', icon: <PageIcon /> },
 ];
 
 /** A printed blank: a frame with a drawing in it. */
@@ -57,10 +57,10 @@ const BLANK_ICON = (
 const PRESET_INSETS = [3, 1.8, 4.4];
 
 const SIDES: { key: keyof PageSetup['margins']; name: string }[] = [
-  { key: 'top', name: 'Сверху' },
-  { key: 'bottom', name: 'Снизу' },
-  { key: 'left', name: 'Слева' },
-  { key: 'right', name: 'Справа' },
+  { key: 'top', name: 'Top' },
+  { key: 'bottom', name: 'Bottom' },
+  { key: 'left', name: 'Left' },
+  { key: 'right', name: 'Right' },
 ];
 
 interface Props {
@@ -89,7 +89,7 @@ export function PageMenu({ setup, blank, onChange, fontSize, onFontSize, onAllNo
       onChange({ ...setup, blank: b.id });
       if (setup.blank) await db.blanks.delete(setup.blank);
     } catch (err) {
-      alert(`Не удалось открыть картинку: ${String(err)}`);
+      alert(`Could not open image: ${String(err)}`);
     } finally {
       setOpening(false);
     }
@@ -97,7 +97,7 @@ export function PageMenu({ setup, blank, onChange, fontSize, onFontSize, onAllNo
   /** Paper of the document's own instead of the blank (its picture is forgotten). */
   const choosePaper = (paper: PaperStyle) => {
     if (setup.blank) {
-      if (!confirm('Убрать бланк? Чертежи останутся, а картинку бланка потом придётся открыть заново.')) return;
+      if (!confirm('Убрать бланк? Drawings останутся, а картинку бланка потом придётся открыть заново.')) return;
       void db.blanks.delete(setup.blank);
     }
     onChange({ ...setup, paper, blank: null });
@@ -107,14 +107,14 @@ export function PageMenu({ setup, blank, onChange, fontSize, onFontSize, onAllNo
   };
   return (
     <details className="menu">
-      <summary className="rail-btn" title="Лист" aria-label="Лист">
+      <summary className="rail-btn" title="Page" aria-label="Page">
         <SheetIcon />
       </summary>
       <div className="menu-items page-menu">
         {!blank && (
         <label className="font-size-row" title="Размер почерка во всех документах">
           <span>
-            Размер букв <output>{fontSize} px</output>
+            Letter size <output>{fontSize} px</output>
           </span>
           <input type="range" min={16} max={48} value={fontSize} onChange={(e) => onFontSize(Number(e.target.value))} />
         </label>
@@ -135,7 +135,7 @@ export function PageMenu({ setup, blank, onChange, fontSize, onFontSize, onAllNo
           <label
             className={`icon-btn ${setup.blank ? 'on' : ''}`}
             title="Бланк: картинка задания (PNG, JPG, WebP) как лист документа — чертежи кладутся поверх неё"
-            aria-label="Бланк из файла"
+            aria-label="Import form image"
           >
             {BLANK_ICON}
             <input
@@ -168,7 +168,7 @@ export function PageMenu({ setup, blank, onChange, fontSize, onFontSize, onAllNo
           })}
         </div>
 
-        {opening && <p className="muted small">Открываю бланк…</p>}
+        {opening && <p className="muted small">Opening form…</p>}
         {blank && <BlankSettings blank={blank} onPatch={patchBlank} onAllNotes={onAllNotes} />}
 
         {!setup.blank && (
@@ -195,19 +195,19 @@ export function PageMenu({ setup, blank, onChange, fontSize, onFontSize, onAllNo
           <>
           <label className="check inline" title="Розовая линия поля справа, как слева (на листе в линейку и в клетку)">
             <input type="checkbox" checked={setup.rightLine} onChange={(e) => onChange({ ...setup, rightLine: e.target.checked })} />
-            Линия поля справа
+            Right margin line
           </label>
           <label className="check inline">
             <input type="checkbox" checked={setup.showTitle} onChange={(e) => onChange({ ...setup, showTitle: e.target.checked })} />
-            Название на листе
+            Title на листе
           </label>
           <div className="numbering-row">
             <label className="check inline">
               <input type="checkbox" checked={setup.pageNumbers} onChange={(e) => onChange({ ...setup, pageNumbers: e.target.checked })} />
-              Нумерация страниц
+              Page numbers
             </label>
             {setup.pageNumbers && (
-              <label className="first-number" title="Номер первого листа">
+              <label className="first-number" title="First page number">
                 с
                 <input
                   type="number"
@@ -221,7 +221,7 @@ export function PageMenu({ setup, blank, onChange, fontSize, onFontSize, onAllNo
           </div>
           </>
           )}
-          <div className="swatches" role="group" aria-label="Цвет чернил">
+          <div className="swatches" role="group" aria-label="Ink color">
             {INK_COLORS.map((c) => (
               <button
                 key={c.color}
@@ -232,7 +232,7 @@ export function PageMenu({ setup, blank, onChange, fontSize, onFontSize, onAllNo
                 onClick={() => onChange({ ...setup, ink: c.color })}
               />
             ))}
-            <label className={`swatch custom ${INK_COLORS.some((c) => c.color === setup.ink) ? '' : 'on'}`} title="Свой цвет">
+            <label className={`swatch custom ${INK_COLORS.some((c) => c.color === setup.ink) ? '' : 'on'}`} title="Custom color">
               <input type="color" value={setup.ink} onChange={(e) => onChange({ ...setup, ink: e.target.value })} />
             </label>
           </div>
@@ -260,26 +260,26 @@ function BlankSettings({ blank, onPatch, onAllNotes }: { blank: Blank; onPatch: 
         Бланк: <strong>{blank.name}</strong>
       </div>
       <div className="blank-row">
-        <span>Бумага</span>
-        <div className="pill small" role="group" aria-label="Формат бумаги">
+        <span>Paper</span>
+        <div className="pill small" role="group" aria-label="Paper size">
           {(Object.keys(BLANK_FORMATS) as BlankFormat[]).map((f) => (
             <button key={f} className={blank.format === f ? 'on' : ''} onClick={() => onPatch({ format: f })}>
               {BLANK_FORMATS[f].name}
             </button>
           ))}
         </div>
-        <div className="pill small" role="group" aria-label="Ориентация">
-          <button className={!blank.landscape ? 'on' : ''} onClick={() => onPatch({ landscape: false })} title="Книжная">
+        <div className="pill small" role="group" aria-label="Orientation">
+          <button className={!blank.landscape ? 'on' : ''} onClick={() => onPatch({ landscape: false })} title="Portrait">
             ▯
           </button>
-          <button className={blank.landscape ? 'on' : ''} onClick={() => onPatch({ landscape: true })} title="Альбомная">
+          <button className={blank.landscape ? 'on' : ''} onClick={() => onPatch({ landscape: true })} title="Landscape">
             ▭
           </button>
         </div>
       </div>
       <div className="blank-row">
-        <span>Печать</span>
-        <div className="pill small" role="group" aria-label="Масштаб печати">
+        <span>Print</span>
+        <div className="pill small" role="group" aria-label="Print scale">
           <button
             className={blank.print === 'fit' ? 'on' : ''}
             onClick={() => onPatch({ print: 'fit' })}

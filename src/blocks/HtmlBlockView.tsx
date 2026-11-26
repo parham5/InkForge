@@ -276,7 +276,7 @@ export function HtmlBlockView({ node, editor, getPos, updateAttributes, deleteNo
       {selected ? (
         <BlockBar>
           {box && (
-            <span className="grip" title="Чертёж по бланку: стоит там, где задано в НаБланке(…); начало можно сменить пипеткой «⌖ Начало»">
+            <span className="grip" title="Drawing по бланку: стоит там, где задано в НаБланке(…); начало можно сменить пипеткой «⌖ Начало»">
               ⌖
             </span>
           )}
@@ -288,7 +288,7 @@ export function HtmlBlockView({ node, editor, getPos, updateAttributes, deleteNo
               e.currentTarget.focus();
               e.currentTarget.select();
             }}
-            aria-label="Название блока"
+            aria-label="Title блока"
           />
           <div className="html-block-tools">
             {!box && (
@@ -323,7 +323,7 @@ export function HtmlBlockView({ node, editor, getPos, updateAttributes, deleteNo
                 </button>
               </>
             )}
-            <button onClick={() => deleteNode()} title="Удалить блок" className="danger">
+            <button onClick={() => deleteNode()} title="Delete блок" className="danger">
               ✕
             </button>
           </div>
@@ -409,7 +409,7 @@ export function HtmlBlockView({ node, editor, getPos, updateAttributes, deleteNo
                   Отменить правки
                 </button>
                 <span className="muted small">
-                  Блок работает в песочнице: без доступа к редактору и сети. API: block.data, block.setData(),
+                  Block работает в песочнице: без доступа к редактору и сети. API: block.data, block.setData(),
                   block.onData(), block.onFont().
                 </span>
               </div>
@@ -472,7 +472,7 @@ function PenMenu({ pen, onChange }: { pen: Record<string, unknown> | null; onCha
             Как во всём документе
           </label>
           <DrawPenPicker value={value} textInk={textInk} onChange={(next) => onChange({ ...next })} />
-          <p className="muted small">Для всех чертежей документа — в меню «Лист».</p>
+          <p className="muted small">Для всех чертежей документа — в меню «Page».</p>
         </div>
       )}
     </div>

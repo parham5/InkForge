@@ -19,7 +19,7 @@ function Icon({ children, size = 20 }: { children: ReactNode; size?: number }) {
   );
 }
 
-/** «Вставить блок». */
+/** «Insert block». */
 export const BlockIcon = () => (
   <Icon>
     <rect x="3" y="3" width="14" height="14" rx="3.5" />
@@ -27,7 +27,7 @@ export const BlockIcon = () => (
   </Icon>
 );
 
-/** «Лист». */
+/** «Page». */
 export const SheetIcon = () => (
   <Icon>
     <rect x="4.5" y="2.5" width="11" height="15" rx="1.8" />
@@ -35,14 +35,14 @@ export const SheetIcon = () => (
   </Icon>
 );
 
-/** «Формулы». */
+/** «Formulas». */
 export const SigmaIcon = () => (
   <Icon>
     <path d="M14.5 4.5h-9l4.8 5.5-4.8 5.5h9" />
   </Icon>
 );
 
-/** «Чертежи»: a set square. */
+/** «Drawings»: a set square. */
 export const DrawingIcon = () => (
   <Icon>
     <path d="M4 16.5V3.5l13 13z" />
@@ -50,7 +50,7 @@ export const DrawingIcon = () => (
   </Icon>
 );
 
-/** «Отрендерить»: a pen nib. */
+/** «Render»: a pen nib. */
 export const NibIcon = () => (
   <Icon>
     <path d="M6 3.5h8l-.9 6.2L10 17l-3.1-7.3z" />
@@ -59,7 +59,7 @@ export const NibIcon = () => (
   </Icon>
 );
 
-/** «Редактировать»: a pencil. */
+/** «Edit»: a pencil. */
 export const PencilIcon = () => (
   <Icon>
     <path d="M4 16l.9-3.9 8.4-8.4a2 2 0 0 1 2.9 2.9l-8.4 8.4z" />
@@ -77,7 +77,7 @@ export const SlidersIcon = () => (
   </Icon>
 );
 
-/** «Экспорт». */
+/** «Export». */
 export const ExportIcon = () => (
   <Icon>
     <path d="M10 12.5V3.5M6.6 6.9 10 3.5l3.4 3.4" />
@@ -175,7 +175,7 @@ export const AgainIcon = () => (
   </Icon>
 );
 
-/** «Очистить». */
+/** «Clear». */
 export const ClearIcon = () => (
   <Icon>
     <path d="M4 5.5h12M8 5.5V3.8h4v1.7M5.5 5.5l.8 10.7h7.4l.8-10.7" />

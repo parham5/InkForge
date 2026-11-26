@@ -29,7 +29,7 @@ export function MissingGlyphPopover({ char, rect, onClose }: Props) {
           Напишите «{char}»
         </strong>
         <span className="muted small">{count > 0 ? `вариантов: ${count}` : 'буквы ещё нет в почерке'}</span>
-        <button className="btn ghost small" onClick={onClose} aria-label="Закрыть">
+        <button className="btn ghost small" onClick={onClose} aria-label="Close">
           ✕
         </button>
       </header>
@@ -46,9 +46,9 @@ export function MissingGlyphPopover({ char, rect, onClose }: Props) {
         }}
       />
       <footer>
-        {saved > 0 && <span className="muted small">Сохранено: {saved}. Можно написать ещё вариант.</span>}
+        {saved > 0 && <span className="muted small">Saved: {saved}. Можно написать ещё вариант.</span>}
         <button className="btn small" onClick={onClose}>
-          Готово
+          Done
         </button>
       </footer>
     </div>

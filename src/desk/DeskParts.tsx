@@ -119,7 +119,7 @@ function Toast({ m, onClose }: { m: Message; onClose: () => void }) {
           {m.action.label}
         </button>
       )}
-      <button type="button" className="desk-toast-x" aria-label="Закрыть" onClick={onClose}>
+      <button type="button" className="desk-toast-x" aria-label="Close" onClick={onClose}>
         <CloseIcon />
       </button>
     </div>

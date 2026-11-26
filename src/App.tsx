@@ -183,7 +183,7 @@ export function App() {
           aria-selected={tab === 'studio'}
           className={tab === 'studio' ? 'on' : ''}
           onClick={() => go('studio')}
-          title={!loaded ? 'Почерк загружается' : building ? 'Собираю шрифт…' : `Букв в почерке: ${byChar.size}`}
+          title={!loaded ? 'Почерк загружается' : building ? 'Building font…' : `Букв в почерке: ${byChar.size}`}
         >
           Handwriting
           {(!loaded || building) && <span className="tab-busy pulse" aria-label="собираю шрифт" />}

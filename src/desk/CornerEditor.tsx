@@ -353,7 +353,7 @@ export function CornerEditor({ photo, corners, onChange, bend, onGrid, snapped, 
     edges(ctx, toScreen, 1);
     guideLines(ctx, toScreen, 1);
 
-    // «верх» over the top edge, upright along it.
+    // «upper» over the top edge, upright along it.
     const [t0, t1] = [toScreen(corners[0]), toScreen(corners[1])];
     const mid = toScreen(map(0.5, 0));
     ctx.save();
@@ -365,9 +365,9 @@ export function CornerEditor({ photo, corners, onChange, bend, onGrid, snapped, 
     ctx.textAlign = 'center';
     ctx.lineWidth = 3;
     ctx.strokeStyle = 'rgba(0,0,0,0.6)';
-    ctx.strokeText('верх листа', 0, -8);
+    ctx.strokeText('upper листа', 0, -8);
     ctx.fillStyle = '#ffb020';
-    ctx.fillText('верх листа', 0, -8);
+    ctx.fillText('upper листа', 0, -8);
     ctx.restore();
 
     const isActive = (h: Handle) => h.kind === active.kind && h.i === active.i;

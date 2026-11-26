@@ -78,7 +78,7 @@ export function HandEditor({ doc, fontSize, geo, onChange, onEditor, onPages, on
         UndoRedo,
         Dropcursor.configure({ color: '#e0523f', width: 2 }),
         Gapcursor,
-        Placeholder.configure({ placeholder: 'Пишите… (недостающие буквы подчёркнуты — по клику их можно дописать)' }),
+        Placeholder.configure({ placeholder: 'Start writing… Missing letters are underlined; click one to add it.' }),
         HtmlBlock,
         MissingGlyphs.configure({
           hasGlyph,
@@ -112,7 +112,7 @@ export function HandEditor({ doc, fontSize, geo, onChange, onEditor, onPages, on
       content: doc.content,
       // Copied as plain text, a line of the document is a line (not a paragraph and an empty line).
       coreExtensionOptions: { clipboardTextSerializer: { blockSeparator: '\n' } },
-      editorProps: { attributes: { class: 'hand-text', spellcheck: 'false', 'aria-label': 'Текст документа' } },
+      editorProps: { attributes: { class: 'hand-text', spellcheck: 'false', 'aria-label': 'Document text' } },
       onUpdate: ({ editor }) => onChange(jsonOf(editor.state.doc)),
     },
     [doc.id],

@@ -179,17 +179,17 @@ export function CaptureCanvas({ char, penWidth, height = 420, onSave, hotkeys = 
         onPointerMove={onPointerMove}
         onPointerUp={endStroke}
         onPointerCancel={endStroke}
-        aria-label={`Холст для буквы ${char}`}
+        aria-label={`Letter canvas: ${char}`}
       />
       <div className="capture-actions">
         <button className="btn primary" onClick={save} disabled={strokeCount === 0}>
-          Сохранить вариант {hotkeys && <kbd>Enter</kbd>}
+          Save sample {hotkeys && <kbd>Enter</kbd>}
         </button>
         <button className="btn" onClick={undo} disabled={strokeCount === 0}>
-          Отменить штрих {hotkeys && <kbd>Ctrl+Z</kbd>}
+          Undo stroke {hotkeys && <kbd>Ctrl+Z</kbd>}
         </button>
         <button className="btn ghost" onClick={clear} disabled={strokeCount === 0}>
-          Очистить {hotkeys && <kbd>Esc</kbd>}
+          Clear {hotkeys && <kbd>Esc</kbd>}
         </button>
         {extra}
       </div>

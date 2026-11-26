@@ -17,7 +17,7 @@ export function AnswerCard({ report, onClose }: { report: AnswerReport; onClose:
     <div className="answer-card float no-print" role="status">
       <header>
         <strong>{report.tasks.length ? `Нейронка заполнила: ${report.tasks.join(', ')}` : 'Ответ не разложился'}</strong>
-        <button className="link-btn" onClick={onClose} aria-label="Закрыть">
+        <button className="link-btn" onClick={onClose} aria-label="Close">
           ✕
         </button>
       </header>

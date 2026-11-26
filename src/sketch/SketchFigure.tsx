@@ -29,7 +29,7 @@ interface Props {
 }
 
 /**
- * A «Чертёж» drawn in the user's hand: lines appear at once, labels as soon
+ * A «Drawing» drawn in the user's hand: lines appear at once, labels as soon
  * as the engine has written them. The height is known up front, so nothing
  * around it jumps.
  */
