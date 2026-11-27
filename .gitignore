@@ -1,12 +1,61 @@
+# ===== Node =====
 node_modules/
 dist/
-public/vendor/
-crates/*/pkg/
-validation-hand.ttf
+dist-ssr/
+.vite/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# ===== Rust / Cargo =====
 target/
-test-results/
+**/target/
+*.rs.bk
+*.pdb
+
+# ===== Tauri =====
+src-tauri/target/
+src-tauri/gen/
+src-tauri/WixTools/
+*.msi
+*.msix
+*.exe
+*.dll
+*.appx
+
+# ===== لاگ‌ها و خروجی‌های تست =====
 *.log
+*.stdout.log
+*.stderr.log
+test-results/
+desk-test.stdout.log
+desk-test.stderr.log
+installer-final.stderr.log
+installer-final.stdout.log
+localized-build.stderr.log
+localized-build.stdout.log
+localized-build-retry.stderr.log
+localized-build-retry.stdout.log
+npm-ci.stderr.log
+npm-ci.stdout.log
+bundle-local.stderr.log
+bundle-local.stdout.log
+
+# ===== فایل‌های بیلد/نصب ویندوز =====
+nsis-3.11.zip
+nsis_tauri_utils.dll
+
+# ===== سیستم‌عامل و ادیتور =====
 .DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# ===== env =====
 .env
 .env.*
 !.env.example
