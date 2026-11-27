@@ -15,7 +15,8 @@
     "test:desk": "node scripts/with-cargo.mjs cargo test -p desk-core --release",
     "tauri": "node scripts/with-cargo.mjs tauri",
     "app": "node scripts/with-cargo.mjs tauri dev",
-    "app:build": "node scripts/with-cargo.mjs tauri build"
+    "app:build": "node scripts/with-cargo.mjs tauri build",
+    "deploy": "npm run build && gh-pages -d dist"
   },
   "dependencies": {
     "@codemirror/lang-html": "^6.4.12",
@@ -42,7 +43,9 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "gh-pages": "^6.3.0",
     "typescript": "~6.0.3",
-    "vite": "^8.3.4"
+    "vite": "^8.3.4",
+    "vite-plugin-pwa": "^2.0.0"
   }
 }

@@ -4,9 +4,8 @@ import pkg from '../../package.json';
 
 export type HelpId = 'letters' | 'keys' | 'about';
 
-
-/** Fired on window to open a help page of the «Информация» menu (or the drawing help). */
-export const HELP_EVENT = 'handbook:help';
+/** Fired on window to open a help page of the «Information» menu (or the drawing help). */
+export const HELP_EVENT = 'inkforge:help';
 export const openHelp = (which: HelpId | 'sketch') => window.dispatchEvent(new CustomEvent(HELP_EVENT, { detail: which }));
 
 function Dialog({ title, onClose, children, narrow }: { title: string; onClose: () => void; children: ReactNode; narrow?: boolean }) {
@@ -15,6 +14,7 @@ function Dialog({ title, onClose, children, narrow }: { title: string; onClose: 
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
+  
   return createPortal(
     <div className="sketch-help-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className={`sketch-help help-dialog ${narrow ? 'narrow' : ''}`} role="dialog" aria-modal="true" aria-label={title}>
@@ -38,21 +38,21 @@ function LettersHelp() {
       <section>
         <h3>Lowercase and uppercase</h3>
         <p>
-          Write lowercase letters between the baseline and x-height guides, with descenders (д, у, р) extending to the descender guide.
+          Write lowercase letters between the baseline and x-height guides, with descenders extending down to the descender guide.
           A leading stroke from the left and a trailing stroke to the right define the entry and exit points for cursive writing.
         </p>
         <p>
           Uppercase letters reach the cap-height guide. To <b>connect</b> to the next letter, draw the connecting stroke{' '}
           <b>last</b>, ending on the right at the baseline or x-height. The exit marker
-          turns green. Г, П, Т and Ф commonly remain unconnected; this is normal.
+          turns green. Some letters naturally remain unconnected; this is normal.
         </p>
-        <p>Add as many samples as you like. Each one makes your handwriting more natural.</p>
+        <p>Add as many samples as you like. Each one makes your handwriting engine smarter and more natural.</p>
       </section>
       <section>
         <h3>Letter pairs</h3>
         <p>
           Write a pair <b>in one movement</b>, as part of a word, including the connection. In text, the pair replaces
-          individual letters for a natural join. Add your own using the custom pair field below the pairs.
+          individual letters for a natural join. Add your own using the custom pair field below.
         </p>
       </section>
       <section>
@@ -128,7 +128,7 @@ function KeysHelp() {
       <section>
         <h3>Formulas</h3>
         <p>
-          Formulas pasted from ChatGPT, Gemini or Wikipedia become handwriting: <code>$f_1$</code> → f₁. You can also type:{' '}
+          Formulas pasted from AI assistants or Wikipedia become handwriting: <code>$f_1$</code> → f₁. You can also type:{' '}
           <code>$\Pi_1$</code> becomes Π₁ when you type the closing <code>$</code>; pressing Backspace immediately afterward restores
           the original text. Use Convert formulas $…$ in the Σ menu for formulas already in the document.
         </p>
@@ -152,12 +152,18 @@ function About() {
         InkForge <span className="muted">{pkg.version}</span>
       </p>
       <p>Your handwriting. Your typeface. Your identity.</p>
-      <p>Developed and published by Parham Fallah. © 2026 Parham Fallah.</p>
+      
+      <p>Designed and developed from scratch by <b>Parham Fallah</b>.</p>
+      
       <p className="muted">
-        Handwriting, documents and settings are stored only on this computer. To transfer them, choose File → Back up everything,
-        then open the backup on the other computer using File → Open…
+        InkForge is built as an offline-first application. Your handwriting samples, documents, and settings are stored locally on your device and never leave it. 
+        To transfer your workspace, choose File → Back up everything, then open the backup on your other device using File → Open…
       </p>
-      <p className="muted">This application is based on the authorized Handbook source. Original authorship and third-party notices are retained in the project documentation.</p>
+      
+      <p className="muted">
+        Copyright © 2026 Parham Fallah. All rights reserved. <br />
+        Built with Rust and React.
+      </p>
     </section>
   );
 }
